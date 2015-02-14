@@ -143,7 +143,7 @@ public class StorageNode extends Agent {
 	@Override
 	public synchronized boolean write(String table, String key, List<String> names,
 			List<String> values) {
-		LOG.info("write: "  + table + " " + key);
+//		LOG.info("write: "  + table + " " + key);
 		return db.write(table, key, names, values);
 	}
 	

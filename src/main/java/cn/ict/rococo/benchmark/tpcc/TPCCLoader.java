@@ -2,6 +2,7 @@ package cn.ict.rococo.benchmark.tpcc;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class TPCCLoader {
 	private static final Log LOG = LogFactory.getLog(TPCCLoader.class);
 	private KeyedObjectPool<Member, TTransport> blockingPool = new 
 			StackKeyedObjectPool<Member, TTransport>(new ThriftConnectionPool());
-	
+	private HashMap<Member, RococoCommunicationService.Client> clientPool = new HashMap<Member, RococoCommunicationService.Client>();
 	private TpccServerConfiguration config;
 	
 	
@@ -53,9 +54,12 @@ public class TPCCLoader {
 		TTransport transport = null;
 		try {
 			member = config.getTpccShardMember(table, key);
-			transport = blockingPool.borrowObject(member);
-			RococoCommunicationService.Client client = new RococoCommunicationService.Client(
-					new TBinaryProtocol(transport));
+			RococoCommunicationService.Client client = clientPool.get(member);
+			if (client == null) {
+				transport = blockingPool.borrowObject(member);
+				client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
+				clientPool.put(member, client);
+			}
 			return client.write(table, key, names, values);
 		} catch (Exception e) {
 			if (member != null) {
@@ -71,7 +75,6 @@ public class TPCCLoader {
 	 * This function Load items into item table
 	 */
 	private class ItemLoader implements Callable<Integer> {
-
 		int start_id, end_id;
 		int[] orig;
 
@@ -104,11 +107,12 @@ public class TPCCLoader {
 			LOG.info("Item Done. (" + start_id + "-" + end_id + ")");
 			return 0;
 		}
-
 	}
 
 	public void LoadItems() {
-		int pos = 0;
+		String i_name, i_data;
+		float i_price;
+		int idatasiz, pos = 0;
 		int orig[] = new int[TPCCConstants.NUM_ITEMS];
 		/* random of 10% items that will be marked 'original ' */
 		for (int i = 0; i < TPCCConstants.NUM_ITEMS; i++) {
@@ -121,23 +125,37 @@ public class TPCCLoader {
 			orig[pos] = 1;
 		}
 		LOG.info("Loading Item");
-		int NUMBER_THREADS = TPCCConfig.LOADER_NUM_THREADS;
-		ExecutorService exec = Executors.newFixedThreadPool(NUMBER_THREADS);
-		Future<Integer>[] futures = new Future[NUMBER_THREADS];
-		int num = TPCCConstants.NUM_ITEMS / NUMBER_THREADS;
-		for (int i = 0; i < NUMBER_THREADS - 1; i++) {
-			futures[i] = exec.submit(new ItemLoader(num * i + 1, num * (i + 1), orig));
-		}
-		futures[NUMBER_THREADS - 1] = exec.submit(new ItemLoader(num
-				* (NUMBER_THREADS - 1) + 1, TPCCConstants.NUM_ITEMS, orig));
-		for (int i = 0; i < NUMBER_THREADS; i++) {
-			try {
-				futures[i].get();
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
+//		int NUMBER_THREADS = TPCCConfig.LOADER_NUM_THREADS;
+//		ExecutorService exec = Executors.newFixedThreadPool(NUMBER_THREADS);
+//		Future<Integer>[] futures = new Future[NUMBER_THREADS];
+//		int num = TPCCConstants.NUM_ITEMS / NUMBER_THREADS;
+//		for (int i = 0; i < NUMBER_THREADS - 1; i++) {
+//			futures[i] = exec.submit(new ItemLoader(num * i + 1, num * (i + 1), orig));
+//		}
+//		futures[NUMBER_THREADS - 1] = exec.submit(new ItemLoader(num*(NUMBER_THREADS - 1) + 1, TPCCConstants.NUM_ITEMS, orig));
+//		for (int i = 0; i < NUMBER_THREADS; i++) {
+//			try {
+//				futures[i].get();
+//			} catch (InterruptedException | ExecutionException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		exec.shutdownNow();
+		for (int i_id = 1; i_id <= TPCCConstants.NUM_ITEMS; i_id++) {
+			i_name 	= TPCCGenerator.makeAlphaString(14, 24);
+			i_price = TPCCGenerator.randomFloat(100, 10000) / 100.0f;
+			i_data 	= TPCCGenerator.makeAlphaString(26, 50);
+			idatasiz = i_data.length();
+			if (orig[i_id - 1] == 1) {
+				pos = TPCCGenerator.randomInt(0, idatasiz - 8);
+				i_data = i_data.substring(0, pos) + "original" + i_data.substring(pos + 8);
 			}
+			String key = String.valueOf(i_id);
+			List<String> columns = TPCCGenerator.buildColumns("i_id", "i_name", "i_price", "i_data");
+			List<String> values = TPCCGenerator.buildColumns(i_id, i_name, i_price, i_data);
+			LOG.info("write: "  + TPCCConstants.TABLENAME_ITEM  + " "+ key);
+			write(TPCCConstants.TABLENAME_ITEM, key, columns, values);
 		}
-		exec.shutdownNow();
 		LOG.info("Item Done.");
 	}
 
@@ -247,15 +265,15 @@ public class TPCCLoader {
 		/* local varibales */
 		int d_id, d_w_id;
 		String d_name, d_street_1, d_street_2, d_city, d_state, d_zip;
-		float d_tax, d_ytd;
+		double d_tax, d_ytd;
 		int d_next_o_id;
 
 		/* Starting Loading ... */
 		LOG.info("Loading District Wid = " + w_id);
 
 		d_w_id = w_id;
-		d_ytd = 30000.0f;
-		d_next_o_id = 3001;
+		d_ytd = TPCCConstants.INITIAL_W_YTD;
+		d_next_o_id = TPCCConstants.INITIAL_NEXT_O_ID;
 
 		for (d_id = 1; d_id <= TPCCScaleParameters.DIST_PER_WARE; d_id++) {
 			/* Generate District Data */

@@ -12,7 +12,7 @@ public class ThriftConnectionPool extends BaseKeyedPoolableObjectFactory<Member,
     @Override
     public TTransport makeObject(Member member) throws Exception {
         String host = member.getHostName();
-        int port = member.getPort();
+        int port 	= member.getPort();
         TTransport transport = new CachedTTransport(new TSocket(host, port));
         transport.open();
         return transport;
