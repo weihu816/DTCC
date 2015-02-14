@@ -1,4 +1,4 @@
-package cn.ict.rococo.coordinator;
+package cn.ict.rococo.server.coordinator;
 
 import java.util.List;
 

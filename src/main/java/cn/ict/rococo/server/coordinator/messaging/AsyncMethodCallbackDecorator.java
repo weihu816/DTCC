@@ -1,4 +1,4 @@
-package cn.ict.rococo.coordinator.messaging;
+package cn.ict.rococo.server.coordinator.messaging;
 
 import org.apache.thrift.async.AsyncMethodCallback;
 

@@ -12,11 +12,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
-import cn.ict.rococo.coordinator.messaging.CoordinatorCommunicator;
 import cn.ict.rococo.messaging.Action;
 import cn.ict.rococo.messaging.Piece;
 import cn.ict.rococo.messaging.ReturnType;
 import cn.ict.rococo.messaging.Vertex;
+import cn.ict.rococo.server.coordinator.messaging.CoordinatorCommunicator;
 
 public class RococoTransaction {
 	

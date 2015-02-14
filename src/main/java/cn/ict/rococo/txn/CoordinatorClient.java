@@ -24,7 +24,7 @@ public class CoordinatorClient {
 	
 	public boolean ping() throws TException {
 		final String host = configuration.getHost();
-		final int port 	  = configuration.getPort();
+		final int port = configuration.getPort();
         TTransport transport = new TFramedTransport(new TSocket(host, port));
         try {
             RococoCoordinator.Client client = getClient(transport);

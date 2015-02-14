@@ -12,15 +12,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
-import cn.ict.rococo.coordinator.messaging.CoordinatorCommunicator;
 import cn.ict.rococo.messaging.Action;
 import cn.ict.rococo.messaging.Piece;
 import cn.ict.rococo.messaging.ReturnType;
 import cn.ict.rococo.messaging.Vertex;
+import cn.ict.rococo.server.coordinator.messaging.CoordinatorCommunicator;
 
 public class RococoTransaction {
 	
-	private static final Log log = LogFactory.getLog(RococoTransaction.class);
+	private static final Log LOG = LogFactory.getLog(RococoTransaction.class);
 	
 	protected String transactionId;
 	protected boolean finished = false;
@@ -88,7 +88,7 @@ public class RococoTransaction {
 			HashMap<String, String> map = readSet.get(piece_number);
 			while (map == null || map.get(key) == null) {
 				Thread.sleep(100);
-				log.info("sleep...");
+				LOG.info("sleep...");
 				map = readSet.get(piece_number);
 			}
 			value = map.get(key);

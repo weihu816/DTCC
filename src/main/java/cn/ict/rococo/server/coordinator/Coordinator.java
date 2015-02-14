@@ -1,4 +1,4 @@
-package cn.ict.rococo.coordinator;
+package cn.ict.rococo.server.coordinator;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,22 +12,22 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import cn.ict.rococo.coordinator.config.CoordinatorConfiguration;
 import cn.ict.rococo.messaging.RococoCoordinator;
 import cn.ict.rococo.procedure.TPCC;
 import cn.ict.rococo.procedure.TransactionException;
+import cn.ict.rococo.server.config.TpccServerConfiguration;
 
 
 public class Coordinator {
 
 	private static final Log log = LogFactory.getLog(Coordinator.class);
 	
-	private CoordinatorConfiguration configuration;
+	private TpccServerConfiguration configuration;
     private TServer server;
     private ExecutorService exec;
     
     public Coordinator() {
-        this.configuration = CoordinatorConfiguration.getConfiguration();
+        this.configuration = TpccServerConfiguration.getConfiguration();
 	}
     
 	public void startListener() {
@@ -104,7 +104,7 @@ public class Coordinator {
 	//-----------------------------
 	public static void main(String[] args) {
 		
-		PropertyConfigurator.configure(CoordinatorConfiguration.getConfiguration().getLogConfigFilePath());
+		PropertyConfigurator.configure(TpccServerConfiguration.getConfiguration().getLogConfigFilePath());
 		
 		final Coordinator server = new Coordinator();
 		Runtime.getRuntime().addShutdownHook(new Thread() {

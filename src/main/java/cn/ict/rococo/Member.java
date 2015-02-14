@@ -1,8 +1,11 @@
 package cn.ict.rococo;
 
 import cn.ict.rococo.exception.RococoException;
-
-
+/**
+ * Membership
+ * @author rayhu
+ *
+ */
 public class Member {
 	private String hostName;
 	private int port;

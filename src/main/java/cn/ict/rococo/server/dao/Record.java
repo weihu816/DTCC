@@ -1,4 +1,4 @@
-package cn.ict.rococo;
+package cn.ict.rococo.server.dao;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

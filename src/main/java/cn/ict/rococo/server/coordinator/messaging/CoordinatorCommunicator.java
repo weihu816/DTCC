@@ -1,4 +1,4 @@
-package cn.ict.rococo.coordinator.messaging;
+package cn.ict.rococo.server.coordinator.messaging;
 
 import java.io.IOException;
 
@@ -13,28 +13,34 @@ import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TTransport;
 
 import cn.ict.rococo.Member;
-import cn.ict.rococo.coordinator.config.CoordinatorConfiguration;
 import cn.ict.rococo.exception.RococoException;
 import cn.ict.rococo.messaging.Piece;
 import cn.ict.rococo.messaging.ReturnType;
 import cn.ict.rococo.messaging.RococoCommunicationService;
 import cn.ict.rococo.messaging.ThriftConnectionPool;
 import cn.ict.rococo.messaging.ThriftNonBlockingConnectionPool;
+import cn.ict.rococo.server.config.TpccServerConfiguration;
 
+/**
+ * TODO
+ * @author Wei
+ *
+ */
 public class CoordinatorCommunicator {
 
-	private static final Log log = LogFactory.getLog(CoordinatorCommunicator.class);
-	private CoordinatorConfiguration config;
+	private static final Log LOG = LogFactory.getLog(CoordinatorCommunicator.class);
+	private TpccServerConfiguration config;
 
 	private KeyedObjectPool<Member, TTransport> blockingPool = new StackKeyedObjectPool<Member, TTransport>(
 			new ThriftConnectionPool());
 	private KeyedObjectPool<Member, TNonblockingSocket> nonBlockingPool = new StackKeyedObjectPool<Member, TNonblockingSocket>(
 			new ThriftNonBlockingConnectionPool());
+	// TODO: Client Pool
 
 	private TAsyncClientManager clientManager;
 
 	public CoordinatorCommunicator() {
-		config = CoordinatorConfiguration.getConfiguration();
+		config = TpccServerConfiguration.getConfiguration();
 		try {
 			this.clientManager = new TAsyncClientManager();
 		} catch (IOException e) {
@@ -46,13 +52,12 @@ public class CoordinatorCommunicator {
 	 * Send the immediate piece immediately 
 	 */
 	public ReturnType fistRound(Piece piece) throws TException {
-		log.info("fistRoundAsync(Piece piece)");
+		LOG.info("fistRoundAsync(Piece piece)");
 		Member member = null;
 		TTransport transport = null;
 		ReturnType returnType = null;
 		try {
-			String shardKey = piece.getTable() + piece.getKey();
-			member = config.getMembers(shardKey)[0]; // no replication for now
+			member = config.getTpccShardMember(piece.getTable(), piece.getKey());
 			transport = blockingPool.borrowObject(member);
 			RococoCommunicationService.Client client = new RococoCommunicationService.Client(
 					new TBinaryProtocol(transport));
@@ -121,6 +126,6 @@ public class CoordinatorCommunicator {
 
 	private void handleException(String target, Exception e) {
 		String msg = "Error contacting the remote member: " + target;
-		log.warn(msg, e);
+		LOG.warn(msg, e);
 	}
 }

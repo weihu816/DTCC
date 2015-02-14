@@ -35,10 +35,12 @@ public class TpccServerConfiguration {
 	private int myProcessId = 0;
 	private Map<Integer,Member[]> members = new HashMap<Integer, Member[]>();
 	private String logConfigfile = "conf/log4j-server.properties";
+	private String appServerUrl = "localhost:9190";
 	
 	private TpccServerConfiguration(Properties properties) {
 		
 		logConfigfile = properties.getProperty("logConfigfile", "conf/log4j-server.properties");
+		appServerUrl = properties.getProperty("rococo.coordinator");
 		
 		String shardIdValue = System.getProperty("rococo.tpccShardId", properties.getProperty("rococo.shardId"));;
 		String processIdValue = System.getProperty("rococo.tpccProcessId", properties.getProperty("rococo.processId"));
@@ -165,4 +167,7 @@ public class TpccServerConfiguration {
 		return myProcessId;
 	}
 
+	public String getAppServerUrl() {
+        return appServerUrl;
+    }
 }
