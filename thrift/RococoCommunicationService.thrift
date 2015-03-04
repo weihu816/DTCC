@@ -1,4 +1,4 @@
-namespace java cn.ict.rococo.messaging
+namespace java cn.ict.rcc.messaging
 
 enum Action {
 	READROW 	 = 1,
