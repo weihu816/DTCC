@@ -1,14 +1,11 @@
 package cn.ict.rcc.server.coordinator;
 
-import java.util.List;
-
 import org.apache.thrift.TException;
 
 import cn.ict.rcc.benchmark.micro.MicroBench;
 import cn.ict.rcc.benchmark.tpcc.TPCC;
-import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.RococoCoordinator.Iface;
-import cn.ict.rcc.procedure.TransactionException;
+import cn.ict.rcc.server.coordinator.txn.TransactionException;
 
 public class CoordinatorServiceHandler implements Iface {
 
@@ -24,7 +21,7 @@ public class CoordinatorServiceHandler implements Iface {
 	@Override
 	public void procedure_micro() throws TException {
 		try {
-			MicroBench.updataThreesome();
+			MicroBench.updateThreesome();
 		} catch (TransactionException e) {
 			e.printStackTrace();
 		}
@@ -34,12 +31,6 @@ public class CoordinatorServiceHandler implements Iface {
 	public boolean ping() throws TException {
 		System.out.println("received ping");
 		return true;
-	}
-
-	@Override
-	public boolean commit(String transactionId, List<Piece> pieces)
-			throws TException {
-		return false;
 	}
 
 }

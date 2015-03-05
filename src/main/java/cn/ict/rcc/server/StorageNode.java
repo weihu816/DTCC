@@ -1,11 +1,14 @@
 package cn.ict.rcc.server;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,11 +20,10 @@ import cn.ict.rcc.messaging.Edge;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
-import cn.ict.rcc.server.config.MicroServerConfiguration;
-import cn.ict.rcc.server.config.TpccServerConfiguration;
+import cn.ict.rcc.server.config.ServerConfiguration;
 import cn.ict.rcc.server.dao.MemoryDB;
 
-public class StorageNode extends Agent {
+public class StorageNode {
 
 	private static final Log LOG = LogFactory.getLog(StorageNode.class);
 
@@ -30,35 +32,31 @@ public class StorageNode extends Agent {
 	public static final int DECIDED 	= 2;
 
 	private MemoryDB db = new MemoryDB();
-	private MicroServerConfiguration configuration;
+	private ServerConfiguration configuration;
 	private ServerCommunicator communicator;
-	// dependency information
-	private ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
-	// dependency graph of the node
-	private ArrayList<Edge> dep = new ArrayList<Edge>();
 
-	private ConcurrentHashMap<String, ArrayList<Piece>> pieces = new ConcurrentHashMap<String, ArrayList<Piece>>();
+	private ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
+	
+	private Set<Edge> dep_server = new ConcurrentSkipListSet<Edge>();
+
+	private ConcurrentHashMap<String, List<Piece>> pieces = new ConcurrentHashMap<String, List<Piece>>();
 
 	public StorageNode() {
-		this.configuration = MicroServerConfiguration.getConfiguration();
+		this.configuration = ServerConfiguration.getConfiguration();
 		this.communicator = new ServerCommunicator();
 	}
 
-	@Override
 	public void start() {
 		db.init();
 		int port = configuration.getLocalMember().getPort();
 		communicator.startListener(this, port);
 	}
 
-	@Override
 	public void stop() {
-		super.stop();
 		communicator.stopListener();
 	}
 
 	// ---------------------------------------------------------------
-	@Override
 	public ReturnType start_req(Piece piece) throws TException {
 		LOG.info("start_req(piece)");
 		
@@ -71,41 +69,48 @@ public class StorageNode extends Agent {
 		status.put(id, STARTED);
 		
 		/* foreach p' received by Server that conflicts with p */
-		ArrayList<Piece> conflictPieces = pieces.get(theKey);
+		List<Piece> conflictPieces = pieces.get(theKey);
 		if (conflictPieces != null && conflictPieces.size() > 0) {
 			for (Piece p : conflictPieces) {
-				Edge edge = new Edge();
-				edge.setFrom(p.getTransactionId()); // 什么时候移除
-				edge.setTo(piece.transactionId);
-				edge.setImmediate(piece.isImmediate());
-				dep.add(edge);
+				if (p.getTransactionId() != piece.getTransactionId()) {
+					Edge edge = new Edge();
+					edge.setFrom(p.getTransactionId()); // 什么时候移除
+					edge.setTo(piece.transactionId);
+					edge.setImmediate(piece.isImmediate());
+					dep_server.add(edge);
+				}
 			}
 		}
-		
+
 		if (piece.isImmediate()) {
 			output = execute(piece);
 		}
 		/* buffer piece */
 		if (conflictPieces == null) {
-			conflictPieces = new ArrayList<Piece>();
+			conflictPieces = Collections.synchronizedList(new ArrayList<Piece>());
 			pieces.put(theKey, conflictPieces);
 		}
 		conflictPieces.add(piece);
 
 		ReturnType returnType = new ReturnType();
 		returnType.setOutput(output);
-		returnType.setEdges(new ArrayList<Edge>(dep));
+		returnType.setEdges(new ConcurrentSkipListSet<Edge>(dep_server));
+		LOG.info(returnType);
 		return returnType;
 	}
 
-	@Override
-	public ReturnType commit_req(String transactionId, Piece piece) {
+	public ReturnType commit_req(String transactionId, Piece piece, Set<Edge> dep) {
 		LOG.info("commit_req(String transactionId, Piece piece)");
-
+		// s.dep union dep
+		Set<Edge> dep_union = new ConcurrentSkipListSet<Edge>(dep);
+		dep_union.addAll(dep_server);
+		
+		status.put(transactionId, COMMITTING);
+		
+		
 		return null;
 	}
 
-	@Override
 	public synchronized Map<String, String> execute(Piece piece)
 			throws TException {
 		LOG.info("execute(Piece piece)");
@@ -145,7 +150,6 @@ public class StorageNode extends Agent {
 		return output;
 	}
 
-	@Override
 	public synchronized boolean write(String table, String key, List<String> names,
 			List<String> values) {
 		LOG.info("write: "  + table + " " + key);
@@ -153,7 +157,7 @@ public class StorageNode extends Agent {
 	}
 	
 	public static void main(String[] args) {
-		PropertyConfigurator.configure(TpccServerConfiguration.getConfiguration().getLogConfigFilePath());
+		PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
 		final StorageNode storageNode = new StorageNode();
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

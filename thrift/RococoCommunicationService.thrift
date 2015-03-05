@@ -32,12 +32,12 @@ struct Edge {
 
 struct ReturnType {
   1: required map<string, string> output
-  2: optional list<Edge> edges
+  2: optional set<Edge> edges
 }
 
 service RococoCommunicationService {
   bool ping(),
   ReturnType start_req(1:Piece piece),
-  ReturnType commit_req(1:string transactionId, 2:Piece piece),
+  ReturnType commit_req(1:string transactionId, 2:set<Edge> edges),
   bool write(1:string table, 2:string key, 3:list<string> names, 4:list<string> values)
 }

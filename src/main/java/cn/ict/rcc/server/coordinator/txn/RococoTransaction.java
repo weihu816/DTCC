@@ -1,43 +1,53 @@
-package cn.ict.rcc.procedure;
+package cn.ict.rcc.server.coordinator.txn;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import cn.ict.rcc.messaging.Action;
+import cn.ict.rcc.messaging.Edge;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
 import cn.ict.rcc.server.coordinator.messaging.CoordinatorCommunicator;
+import cn.ict.rcc.server.coordinator.messaging.MethodCallback;
 
 public class RococoTransaction {
 	
-	private static final Log log = LogFactory.getLog(RococoTransaction.class);
+	public static AtomicInteger transactionIdGen = new AtomicInteger(0);
+	
+	private static final Log LOG = LogFactory.getLog(RococoTransaction.class);
 	
 	protected String transactionId;
 	protected boolean finished = false;
-	private Piece piece = null;
+	private Piece piece = null, tempPiece = null;
+	private List<Piece> pieces = new ArrayList<Piece>();
 	CoordinatorCommunicator communicator;
 	int piece_number;
-	private Map<Integer, HashMap<String, String>> readSet = new HashMap<Integer, HashMap<String, String>>();
-	ExecutorService cachedThreadPool; 
+	private Map<Integer, HashMap<String, String>> readSet = new ConcurrentHashMap<Integer, HashMap<String, String>>();
+	ExecutorService cachedThreadPool;
+	private Set<Edge> dep = new ConcurrentSkipListSet<Edge>();
 	
 	public RococoTransaction() {
 		communicator = new CoordinatorCommunicator();
 	}
 	
 	public void begin() {
-		transactionId = UUID.randomUUID().toString();
-		cachedThreadPool = Executors.newCachedThreadPool();
+//		transactionId = UUID.randomUUID().toString();
+		transactionId = String.valueOf(transactionIdGen.addAndGet(1));
 		piece_number = 0;
+		cachedThreadPool = Executors.newCachedThreadPool();
 	}
 	
 	public boolean commit() throws TransactionException {
@@ -45,6 +55,13 @@ public class RococoTransaction {
 			throw new TransactionException("Commit a txn without complete the pieces");
 		}
 		this.finished = true;
+		try {
+			if (communicator.secondRound(transactionId, pieces, dep)) {
+				// TODO: clean up
+			}
+		} catch (TException e) {
+			e.printStackTrace();
+		}
 		cachedThreadPool.shutdown();
 		return true;
 	}
@@ -60,41 +77,44 @@ public class RococoTransaction {
 	}
 	
 	public void completePiece() {
+		pieces.add(piece);
 		if (piece.isImmediate()) {
-//			cachedThreadPool.execute(new Runnable() {
-//				@Override
-//				public void run() {
-//					
-//				}
-//			}); 
+			tempPiece = piece;
 			try {
-				ReturnType returnType = communicator.fistRound(piece); // TODO
+				MethodCallback callback = communicator.fistRound(tempPiece);
 				HashMap<String, String> map = readSet.get(piece_number);
 				if (map == null) {
 					map = new HashMap<String, String>();
 					readSet.put(piece_number, map);
 				}
+				ReturnType returnType = callback.getResult();
 				map.putAll(returnType.getOutput());
+				dep.addAll(returnType.getEdges());
+				LOG.info(returnType);
+				LOG.info(dep);
 			} catch (TException e) {
 				e.printStackTrace();
 			}
+
 		}
 		piece = null;
 	}
 	
-	public String get(int piece_number, String key) throws TransactionException {
+	public String get(int piece_number, String key) {
 		String value;
-		try {
-			HashMap<String, String> map = readSet.get(piece_number);
-			while (map == null || map.get(key) == null) {
-				Thread.sleep(100);
-				log.info("sleep...");
-				map = readSet.get(piece_number);
+
+		HashMap<String, String> map = readSet.get(piece_number);
+		while (map == null || map.get(key) == null) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			value = map.get(key);
-		} catch (Exception e) {
-			throw new TransactionException("No such element from the read set");
+			LOG.info("sleep...");
+			map = readSet.get(piece_number);
 		}
+		value = map.get(key);
+
 		return value;
 	}
 	
@@ -120,9 +140,17 @@ public class RococoTransaction {
 	}
 
 	
-	public void readSelect(List<String> name) throws TransactionException {
+	public void read(String name) throws TransactionException {
 		assertState();
-		Vertex v = new Vertex(Action.READSELECT, name);
+		List<String> names = new ArrayList<String>();
+		names.add(name);
+		Vertex v = new Vertex(Action.READSELECT, names);
+		piece.getVertexs().add(v);
+	}
+	
+	public void readSelect(List<String> names) throws TransactionException {
+		assertState();
+		Vertex v = new Vertex(Action.READSELECT, names);
 		piece.getVertexs().add(v);
 	}
 	
@@ -149,7 +177,6 @@ public class RococoTransaction {
 	public String getTransactionId() {
 		return transactionId;
 	}
-
 
 	public boolean isFinished() {
 		return finished;

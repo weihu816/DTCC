@@ -77,7 +77,7 @@ public class MemoryDB {
 		int size = names.size();
 		Record r = db.get(table).get(key);
 		if (r == null) {
-			throw new RococoException("No such element");
+			throw new RococoException("No such element table:" + table + " key: "+ key);
 		}
 		for (int i = 0; i < size; i++) {
 			String new_value = String.valueOf(Integer.parseInt(r.get(names.get(i))) + Integer.parseInt(values.get(i)));

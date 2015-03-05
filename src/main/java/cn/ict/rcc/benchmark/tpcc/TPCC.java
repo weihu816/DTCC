@@ -1,6 +1,5 @@
 package cn.ict.rcc.benchmark.tpcc;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -9,11 +8,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
-import cn.ict.rcc.procedure.RococoTransaction;
-import cn.ict.rcc.procedure.TransactionException;
-import cn.ict.rcc.procedure.TransactionFactory;
-import cn.ict.rcc.txn.CoordinatorClient;
-import cn.ict.rcc.txn.CoordinatorClientConfiguration;
+import cn.ict.rcc.server.coordinator.txn.CoordinatorClient;
+import cn.ict.rcc.server.coordinator.txn.CoordinatorClientConfiguration;
+import cn.ict.rcc.server.coordinator.txn.RococoTransaction;
+import cn.ict.rcc.server.coordinator.txn.TransactionException;
+import cn.ict.rcc.server.coordinator.txn.TransactionFactory;
 
 /**
  * TPCC Transaction Stored Procedures

@@ -36,7 +36,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ReturnType");
 
   private static final org.apache.thrift.protocol.TField OUTPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("output", org.apache.thrift.protocol.TType.MAP, (short)1);
-  private static final org.apache.thrift.protocol.TField EDGES_FIELD_DESC = new org.apache.thrift.protocol.TField("edges", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField EDGES_FIELD_DESC = new org.apache.thrift.protocol.TField("edges", org.apache.thrift.protocol.TType.SET, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,7 +45,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
   }
 
   public Map<String,String> output; // required
-  public List<Edge> edges; // optional
+  public Set<Edge> edges; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -118,7 +118,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.EDGES, new org.apache.thrift.meta_data.FieldMetaData("edges", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Edge.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ReturnType.class, metaDataMap);
@@ -143,7 +143,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       this.output = __this__output;
     }
     if (other.isSetEdges()) {
-      List<Edge> __this__edges = new ArrayList<Edge>(other.edges.size());
+      Set<Edge> __this__edges = new HashSet<Edge>(other.edges.size());
       for (Edge other_element : other.edges) {
         __this__edges.add(new Edge(other_element));
       }
@@ -206,16 +206,16 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
 
   public void addToEdges(Edge elem) {
     if (this.edges == null) {
-      this.edges = new ArrayList<Edge>();
+      this.edges = new HashSet<Edge>();
     }
     this.edges.add(elem);
   }
 
-  public List<Edge> getEdges() {
+  public Set<Edge> getEdges() {
     return this.edges;
   }
 
-  public ReturnType setEdges(List<Edge> edges) {
+  public ReturnType setEdges(Set<Edge> edges) {
     this.edges = edges;
     return this;
   }
@@ -249,7 +249,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       if (value == null) {
         unsetEdges();
       } else {
-        setEdges((List<Edge>)value);
+        setEdges((Set<Edge>)value);
       }
       break;
 
@@ -454,18 +454,18 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
             }
             break;
           case 2: // EDGES
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                struct.edges = new ArrayList<Edge>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TSet _set28 = iprot.readSetBegin();
+                struct.edges = new HashSet<Edge>(2*_set28.size);
+                for (int _i29 = 0; _i29 < _set28.size; ++_i29)
                 {
                   Edge _elem30;
                   _elem30 = new Edge();
                   _elem30.read(iprot);
                   struct.edges.add(_elem30);
                 }
-                iprot.readListEnd();
+                iprot.readSetEnd();
               }
               struct.setEdgesIsSet(true);
             } else { 
@@ -504,12 +504,12 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
         if (struct.isSetEdges()) {
           oprot.writeFieldBegin(EDGES_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.edges.size()));
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.edges.size()));
             for (Edge _iter32 : struct.edges)
             {
               _iter32.write(oprot);
             }
-            oprot.writeListEnd();
+            oprot.writeSetEnd();
           }
           oprot.writeFieldEnd();
         }
@@ -574,9 +574,9 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list39 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.edges = new ArrayList<Edge>(_list39.size);
-          for (int _i40 = 0; _i40 < _list39.size; ++_i40)
+          org.apache.thrift.protocol.TSet _set39 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.edges = new HashSet<Edge>(2*_set39.size);
+          for (int _i40 = 0; _i40 < _set39.size; ++_i40)
           {
             Edge _elem41;
             _elem41 = new Edge();

@@ -1,11 +1,13 @@
 package cn.ict.rcc.server;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
+import cn.ict.rcc.messaging.Edge;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService.Iface;
@@ -18,10 +20,10 @@ public class ServerCommunicationServiceHandler implements Iface {
 
 	private static final Log LOG = LogFactory.getLog(ServerCommunicationServiceHandler.class);
 			
-	private AgentService agent;
+	private StorageNode node;
 	
-	public ServerCommunicationServiceHandler(AgentService agent) {
-        this.agent = agent;
+	public ServerCommunicationServiceHandler(StorageNode node) {
+        this.node = node;
     }
 	
 	@Override
@@ -33,19 +35,20 @@ public class ServerCommunicationServiceHandler implements Iface {
 	@Override
 	public ReturnType start_req(Piece piece) throws TException {
 		LOG.info("Server Handler: start_req(Piece piece)");
-		return agent.start_req(piece);
+		return node.start_req(piece);
 	}
 
-	@Override
-	public ReturnType commit_req(String transactionId, Piece piece) throws TException {
-		LOG.info("Server Handler: commit_req");
-		return agent.commit_req(transactionId, piece);
-	}
 
 	@Override
 	public boolean write(String table, String key, List<String> names,
 			List<String> values) throws TException {
-		return agent.write(table, key, names, values);
+		return node.write(table, key, names, values);
+	}
+
+	@Override
+	public ReturnType commit_req(String transactionId, Set<Edge> edges) throws TException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

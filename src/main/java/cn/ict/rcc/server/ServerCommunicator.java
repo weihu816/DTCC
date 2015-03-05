@@ -21,7 +21,7 @@ public class ServerCommunicator {
 	private TServer server;
 
 
-	public void startListener(final AgentService agent, final int port) {
+	public void startListener(final StorageNode agent, final int port) {
 		exec = Executors.newSingleThreadExecutor();
 		exec.submit(new Runnable() {
 			public void run() {

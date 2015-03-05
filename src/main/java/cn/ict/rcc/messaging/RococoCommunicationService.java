@@ -40,7 +40,7 @@ public class RococoCommunicationService {
 
     public ReturnType start_req(Piece piece) throws org.apache.thrift.TException;
 
-    public ReturnType commit_req(String transactionId, Piece piece) throws org.apache.thrift.TException;
+    public ReturnType commit_req(String transactionId, Set<Edge> edges) throws org.apache.thrift.TException;
 
     public boolean write(String table, String key, List<String> names, List<String> values) throws org.apache.thrift.TException;
 
@@ -52,7 +52,7 @@ public class RococoCommunicationService {
 
     public void start_req(Piece piece, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void commit_req(String transactionId, Piece piece, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void commit_req(String transactionId, Set<Edge> edges, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void write(String table, String key, List<String> names, List<String> values, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -123,17 +123,17 @@ public class RococoCommunicationService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "start_req failed: unknown result");
     }
 
-    public ReturnType commit_req(String transactionId, Piece piece) throws org.apache.thrift.TException
+    public ReturnType commit_req(String transactionId, Set<Edge> edges) throws org.apache.thrift.TException
     {
-      send_commit_req(transactionId, piece);
+      send_commit_req(transactionId, edges);
       return recv_commit_req();
     }
 
-    public void send_commit_req(String transactionId, Piece piece) throws org.apache.thrift.TException
+    public void send_commit_req(String transactionId, Set<Edge> edges) throws org.apache.thrift.TException
     {
       commit_req_args args = new commit_req_args();
       args.setTransactionId(transactionId);
-      args.setPiece(piece);
+      args.setEdges(edges);
       sendBase("commit_req", args);
     }
 
@@ -252,27 +252,27 @@ public class RococoCommunicationService {
       }
     }
 
-    public void commit_req(String transactionId, Piece piece, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void commit_req(String transactionId, Set<Edge> edges, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      commit_req_call method_call = new commit_req_call(transactionId, piece, resultHandler, this, ___protocolFactory, ___transport);
+      commit_req_call method_call = new commit_req_call(transactionId, edges, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class commit_req_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String transactionId;
-      private Piece piece;
-      public commit_req_call(String transactionId, Piece piece, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private Set<Edge> edges;
+      public commit_req_call(String transactionId, Set<Edge> edges, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.transactionId = transactionId;
-        this.piece = piece;
+        this.edges = edges;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("commit_req", org.apache.thrift.protocol.TMessageType.CALL, 0));
         commit_req_args args = new commit_req_args();
         args.setTransactionId(transactionId);
-        args.setPiece(piece);
+        args.setEdges(edges);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -404,7 +404,7 @@ public class RococoCommunicationService {
 
       public commit_req_result getResult(I iface, commit_req_args args) throws org.apache.thrift.TException {
         commit_req_result result = new commit_req_result();
-        result.success = iface.commit_req(args.transactionId, args.piece);
+        result.success = iface.commit_req(args.transactionId, args.edges);
         return result;
       }
     }
@@ -600,7 +600,7 @@ public class RococoCommunicationService {
       }
 
       public void start(I iface, commit_req_args args, org.apache.thrift.async.AsyncMethodCallback<ReturnType> resultHandler) throws TException {
-        iface.commit_req(args.transactionId, args.piece,resultHandler);
+        iface.commit_req(args.transactionId, args.edges,resultHandler);
       }
     }
 
@@ -1980,7 +1980,7 @@ public class RococoCommunicationService {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("commit_req_args");
 
     private static final org.apache.thrift.protocol.TField TRANSACTION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("transactionId", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField PIECE_FIELD_DESC = new org.apache.thrift.protocol.TField("piece", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField EDGES_FIELD_DESC = new org.apache.thrift.protocol.TField("edges", org.apache.thrift.protocol.TType.SET, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -1989,12 +1989,12 @@ public class RococoCommunicationService {
     }
 
     public String transactionId; // required
-    public Piece piece; // required
+    public Set<Edge> edges; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TRANSACTION_ID((short)1, "transactionId"),
-      PIECE((short)2, "piece");
+      EDGES((short)2, "edges");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -2011,8 +2011,8 @@ public class RococoCommunicationService {
         switch(fieldId) {
           case 1: // TRANSACTION_ID
             return TRANSACTION_ID;
-          case 2: // PIECE
-            return PIECE;
+          case 2: // EDGES
+            return EDGES;
           default:
             return null;
         }
@@ -2058,8 +2058,9 @@ public class RococoCommunicationService {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TRANSACTION_ID, new org.apache.thrift.meta_data.FieldMetaData("transactionId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PIECE, new org.apache.thrift.meta_data.FieldMetaData("piece", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Piece.class)));
+      tmpMap.put(_Fields.EDGES, new org.apache.thrift.meta_data.FieldMetaData("edges", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Edge.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(commit_req_args.class, metaDataMap);
     }
@@ -2069,11 +2070,11 @@ public class RococoCommunicationService {
 
     public commit_req_args(
       String transactionId,
-      Piece piece)
+      Set<Edge> edges)
     {
       this();
       this.transactionId = transactionId;
-      this.piece = piece;
+      this.edges = edges;
     }
 
     /**
@@ -2083,8 +2084,12 @@ public class RococoCommunicationService {
       if (other.isSetTransactionId()) {
         this.transactionId = other.transactionId;
       }
-      if (other.isSetPiece()) {
-        this.piece = new Piece(other.piece);
+      if (other.isSetEdges()) {
+        Set<Edge> __this__edges = new HashSet<Edge>(other.edges.size());
+        for (Edge other_element : other.edges) {
+          __this__edges.add(new Edge(other_element));
+        }
+        this.edges = __this__edges;
       }
     }
 
@@ -2095,7 +2100,7 @@ public class RococoCommunicationService {
     @Override
     public void clear() {
       this.transactionId = null;
-      this.piece = null;
+      this.edges = null;
     }
 
     public String getTransactionId() {
@@ -2122,27 +2127,42 @@ public class RococoCommunicationService {
       }
     }
 
-    public Piece getPiece() {
-      return this.piece;
+    public int getEdgesSize() {
+      return (this.edges == null) ? 0 : this.edges.size();
     }
 
-    public commit_req_args setPiece(Piece piece) {
-      this.piece = piece;
+    public java.util.Iterator<Edge> getEdgesIterator() {
+      return (this.edges == null) ? null : this.edges.iterator();
+    }
+
+    public void addToEdges(Edge elem) {
+      if (this.edges == null) {
+        this.edges = new HashSet<Edge>();
+      }
+      this.edges.add(elem);
+    }
+
+    public Set<Edge> getEdges() {
+      return this.edges;
+    }
+
+    public commit_req_args setEdges(Set<Edge> edges) {
+      this.edges = edges;
       return this;
     }
 
-    public void unsetPiece() {
-      this.piece = null;
+    public void unsetEdges() {
+      this.edges = null;
     }
 
-    /** Returns true if field piece is set (has been assigned a value) and false otherwise */
-    public boolean isSetPiece() {
-      return this.piece != null;
+    /** Returns true if field edges is set (has been assigned a value) and false otherwise */
+    public boolean isSetEdges() {
+      return this.edges != null;
     }
 
-    public void setPieceIsSet(boolean value) {
+    public void setEdgesIsSet(boolean value) {
       if (!value) {
-        this.piece = null;
+        this.edges = null;
       }
     }
 
@@ -2156,11 +2176,11 @@ public class RococoCommunicationService {
         }
         break;
 
-      case PIECE:
+      case EDGES:
         if (value == null) {
-          unsetPiece();
+          unsetEdges();
         } else {
-          setPiece((Piece)value);
+          setEdges((Set<Edge>)value);
         }
         break;
 
@@ -2172,8 +2192,8 @@ public class RococoCommunicationService {
       case TRANSACTION_ID:
         return getTransactionId();
 
-      case PIECE:
-        return getPiece();
+      case EDGES:
+        return getEdges();
 
       }
       throw new IllegalStateException();
@@ -2188,8 +2208,8 @@ public class RococoCommunicationService {
       switch (field) {
       case TRANSACTION_ID:
         return isSetTransactionId();
-      case PIECE:
-        return isSetPiece();
+      case EDGES:
+        return isSetEdges();
       }
       throw new IllegalStateException();
     }
@@ -2216,12 +2236,12 @@ public class RococoCommunicationService {
           return false;
       }
 
-      boolean this_present_piece = true && this.isSetPiece();
-      boolean that_present_piece = true && that.isSetPiece();
-      if (this_present_piece || that_present_piece) {
-        if (!(this_present_piece && that_present_piece))
+      boolean this_present_edges = true && this.isSetEdges();
+      boolean that_present_edges = true && that.isSetEdges();
+      if (this_present_edges || that_present_edges) {
+        if (!(this_present_edges && that_present_edges))
           return false;
-        if (!this.piece.equals(that.piece))
+        if (!this.edges.equals(that.edges))
           return false;
       }
 
@@ -2251,12 +2271,12 @@ public class RococoCommunicationService {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetPiece()).compareTo(other.isSetPiece());
+      lastComparison = Boolean.valueOf(isSetEdges()).compareTo(other.isSetEdges());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetPiece()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.piece, other.piece);
+      if (isSetEdges()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.edges, other.edges);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -2289,11 +2309,11 @@ public class RococoCommunicationService {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("piece:");
-      if (this.piece == null) {
+      sb.append("edges:");
+      if (this.edges == null) {
         sb.append("null");
       } else {
-        sb.append(this.piece);
+        sb.append(this.edges);
       }
       first = false;
       sb.append(")");
@@ -2303,9 +2323,6 @@ public class RococoCommunicationService {
     public void validate() throws org.apache.thrift.TException {
       // check for required fields
       // check for sub-struct validity
-      if (piece != null) {
-        piece.validate();
-      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -2350,11 +2367,21 @@ public class RococoCommunicationService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // PIECE
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.piece = new Piece();
-                struct.piece.read(iprot);
-                struct.setPieceIsSet(true);
+            case 2: // EDGES
+              if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
+                {
+                  org.apache.thrift.protocol.TSet _set42 = iprot.readSetBegin();
+                  struct.edges = new HashSet<Edge>(2*_set42.size);
+                  for (int _i43 = 0; _i43 < _set42.size; ++_i43)
+                  {
+                    Edge _elem44;
+                    _elem44 = new Edge();
+                    _elem44.read(iprot);
+                    struct.edges.add(_elem44);
+                  }
+                  iprot.readSetEnd();
+                }
+                struct.setEdgesIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -2379,9 +2406,16 @@ public class RococoCommunicationService {
           oprot.writeString(struct.transactionId);
           oprot.writeFieldEnd();
         }
-        if (struct.piece != null) {
-          oprot.writeFieldBegin(PIECE_FIELD_DESC);
-          struct.piece.write(oprot);
+        if (struct.edges != null) {
+          oprot.writeFieldBegin(EDGES_FIELD_DESC);
+          {
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.edges.size()));
+            for (Edge _iter45 : struct.edges)
+            {
+              _iter45.write(oprot);
+            }
+            oprot.writeSetEnd();
+          }
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -2405,15 +2439,21 @@ public class RococoCommunicationService {
         if (struct.isSetTransactionId()) {
           optionals.set(0);
         }
-        if (struct.isSetPiece()) {
+        if (struct.isSetEdges()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
         if (struct.isSetTransactionId()) {
           oprot.writeString(struct.transactionId);
         }
-        if (struct.isSetPiece()) {
-          struct.piece.write(oprot);
+        if (struct.isSetEdges()) {
+          {
+            oprot.writeI32(struct.edges.size());
+            for (Edge _iter46 : struct.edges)
+            {
+              _iter46.write(oprot);
+            }
+          }
         }
       }
 
@@ -2426,9 +2466,18 @@ public class RococoCommunicationService {
           struct.setTransactionIdIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.piece = new Piece();
-          struct.piece.read(iprot);
-          struct.setPieceIsSet(true);
+          {
+            org.apache.thrift.protocol.TSet _set47 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.edges = new HashSet<Edge>(2*_set47.size);
+            for (int _i48 = 0; _i48 < _set47.size; ++_i48)
+            {
+              Edge _elem49;
+              _elem49 = new Edge();
+              _elem49.read(iprot);
+              struct.edges.add(_elem49);
+            }
+          }
+          struct.setEdgesIsSet(true);
         }
       }
     }
@@ -3364,13 +3413,13 @@ public class RococoCommunicationService {
             case 3: // NAMES
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list42 = iprot.readListBegin();
-                  struct.names = new ArrayList<String>(_list42.size);
-                  for (int _i43 = 0; _i43 < _list42.size; ++_i43)
+                  org.apache.thrift.protocol.TList _list50 = iprot.readListBegin();
+                  struct.names = new ArrayList<String>(_list50.size);
+                  for (int _i51 = 0; _i51 < _list50.size; ++_i51)
                   {
-                    String _elem44;
-                    _elem44 = iprot.readString();
-                    struct.names.add(_elem44);
+                    String _elem52;
+                    _elem52 = iprot.readString();
+                    struct.names.add(_elem52);
                   }
                   iprot.readListEnd();
                 }
@@ -3382,13 +3431,13 @@ public class RococoCommunicationService {
             case 4: // VALUES
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list45 = iprot.readListBegin();
-                  struct.values = new ArrayList<String>(_list45.size);
-                  for (int _i46 = 0; _i46 < _list45.size; ++_i46)
+                  org.apache.thrift.protocol.TList _list53 = iprot.readListBegin();
+                  struct.values = new ArrayList<String>(_list53.size);
+                  for (int _i54 = 0; _i54 < _list53.size; ++_i54)
                   {
-                    String _elem47;
-                    _elem47 = iprot.readString();
-                    struct.values.add(_elem47);
+                    String _elem55;
+                    _elem55 = iprot.readString();
+                    struct.values.add(_elem55);
                   }
                   iprot.readListEnd();
                 }
@@ -3426,9 +3475,9 @@ public class RococoCommunicationService {
           oprot.writeFieldBegin(NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.names.size()));
-            for (String _iter48 : struct.names)
+            for (String _iter56 : struct.names)
             {
-              oprot.writeString(_iter48);
+              oprot.writeString(_iter56);
             }
             oprot.writeListEnd();
           }
@@ -3438,9 +3487,9 @@ public class RococoCommunicationService {
           oprot.writeFieldBegin(VALUES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.values.size()));
-            for (String _iter49 : struct.values)
+            for (String _iter57 : struct.values)
             {
-              oprot.writeString(_iter49);
+              oprot.writeString(_iter57);
             }
             oprot.writeListEnd();
           }
@@ -3486,18 +3535,18 @@ public class RococoCommunicationService {
         if (struct.isSetNames()) {
           {
             oprot.writeI32(struct.names.size());
-            for (String _iter50 : struct.names)
+            for (String _iter58 : struct.names)
             {
-              oprot.writeString(_iter50);
+              oprot.writeString(_iter58);
             }
           }
         }
         if (struct.isSetValues()) {
           {
             oprot.writeI32(struct.values.size());
-            for (String _iter51 : struct.values)
+            for (String _iter59 : struct.values)
             {
-              oprot.writeString(_iter51);
+              oprot.writeString(_iter59);
             }
           }
         }
@@ -3517,26 +3566,26 @@ public class RococoCommunicationService {
         }
         if (incoming.get(2)) {
           {
-            org.apache.thrift.protocol.TList _list52 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.names = new ArrayList<String>(_list52.size);
-            for (int _i53 = 0; _i53 < _list52.size; ++_i53)
+            org.apache.thrift.protocol.TList _list60 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.names = new ArrayList<String>(_list60.size);
+            for (int _i61 = 0; _i61 < _list60.size; ++_i61)
             {
-              String _elem54;
-              _elem54 = iprot.readString();
-              struct.names.add(_elem54);
+              String _elem62;
+              _elem62 = iprot.readString();
+              struct.names.add(_elem62);
             }
           }
           struct.setNamesIsSet(true);
         }
         if (incoming.get(3)) {
           {
-            org.apache.thrift.protocol.TList _list55 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.values = new ArrayList<String>(_list55.size);
-            for (int _i56 = 0; _i56 < _list55.size; ++_i56)
+            org.apache.thrift.protocol.TList _list63 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.values = new ArrayList<String>(_list63.size);
+            for (int _i64 = 0; _i64 < _list63.size; ++_i64)
             {
-              String _elem57;
-              _elem57 = iprot.readString();
-              struct.values.add(_elem57);
+              String _elem65;
+              _elem65 = iprot.readString();
+              struct.values.add(_elem65);
             }
           }
           struct.setValuesIsSet(true);

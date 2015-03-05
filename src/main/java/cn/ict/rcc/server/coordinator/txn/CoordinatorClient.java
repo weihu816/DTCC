@@ -1,4 +1,4 @@
-package cn.ict.rcc.txn;
+package cn.ict.rcc.server.coordinator.txn;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,8 +18,15 @@ public class CoordinatorClient {
 	
 	private CoordinatorClientConfiguration configuration;
 	
+	public static CoordinatorClient coordinatorClient = null;
+	
 	public CoordinatorClient() {
         this.configuration = CoordinatorClientConfiguration.getConfiguration();
+	}
+
+	public static CoordinatorClient getCoordinatorClient() {
+		coordinatorClient = new CoordinatorClient();
+		return coordinatorClient;
 	}
 	
 	public boolean ping() throws TException {
@@ -44,6 +51,21 @@ public class CoordinatorClient {
         try {
             RococoCoordinator.Client client = getClient(transport);
             client.procedure_newOrder(w_id, d_id);
+        } catch (TException e) {
+        	e.printStackTrace();
+            //handleException(host, e);
+        } finally {
+            close(transport);
+        }
+	}
+	
+	public void MicroBench() {
+		final String host = configuration.getHost();
+		final int port 	  = configuration.getPort();
+        TTransport transport = new TFramedTransport(new TSocket(host, port));
+        try {
+            RococoCoordinator.Client client = getClient(transport);
+            client.procedure_micro();
         } catch (TException e) {
         	e.printStackTrace();
             //handleException(host, e);
