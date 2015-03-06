@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -17,6 +18,8 @@ import org.apache.thrift.TException;
 
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Edge;
+import cn.ict.rcc.messaging.Graph;
+import cn.ict.rcc.messaging.Node;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
@@ -37,8 +40,8 @@ public class StorageNode {
 
 	private ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
 	
-	private Set<Edge> dep_server = new ConcurrentSkipListSet<Edge>();
-
+	private Map<String, Set<Node>> dep_server = new ConcurrentHashMap<String, Set<Node>>();
+	
 	private ConcurrentHashMap<String, List<Piece>> pieces = new ConcurrentHashMap<String, List<Piece>>();
 
 	public StorageNode() {
@@ -77,7 +80,7 @@ public class StorageNode {
 					edge.setFrom(p.getTransactionId()); // 什么时候移除
 					edge.setTo(piece.transactionId);
 					edge.setImmediate(piece.isImmediate());
-					dep_server.add(edge);
+					addEdge(edge);
 				}
 			}
 		}
@@ -94,17 +97,27 @@ public class StorageNode {
 
 		ReturnType returnType = new ReturnType();
 		returnType.setOutput(output);
-		returnType.setEdges(new ConcurrentSkipListSet<Edge>(dep_server));
+		Graph g = new Graph();
+		g.setVertexes(dep_server);
+		returnType.setDep(g);
 		LOG.info(returnType);
 		return returnType;
 	}
 
-	public ReturnType commit_req(String transactionId, Piece piece, Set<Edge> dep) {
+	public ReturnType commit_req(String transactionId, Piece piece, Graph dep) {
 		LOG.info("commit_req(String transactionId, Piece piece)");
 		// s.dep union dep
-		Set<Edge> dep_union = new ConcurrentSkipListSet<Edge>(dep);
-		dep_union.addAll(dep_server);
+		for(Entry<String, Set<Node>> entry : dep.getVertexes().entrySet()) {
+			if (dep_server.containsKey(entry.getKey())) {
+				dep_server.get(entry.getKey()).addAll(entry.getValue());
+			} else {
+				dep_server.put(entry.getKey(), entry.getValue());
+			}
+		}
 		
+		ArrayList<String> transactions_sorted = new ArrayList<String>();
+		// deterministic_topological_sort
+
 		status.put(transactionId, COMMITTING);
 		
 		
@@ -168,5 +181,13 @@ public class StorageNode {
 		storageNode.start();
 	}
 
+	public void addEdge(Edge e) {
+		Set<Node> v = dep_server.get(e.getFrom());
+		if (v == null) {
+			v = new ConcurrentSkipListSet<Node>();
+			dep_server.put(e.getFrom(), v);
+		}
+		v.add(new Node(e.to, e.isImmediate()));
+	}
 	
 }

@@ -30,14 +30,23 @@ struct Edge {
   3: required bool immediate
 }
 
+struct Node {
+  1: required string id
+  2: required bool immediate
+}
+
+struct Graph {
+  1: required map<string, set<Node>> vertexes
+}
+
 struct ReturnType {
   1: required map<string, string> output
-  2: optional set<Edge> edges
+  2: optional Graph dep
 }
 
 service RococoCommunicationService {
   bool ping(),
   ReturnType start_req(1:Piece piece),
-  ReturnType commit_req(1:string transactionId, 2:set<Edge> edges),
+  ReturnType commit_req(1:string transactionId, 2:Graph dep),
   bool write(1:string table, 2:string key, 3:list<string> names, 4:list<string> values)
 }

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,7 +16,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import cn.ict.rcc.messaging.Action;
-import cn.ict.rcc.messaging.Edge;
+import cn.ict.rcc.messaging.Graph;
+import cn.ict.rcc.messaging.Node;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
@@ -37,7 +38,9 @@ public class RococoTransaction {
 	int piece_number;
 	private Map<Integer, HashMap<String, String>> readSet = new ConcurrentHashMap<Integer, HashMap<String, String>>();
 	ExecutorService cachedThreadPool;
-	private Set<Edge> dep = new ConcurrentSkipListSet<Edge>();
+//	private Set<Edge> dep = new ConcurrentSkipListSet<Edge>();
+//	private RccGraph dep = new RccGraph();
+	Map<String, Set<Node>> dep = new ConcurrentHashMap<String, Set<Node>>();
 	
 	public RococoTransaction() {
 		communicator = new CoordinatorCommunicator();
@@ -56,7 +59,9 @@ public class RococoTransaction {
 		}
 		this.finished = true;
 		try {
-			if (communicator.secondRound(transactionId, pieces, dep)) {
+			Graph graph = new Graph();
+			graph.setVertexes(dep);
+			if (communicator.secondRound(transactionId, pieces, graph)) {
 				// TODO: clean up
 			}
 		} catch (TException e) {
@@ -88,8 +93,15 @@ public class RococoTransaction {
 					readSet.put(piece_number, map);
 				}
 				ReturnType returnType = callback.getResult();
+				// update the dependency information
 				map.putAll(returnType.getOutput());
-				dep.addAll(returnType.getEdges());
+				for(Entry<String, Set<Node>> entry : returnType.getDep().getVertexes().entrySet()) {
+					if (dep.containsKey(entry.getKey())) {
+						dep.get(entry.getKey()).addAll(entry.getValue());
+					} else {
+						dep.put(entry.getKey(), entry.getValue());
+					}
+				}
 				LOG.info(returnType);
 				LOG.info(dep);
 			} catch (TException e) {

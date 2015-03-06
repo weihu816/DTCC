@@ -18,9 +18,7 @@ public class MethodCallback implements AsyncMethodCallback<Object> {
 	public synchronized ReturnType getResult() throws TException {
 		if (!done) {
 			try {
-				LOG.info("Waiting......");
 				wait();
-				LOG.info("Continue.....");
 			} catch (InterruptedException ie) {
 				ie.printStackTrace();
 			}

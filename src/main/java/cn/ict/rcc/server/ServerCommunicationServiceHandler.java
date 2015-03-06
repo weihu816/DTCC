@@ -1,5 +1,6 @@
 package cn.ict.rcc.server;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -8,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import cn.ict.rcc.messaging.Edge;
+import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService.Iface;
@@ -34,7 +36,7 @@ public class ServerCommunicationServiceHandler implements Iface {
 
 	@Override
 	public ReturnType start_req(Piece piece) throws TException {
-		LOG.info("Server Handler: start_req(Piece piece)");
+		LOG.info("Server Handler: start_req(Piece piece) TransactionID: " + piece.getTransactionId());
 		return node.start_req(piece);
 	}
 
@@ -46,9 +48,11 @@ public class ServerCommunicationServiceHandler implements Iface {
 	}
 
 	@Override
-	public ReturnType commit_req(String transactionId, Set<Edge> edges) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+	public ReturnType commit_req(String transactionId, Graph dep) throws TException {
+		// TODO
+		ReturnType returnType = new ReturnType();
+		returnType.setOutput(new HashMap<String, String>());
+		return returnType;
 	}
 
 }

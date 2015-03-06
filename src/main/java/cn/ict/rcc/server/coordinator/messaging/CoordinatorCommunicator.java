@@ -18,6 +18,7 @@ import org.apache.thrift.transport.TTransport;
 import cn.ict.rcc.Member;
 import cn.ict.rcc.exception.RococoException;
 import cn.ict.rcc.messaging.Edge;
+import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService;
@@ -73,7 +74,7 @@ public class CoordinatorCommunicator {
 		return callback;
 	}
 	
-	public boolean secondRound(String transactionId, List<Piece> pieces, Set<Edge> dep) throws TException {
+	public boolean secondRound(String transactionId, List<Piece> pieces, Graph dep) throws TException {
 		LOG.info("secondRound  " + dep);
 		Member member = null;
 		TTransport transport = null;
