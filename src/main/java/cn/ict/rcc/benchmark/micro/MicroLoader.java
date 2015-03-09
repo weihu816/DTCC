@@ -40,7 +40,6 @@ public class MicroLoader {
 		values.add("0");
 		write("table1", "myKey", names, values);
 		write("table2", "myKey", names, values);
-		write("table3", "myKey", names, values);
 	}
 
 	private boolean write(String table, String key, List<String> names, List<String> values) {

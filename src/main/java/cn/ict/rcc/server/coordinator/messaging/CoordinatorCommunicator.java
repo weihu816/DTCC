@@ -2,7 +2,6 @@ package cn.ict.rcc.server.coordinator.messaging;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,10 +16,8 @@ import org.apache.thrift.transport.TTransport;
 
 import cn.ict.rcc.Member;
 import cn.ict.rcc.exception.RococoException;
-import cn.ict.rcc.messaging.Edge;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
-import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.ThriftConnectionPool;
 import cn.ict.rcc.messaging.ThriftNonBlockingConnectionPool;

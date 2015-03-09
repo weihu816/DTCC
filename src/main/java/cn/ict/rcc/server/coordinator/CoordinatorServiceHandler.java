@@ -1,7 +1,5 @@
 package cn.ict.rcc.server.coordinator;
 
-import java.util.Random;
-
 import org.apache.thrift.TException;
 
 import cn.ict.rcc.benchmark.micro.MicroBench;
@@ -23,7 +21,7 @@ public class CoordinatorServiceHandler implements Iface {
 	@Override
 	public void procedure_micro() throws TException {
 		try {
-			MicroBench.updateThreesome((new Random()).nextInt(6)+1);
+			MicroBench.Micro(1);
 		} catch (TransactionException e) {
 			e.printStackTrace();
 		}

@@ -172,6 +172,167 @@ public class TPCC {
 		
 	}
 	
+	
+	public static void Payment(int w_id, int d_id, Object c_id_or_c_last) throws TransactionException {
+		
+//		Boolean byname = false;
+//		if (c_id_or_c_last instanceof String) {
+//			byname = true;
+//		}
+//		float h_amount = randomFloat(0, 5000);
+//		int x = randomInt(1, 100);
+//		/*  the customer resident warehouse is the home 85% , remote 15% of the time  */
+//		int c_d_id, c_w_id;
+//		if (x <= 85 ) { 
+//			c_w_id = w_id;
+//			c_d_id = d_id;
+//		} else {
+//			c_d_id = randomInt(1, 10);
+//			do {
+//				c_w_id = randomInt(1, COUNT_WARE);
+//			} while (c_w_id == w_id && COUNT_WARE > 1);
+//		}
+//		String h_date = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
+//		HashMap<String, String> result;
+//		List <HashMap<String, String>> results;
+//		String[] columns, values;
+//		
+//		
+//		/* retrieve and update warehouse w_ytd */
+//		float w_ytd = 0;
+//		String w_name = null, w_street_1 = null, w_street_2 = null, w_city = null, w_state = null, w_zip = null;
+//		String key_warehouse = String.valueOf(w_id);
+//		columns = buildColumns("w_ytd", "w_name", "w_street_1", "w_street_2", "w_city", "w_state", "w_zip");
+//		result = db.read(WAREHOUSE, key_warehouse, columns);
+//		w_ytd = Float.valueOf(result.get(columns[0]));
+//		w_name = (result.get(columns[1]));
+//		w_street_1 = (result.get(columns[2]));
+//		w_street_2 = (result.get(columns[3]));
+//		w_city = (result.get(columns[4]));
+//		w_state = (result.get(columns[5]));
+//		w_zip = (result.get(columns[6]));
+//		
+//		w_ytd += h_amount;
+//		
+//		columns = buildColumns("w_ytd");
+//		values = buildColumns(w_ytd);
+//		db.write(WAREHOUSE, key_warehouse, columns, values, 1);
+//		
+//		/* retrieve and update district d_ytd */
+//		float d_ytd = 0;
+//		String d_name = null,  d_street_1 = null, d_street_2 = null, d_city = null, d_state = null, d_zip = null;
+//		String key_district = buildString(w_id, "_", d_id);
+//		columns = buildColumns("d_ytd", "d_name", "d_street_1", "d_street_2", "d_city", "d_state", "d_zip");
+//		result = db.read(DISTRICT, key_district, columns);
+//		d_ytd = Float.valueOf((result.get(columns[0])));
+//		d_name = (result.get(columns[1]));
+//		d_street_1 = (result.get(columns[2]));
+//		d_street_2 = (result.get(columns[3]));
+//		d_city = (result.get(columns[4]));
+//		d_state = (result.get(columns[5]));
+//		d_zip = (result.get(columns[6]));
+//
+//		/* update district d_ytd */
+//		d_ytd += h_amount;
+//		columns = buildColumns("d_ytd");
+//		values = buildColumns(d_ytd);
+//		db.write(DISTRICT, key_district, columns, values, 1);
+//		
+//		/* retrieve customer information */
+//		float c_balance = 0.0f;
+//		String c_data = null, h_data = null, c_first = null, c_middle = null, c_last = null;
+//		String c_street_1 = null, c_street_2 = null, c_city = null, c_state = null, c_zip = null;
+//		String c_phone = null, c_credit = null, c_credit_lim = null, c_since = null;
+//		int c_id = 0;
+//		String key_customer = null, key_prefix_customer = null;
+//		if (byname) {
+//
+//			key_prefix_customer = (buildString(c_w_id + "_" + c_d_id));
+//			columns = buildColumns("c_id", "c_balance", "c_credit", "c_data",
+//					"c_first", "c_middle", "c_last", "c_street_1",
+//					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
+//					"c_credit", "c_credit_lim", "c_since");
+//			String constraintColumn = "c_last";
+//			String ConstraintValue = ((String)c_id_or_c_last);
+//			String orderColumn =  ("c_first");
+//			results = db.read(CUSTOMER, key_prefix_customer, columns, constraintColumn, ConstraintValue, orderColumn, false);
+//			int index = results.size() / 2;
+//			result = results.get(index);
+//			/* ORDER BY c_first and get midpoint */
+//			c_id = Integer.valueOf((result.get(columns[0])));
+//			c_balance = Float.valueOf((result.get(columns[1])));
+//			c_credit = (result.get(columns[2]));
+//			c_data = (result.get(columns[3]));
+//			c_first = (result.get(columns[4]));
+//			c_middle = (result.get(columns[5]));
+//			c_last = (result.get(columns[6]));
+//			c_street_1 = (result.get(columns[7]));
+//			c_street_2 = (result.get(columns[8]));
+//			c_city = (result.get(columns[9]));
+//			c_state = (result.get(columns[10]));
+//			c_zip = (result.get(columns[11]));
+//			c_phone = (result.get(columns[12]));
+//			c_credit = (result.get(columns[13]));
+//			c_credit_lim = (result.get(columns[14]));
+//			c_since = (result.get(columns[15]));
+//			key_customer = buildString(c_w_id, "_", c_d_id, "_", c_id);
+//		} else {
+//			key_customer = buildString(c_w_id, "_", c_d_id, "_", c_id_or_c_last);
+//			columns = buildColumns("c_balance", "c_credit", "c_data",
+//					"c_first", "c_middle", "c_last", "c_street_1",
+//					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
+//					"c_credit", "c_credit_lim", "c_since");
+//			result = db.read(CUSTOMER, key_customer, columns);
+//			c_id = (int) c_id_or_c_last;
+//			c_balance = Float.valueOf((result.get(columns[0])));
+//			c_credit = (result.get(columns[1]));
+//			c_data = (result.get(columns[2]));
+//			c_first = (result.get(columns[3]));
+//			c_middle = (result.get(columns[4]));
+//			c_last = (result.get(columns[5]));
+//			c_street_1 = (result.get(columns[6]));
+//			c_street_2 = (result.get(columns[7]));
+//			c_city = (result.get(columns[8]));
+//			c_state = (result.get(columns[9]));
+//			c_zip = (result.get(columns[10]));
+//			c_phone = (result.get(columns[11]));
+//			c_credit = (result.get(columns[12]));
+//			c_credit_lim = (result.get(columns[13]));
+//			c_since = (result.get(columns[14]));
+//		}
+//		
+//		
+//		c_balance -= h_amount;
+//		h_data = w_name + "    " + d_name;
+//		if (c_credit.equals("BC")) {
+//			String c_new_data = String.format("| %4d %2d %4d %2d %4d $%7.2f %12s %24s", 
+//					c_id,c_d_id, c_w_id, d_id, w_id, h_amount, h_date, h_data);
+//			c_new_data += c_data;
+//			
+//			/* update customer c_balance， c_data */
+//			columns = buildColumns("c_balance", "c_data");
+//			values = buildColumns(c_balance, c_new_data);
+//			db.write(CUSTOMER, key_customer, columns, values, 1);
+//			
+//		} else {
+//			/* update customer c_balance */
+//			columns = buildColumns("c_balance");
+//			values = buildColumns(c_balance);
+//			db.write(CUSTOMER, key_customer, columns, values, 1);
+//		}
+//		
+//		
+//		/* retrieve history key */
+//		String key_history = String.valueOf(System.currentTimeMillis());
+//		/* insert into history table */
+//		columns = buildColumns("h_c_d_id", "h_c_w_id", "h_c_id", "h_d_id",
+//				"h_w_id", "h_date", "h_amount", "h_data");
+//		values = buildColumns(c_d_id, c_w_id, c_id, d_id, w_id, h_date,
+//				h_amount, h_data);
+//		db.write(HISTORY, key_history, columns, values, 0);
+		
+	}
+	
 	public static void main(String[] args) {
 
 		PropertyConfigurator.configure(CoordinatorClientConfiguration

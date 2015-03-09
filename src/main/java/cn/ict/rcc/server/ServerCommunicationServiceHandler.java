@@ -49,10 +49,7 @@ public class ServerCommunicationServiceHandler implements Iface {
 
 	@Override
 	public ReturnType commit_req(String transactionId, Graph dep) throws TException {
-		// TODO
-		ReturnType returnType = new ReturnType();
-		returnType.setOutput(new HashMap<String, String>());
-		return returnType;
+		return node.commit_req(transactionId, dep);
 	}
 
 }

@@ -30,13 +30,17 @@ struct Edge {
   3: required bool immediate
 }
 
-struct Node {
-  1: required string id
-  2: required bool immediate
-}
+//struct Node {
+//  1: required string id
+//  2: required bool immediate
+//}
+
+//struct Graph {
+//  1: required map<string, list<Node>> vertexes
+//}
 
 struct Graph {
-  1: required map<string, set<Node>> vertexes
+  1: required map<string, string> vertexes
 }
 
 struct ReturnType {

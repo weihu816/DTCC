@@ -5,11 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,9 +15,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
 
 import cn.ict.rcc.messaging.Action;
-import cn.ict.rcc.messaging.Edge;
 import cn.ict.rcc.messaging.Graph;
-import cn.ict.rcc.messaging.Node;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
@@ -29,19 +25,19 @@ import cn.ict.rcc.server.dao.MemoryDB;
 public class StorageNode {
 
 	private static final Log LOG = LogFactory.getLog(StorageNode.class);
-
-	public static final int STARTED 	= 0;
-	public static final int COMMITTING 	= 1;
-	public static final int DECIDED 	= 2;
+	public static final int STARTED = 0;
+	public static final int COMMITTING = 1;
+	public static final int DECIDED = 2;
 
 	private MemoryDB db = new MemoryDB();
 	private ServerConfiguration configuration;
 	private ServerCommunicator communicator;
 
 	private ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
-	
-	private Map<String, Set<Node>> dep_server = new ConcurrentHashMap<String, Set<Node>>();
-	
+
+	private Map<String, String> dep_server = new ConcurrentHashMap<String, String>();
+
+	private ConcurrentHashMap<String, List<String>> pieces_conflict = new ConcurrentHashMap<String, List<String>>();
 	private ConcurrentHashMap<String, List<Piece>> pieces = new ConcurrentHashMap<String, List<Piece>>();
 
 	public StorageNode() {
@@ -60,80 +56,127 @@ public class StorageNode {
 	}
 
 	// ---------------------------------------------------------------
-	public ReturnType start_req(Piece piece) throws TException {
-		LOG.info("start_req(piece)");
-		
+	public synchronized ReturnType start_req(Piece piece) throws TException {
+		LOG.debug("start_req(piece)");
+
 		String id = piece.transactionId;
 		String theKey = piece.getTable() + "_" + piece.getKey();
-		
+
 		Map<String, String> output = new HashMap<String, String>();
-		
+
 		/* S.dep[p.owner].status = STARTED */
 		status.put(id, STARTED);
-		
-		/* foreach p' received by Server that conflicts with p */
-		List<Piece> conflictPieces = pieces.get(theKey);
-		if (conflictPieces != null && conflictPieces.size() > 0) {
-			for (Piece p : conflictPieces) {
-				if (p.getTransactionId() != piece.getTransactionId()) {
-					Edge edge = new Edge();
-					edge.setFrom(p.getTransactionId()); // 什么时候移除
-					edge.setTo(piece.transactionId);
-					edge.setImmediate(piece.isImmediate());
-					addEdge(edge);
-				}
+
+		// update - the most recent piece conflicted
+		List<String> conflictPieces = pieces_conflict.get(theKey);
+		if (piece.isImmediate() && conflictPieces != null && conflictPieces.size() > 0) {
+			String p_id = conflictPieces.get(conflictPieces.size() - 1);
+			if (p_id != piece.getTransactionId() && status.get(p_id) != DECIDED) {
+				LOG.debug(piece.getTransactionId() + "<-" + p_id);
+				dep_server.put(piece.getTransactionId(), p_id);
 			}
 		}
-
 		if (piece.isImmediate()) {
 			output = execute(piece);
+			status.put(id, COMMITTING);
 		}
 		/* buffer piece */
 		if (conflictPieces == null) {
-			conflictPieces = Collections.synchronizedList(new ArrayList<Piece>());
-			pieces.put(theKey, conflictPieces);
+			conflictPieces = Collections.synchronizedList(new ArrayList<String>());
+			pieces_conflict.put(theKey, conflictPieces);
 		}
-		conflictPieces.add(piece);
+		if (!piece.isImmediate()) {
+			LOG.debug("Put txn: " + piece.transactionId);
+			List<Piece> allPieces = pieces.get(piece.getTransactionId());
+			if (allPieces == null) {
+				allPieces = new ArrayList<Piece>();
+				pieces.put(piece.transactionId, allPieces);
+			}
+			allPieces.add(piece);
+		}
+		conflictPieces.add(piece.transactionId);
 
 		ReturnType returnType = new ReturnType();
 		returnType.setOutput(output);
 		Graph g = new Graph();
-		g.setVertexes(dep_server);
+		Map<String, String> map = new HashMap<String, String>();
+		map.putAll(dep_server);
+		g.setVertexes(map);
 		returnType.setDep(g);
-		LOG.info(returnType);
+		LOG.debug(returnType);
 		return returnType;
 	}
 
-	public ReturnType commit_req(String transactionId, Piece piece, Graph dep) {
-		LOG.info("commit_req(String transactionId, Piece piece)");
+	public ReturnType commit_req(String transactionId, Graph dep) throws TException {
+		LOG.debug("commit_req(String transactionId, Piece piece): txn " + transactionId);
 		// s.dep union dep
-		for(Entry<String, Set<Node>> entry : dep.getVertexes().entrySet()) {
-			if (dep_server.containsKey(entry.getKey())) {
-				dep_server.get(entry.getKey()).addAll(entry.getValue());
-			} else {
-				dep_server.put(entry.getKey(), entry.getValue());
-			}
+//		for (Entry<String, Set<Node>> entry : dep.getVertexes().entrySet()) {
+//			if (dep_server.containsKey(entry.getKey())) {
+//				dep_server.get(entry.getKey()).addAll(entry.getValue());
+//			} else {
+//				dep_server.put(entry.getKey(), entry.getValue());
+//			}
+//		}
+//		TarjanSCC scc = new TarjanSCC(transactionId, dep_server);
+		
+		ReturnType returnType = new ReturnType();
+		Map<String, String> output = new HashMap<String, String>();
+		returnType.setOutput(output);
+		
+		if (status.get(transactionId) == DECIDED) {
+			return returnType;
+		} else if (status.get(transactionId) == COMMITTING) {
+			status.put(transactionId, DECIDED);
+			LOG.debug("commit_req DONE: txn " + transactionId);
+			return returnType;
 		}
 		
-		ArrayList<String> transactions_sorted = new ArrayList<String>();
-		// deterministic_topological_sort
-
-		status.put(transactionId, COMMITTING);
-		
-		
-		return null;
+		synchronized (this) {
+			String v = transactionId;
+			Stack<String> stack = new Stack<String>();
+			stack.push(transactionId);
+			while ((v = dep.vertexes.get(v)) != null) {
+				if (status.get(v) != null && status.get(v) == DECIDED) {
+					break;
+				}
+				stack.push(v);
+				LOG.debug("commit_req: push txn " + v);
+			}
+			
+			while (!stack.isEmpty() && (v = stack.pop()) != null) {
+				while (status.get(v) == null) {
+					try {
+						Thread.currentThread().wait(1000);
+						LOG.debug("wait for " + v);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				} 
+				if (status.get(v) == STARTED)  {
+					status.put(v, DECIDED);
+					LOG.debug("execute " + v);
+					for (Piece p : pieces.get(v)) {
+						output.putAll(execute(p));
+					}
+				}
+			}
+			status.put(transactionId, DECIDED);
+			LOG.debug(output);
+			LOG.debug("commit_req DONE: txn " + transactionId);
+			return returnType;
+		}
 	}
 
 	public synchronized Map<String, String> execute(Piece piece)
 			throws TException {
-		LOG.info("execute(Piece piece)");
+		LOG.debug("execute(Piece piece)");
 		Map<String, String> output = new HashMap<String, String>();
 		List<Vertex> vertexs = piece.getVertexs();
 		for (Vertex v : vertexs) {
 			Action action = v.getAction();
-			String table  = piece.getTable();
-			String key 	  = piece.getKey();
-			List<String> names  = v.getName();
+			String table = piece.getTable();
+			String key = piece.getKey();
+			List<String> names = v.getName();
 			List<String> values = v.getValue();
 			switch (action) {
 			case READSELECT:
@@ -141,21 +184,21 @@ public class StorageNode {
 				if (m != null) {
 					output.putAll(m);
 				}
-				LOG.info("Read - Table:" + table + " Key:" + key);
+				LOG.debug("Read - Table:" + table + " Key:" + key);
 				break;
 			case WRITE:
 				if (!db.write(table, key, names, values)) {
 					System.err.println("ERROR WRITE");
-					LOG.info("Error Write - ");
+					LOG.debug("Error Write - ");
 				}
-				LOG.info("Insert - Table:" + table + " Key:" + key);
+				LOG.debug("Insert - Table:" + table + " Key:" + key);
 				break;
 			case ADDVALUE:
 				if (!db.addInteger(table, key, names, values)) {
 					System.err.println("ERROR ADDVALUE");
-					LOG.info("Error Write - ");
+					LOG.debug("Error Write - ");
 				}
-				LOG.info("Addvalue - Table:" + table + " Key:" + key);
+				LOG.debug("Addvalue - Table:" + table + " Key:" + key);
 				break;
 			default:
 			}
@@ -163,14 +206,15 @@ public class StorageNode {
 		return output;
 	}
 
-	public synchronized boolean write(String table, String key, List<String> names,
-			List<String> values) {
-		LOG.info("write: "  + table + " " + key);
+	public synchronized boolean write(String table, String key,
+			List<String> names, List<String> values) {
+		LOG.debug("write: " + table + " " + key);
 		return db.write(table, key, names, values);
 	}
-	
+
 	public static void main(String[] args) {
-		PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
+		PropertyConfigurator.configure(ServerConfiguration.getConfiguration()
+				.getLogConfigFilePath());
 		final StorageNode storageNode = new StorageNode();
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -181,13 +225,4 @@ public class StorageNode {
 		storageNode.start();
 	}
 
-	public void addEdge(Edge e) {
-		Set<Node> v = dep_server.get(e.getFrom());
-		if (v == null) {
-			v = new ConcurrentSkipListSet<Node>();
-			dep_server.put(e.getFrom(), v);
-		}
-		v.add(new Node(e.to, e.isImmediate()));
-	}
-	
 }

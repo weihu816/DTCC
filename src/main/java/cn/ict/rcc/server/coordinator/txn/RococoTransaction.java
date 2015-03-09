@@ -40,7 +40,7 @@ public class RococoTransaction {
 	ExecutorService cachedThreadPool;
 //	private Set<Edge> dep = new ConcurrentSkipListSet<Edge>();
 //	private RccGraph dep = new RccGraph();
-	Map<String, Set<Node>> dep = new ConcurrentHashMap<String, Set<Node>>();
+	Map<String, String> dep = new ConcurrentHashMap<String, String>();
 	
 	public RococoTransaction() {
 		communicator = new CoordinatorCommunicator();
@@ -83,7 +83,7 @@ public class RococoTransaction {
 	
 	public void completePiece() {
 		pieces.add(piece);
-		if (piece.isImmediate()) {
+//		if (piece.isImmediate()) {
 			tempPiece = piece;
 			try {
 				MethodCallback callback = communicator.fistRound(tempPiece);
@@ -95,20 +95,20 @@ public class RococoTransaction {
 				ReturnType returnType = callback.getResult();
 				// update the dependency information
 				map.putAll(returnType.getOutput());
-				for(Entry<String, Set<Node>> entry : returnType.getDep().getVertexes().entrySet()) {
-					if (dep.containsKey(entry.getKey())) {
-						dep.get(entry.getKey()).addAll(entry.getValue());
-					} else {
-						dep.put(entry.getKey(), entry.getValue());
-					}
-				}
+				dep.putAll(returnType.getDep().getVertexes());
+//				for(Entry<String, String> entry : returnType.getDep().getVertexes().entrySet()) {
+//					if (dep.containsKey(entry.getKey())) {
+//						dep.get(entry.getKey()).addAll(entry.getValue());
+//					} else {
+//						dep.put(entry.getKey(), entry.getValue());
+//					}
+//				}
 				LOG.info(returnType);
 				LOG.info(dep);
 			} catch (TException e) {
 				e.printStackTrace();
 			}
-
-		}
+//		}
 		piece = null;
 	}
 	
