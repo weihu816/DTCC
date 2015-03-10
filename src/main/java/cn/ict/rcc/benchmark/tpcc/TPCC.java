@@ -1,5 +1,6 @@
 package cn.ict.rcc.benchmark.tpcc;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -8,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
+import cn.ict.rcc.benchmark.Procedure;
 import cn.ict.rcc.server.coordinator.txn.CoordinatorClient;
 import cn.ict.rcc.server.coordinator.txn.CoordinatorClientConfiguration;
 import cn.ict.rcc.server.coordinator.txn.RococoTransaction;
@@ -339,7 +341,10 @@ public class TPCC {
 				.getConfiguration().getLogConfigFilePath());
 
 		CoordinatorClient client = new CoordinatorClient();
-		client.NewOrder(1, 1);
+		List<String> paras = new ArrayList<String>();
+		paras.add("1");
+		paras.add("1");
+		client.callProcedure(Procedure.TPCC_NEWORDER, paras);
 
 	}
 }

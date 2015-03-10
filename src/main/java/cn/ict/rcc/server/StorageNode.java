@@ -161,7 +161,7 @@ public class StorageNode {
 				}
 			}
 			status.put(transactionId, DECIDED);
-			LOG.debug(output);
+			LOG.debug("output: " + output);
 			LOG.debug("commit_req DONE: txn " + transactionId);
 			return returnType;
 		}
@@ -184,21 +184,19 @@ public class StorageNode {
 				if (m != null) {
 					output.putAll(m);
 				}
-				LOG.debug("Read - Table:" + table + " Key:" + key);
+				LOG.debug("Read - Table:" + table + " Key:" + key + " names: " + names);
 				break;
 			case WRITE:
 				if (!db.write(table, key, names, values)) {
-					System.err.println("ERROR WRITE");
 					LOG.debug("Error Write - ");
 				}
-				LOG.debug("Insert - Table:" + table + " Key:" + key);
+				LOG.debug("Insert - Table:" + table + " Key:" + key + " names: " + names);
 				break;
 			case ADDVALUE:
 				if (!db.addInteger(table, key, names, values)) {
-					System.err.println("ERROR ADDVALUE");
 					LOG.debug("Error Write - ");
 				}
-				LOG.debug("Addvalue - Table:" + table + " Key:" + key);
+				LOG.debug("Addvalue - Table:" + table + " Key:" + key + " names: " + names);
 				break;
 			default:
 			}

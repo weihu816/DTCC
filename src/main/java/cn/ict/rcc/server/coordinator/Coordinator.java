@@ -61,38 +61,6 @@ public class Coordinator {
     public void stop() {
     	
 	}
-    
-//    @Override
-//	public Map<String, String> accept(String transactionId, Piece piece) {
-//    	log.info("accept(String transactionId, Piece piece)");
-//    	ReturnType returnType = null;
-//    	try {
-//			returnType = communicator.fistRoundAsync(piece);
-//			if (returnType == null) {
-//				return null;
-//			}
-//		} catch (TException e) {
-//			e.printStackTrace();
-//		}
-//		return returnType.getOutput();
-//	}
-//    
-//	@Override
-//	public Map<String, String> accept(String transactionId, List<Piece> pieces) {
-//		log.info("accept(String transactionId, List<Piece> pieces)");
-//		ReturnType returnType = null;
-//    	try {
-//			returnType = communicator.fistRoundAsync(pieces);
-//			if (returnType == null) {
-//				return null;
-//			}
-//		} catch (TException e) {
-//			e.printStackTrace();
-//		}
-//		return returnType.getOutput();
-//	}
-
-	
 	
 	//-----------------------------
 	public static void main(String[] args) {

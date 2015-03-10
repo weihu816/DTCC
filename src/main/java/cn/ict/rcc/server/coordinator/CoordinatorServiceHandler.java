@@ -1,7 +1,11 @@
 package cn.ict.rcc.server.coordinator;
 
+import java.util.List;
+
 import org.apache.thrift.TException;
 
+import cn.ict.rcc.benchmark.Procedure;
+import cn.ict.rcc.benchmark.funds.FundsTransferBench;
 import cn.ict.rcc.benchmark.micro.MicroBench;
 import cn.ict.rcc.benchmark.tpcc.TPCC;
 import cn.ict.rcc.messaging.RococoCoordinator.Iface;
@@ -10,22 +14,35 @@ import cn.ict.rcc.server.coordinator.txn.TransactionException;
 public class CoordinatorServiceHandler implements Iface {
 
 	@Override
-	public void procedure_newOrder(int w_id, int d_id) throws TException {
+	public void callProcedure(String procedure, List<String> paras) throws TException {
 		try {
-			TPCC.Neworder(w_id, d_id);
+			switch (procedure) {
+			case Procedure.MICRO_BENCHMARK:
+				MicroBench.Micro();
+				break;
+			case Procedure.FUNDS_BENCHMARK:
+				FundsTransferBench.FundsTransfer();
+				break;
+			case Procedure.TPCC_NEWORDER:
+				TPCC.Neworder(Integer.valueOf(paras.get(0)), Integer.valueOf(paras.get(1)));
+				break;
+			case Procedure.TPCC_PAYMENT:
+				break;
+			case Procedure.TPCC_ORDERSTATUS:
+				break;
+			case Procedure.TPCC_DELIVERY:
+				break;
+			case Procedure.TPCC_STOCKLEVEL:
+				break;
+			case Procedure.TPCC_BENCHMARK:
+				break;
+			default:
+				break;
+			}
 		} catch (TransactionException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	@Override
-	public void procedure_micro() throws TException {
-		try {
-			MicroBench.Micro(1);
-		} catch (TransactionException e) {
-			e.printStackTrace();
-		}
-	}	
 	
 	@Override
 	public boolean ping() throws TException {

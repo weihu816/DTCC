@@ -38,9 +38,7 @@ public class RococoCoordinator {
 
     public boolean ping() throws org.apache.thrift.TException;
 
-    public void procedure_newOrder(int w_id, int d_id) throws org.apache.thrift.TException;
-
-    public void procedure_micro() throws org.apache.thrift.TException;
+    public void callProcedure(String procedure, List<String> paras) throws org.apache.thrift.TException;
 
   }
 
@@ -48,9 +46,7 @@ public class RococoCoordinator {
 
     public void ping(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void procedure_newOrder(int w_id, int d_id, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
-
-    public void procedure_micro(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void callProcedure(String procedure, List<String> paras, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -96,43 +92,24 @@ public class RococoCoordinator {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "ping failed: unknown result");
     }
 
-    public void procedure_newOrder(int w_id, int d_id) throws org.apache.thrift.TException
+    public void callProcedure(String procedure, List<String> paras) throws org.apache.thrift.TException
     {
-      send_procedure_newOrder(w_id, d_id);
-      recv_procedure_newOrder();
+      send_callProcedure(procedure, paras);
+      recv_callProcedure();
     }
 
-    public void send_procedure_newOrder(int w_id, int d_id) throws org.apache.thrift.TException
+    public void send_callProcedure(String procedure, List<String> paras) throws org.apache.thrift.TException
     {
-      procedure_newOrder_args args = new procedure_newOrder_args();
-      args.setW_id(w_id);
-      args.setD_id(d_id);
-      sendBase("procedure_newOrder", args);
+      callProcedure_args args = new callProcedure_args();
+      args.setProcedure(procedure);
+      args.setParas(paras);
+      sendBase("callProcedure", args);
     }
 
-    public void recv_procedure_newOrder() throws org.apache.thrift.TException
+    public void recv_callProcedure() throws org.apache.thrift.TException
     {
-      procedure_newOrder_result result = new procedure_newOrder_result();
-      receiveBase(result, "procedure_newOrder");
-      return;
-    }
-
-    public void procedure_micro() throws org.apache.thrift.TException
-    {
-      send_procedure_micro();
-      recv_procedure_micro();
-    }
-
-    public void send_procedure_micro() throws org.apache.thrift.TException
-    {
-      procedure_micro_args args = new procedure_micro_args();
-      sendBase("procedure_micro", args);
-    }
-
-    public void recv_procedure_micro() throws org.apache.thrift.TException
-    {
-      procedure_micro_result result = new procedure_micro_result();
-      receiveBase(result, "procedure_micro");
+      callProcedure_result result = new callProcedure_result();
+      receiveBase(result, "callProcedure");
       return;
     }
 
@@ -183,27 +160,27 @@ public class RococoCoordinator {
       }
     }
 
-    public void procedure_newOrder(int w_id, int d_id, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void callProcedure(String procedure, List<String> paras, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      procedure_newOrder_call method_call = new procedure_newOrder_call(w_id, d_id, resultHandler, this, ___protocolFactory, ___transport);
+      callProcedure_call method_call = new callProcedure_call(procedure, paras, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class procedure_newOrder_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private int w_id;
-      private int d_id;
-      public procedure_newOrder_call(int w_id, int d_id, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class callProcedure_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String procedure;
+      private List<String> paras;
+      public callProcedure_call(String procedure, List<String> paras, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.w_id = w_id;
-        this.d_id = d_id;
+        this.procedure = procedure;
+        this.paras = paras;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("procedure_newOrder", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        procedure_newOrder_args args = new procedure_newOrder_args();
-        args.setW_id(w_id);
-        args.setD_id(d_id);
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("callProcedure", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        callProcedure_args args = new callProcedure_args();
+        args.setProcedure(procedure);
+        args.setParas(paras);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -214,36 +191,7 @@ public class RococoCoordinator {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_procedure_newOrder();
-      }
-    }
-
-    public void procedure_micro(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      procedure_micro_call method_call = new procedure_micro_call(resultHandler, this, ___protocolFactory, ___transport);
-      this.___currentMethod = method_call;
-      ___manager.call(method_call);
-    }
-
-    public static class procedure_micro_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public procedure_micro_call(org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, false);
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("procedure_micro", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        procedure_micro_args args = new procedure_micro_args();
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public void getResult() throws org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_procedure_micro();
+        (new Client(prot)).recv_callProcedure();
       }
     }
 
@@ -261,8 +209,7 @@ public class RococoCoordinator {
 
     private static <I extends Iface> Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> getProcessMap(Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> processMap) {
       processMap.put("ping", new ping());
-      processMap.put("procedure_newOrder", new procedure_newOrder());
-      processMap.put("procedure_micro", new procedure_micro());
+      processMap.put("callProcedure", new callProcedure());
       return processMap;
     }
 
@@ -287,42 +234,22 @@ public class RococoCoordinator {
       }
     }
 
-    public static class procedure_newOrder<I extends Iface> extends org.apache.thrift.ProcessFunction<I, procedure_newOrder_args> {
-      public procedure_newOrder() {
-        super("procedure_newOrder");
+    public static class callProcedure<I extends Iface> extends org.apache.thrift.ProcessFunction<I, callProcedure_args> {
+      public callProcedure() {
+        super("callProcedure");
       }
 
-      public procedure_newOrder_args getEmptyArgsInstance() {
-        return new procedure_newOrder_args();
-      }
-
-      protected boolean isOneway() {
-        return false;
-      }
-
-      public procedure_newOrder_result getResult(I iface, procedure_newOrder_args args) throws org.apache.thrift.TException {
-        procedure_newOrder_result result = new procedure_newOrder_result();
-        iface.procedure_newOrder(args.w_id, args.d_id);
-        return result;
-      }
-    }
-
-    public static class procedure_micro<I extends Iface> extends org.apache.thrift.ProcessFunction<I, procedure_micro_args> {
-      public procedure_micro() {
-        super("procedure_micro");
-      }
-
-      public procedure_micro_args getEmptyArgsInstance() {
-        return new procedure_micro_args();
+      public callProcedure_args getEmptyArgsInstance() {
+        return new callProcedure_args();
       }
 
       protected boolean isOneway() {
         return false;
       }
 
-      public procedure_micro_result getResult(I iface, procedure_micro_args args) throws org.apache.thrift.TException {
-        procedure_micro_result result = new procedure_micro_result();
-        iface.procedure_micro();
+      public callProcedure_result getResult(I iface, callProcedure_args args) throws org.apache.thrift.TException {
+        callProcedure_result result = new callProcedure_result();
+        iface.callProcedure(args.procedure, args.paras);
         return result;
       }
     }
@@ -341,8 +268,7 @@ public class RococoCoordinator {
 
     private static <I extends AsyncIface> Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase,?>> getProcessMap(Map<String,  org.apache.thrift.AsyncProcessFunction<I, ? extends  org.apache.thrift.TBase, ?>> processMap) {
       processMap.put("ping", new ping());
-      processMap.put("procedure_newOrder", new procedure_newOrder());
-      processMap.put("procedure_micro", new procedure_micro());
+      processMap.put("callProcedure", new callProcedure());
       return processMap;
     }
 
@@ -398,20 +324,20 @@ public class RococoCoordinator {
       }
     }
 
-    public static class procedure_newOrder<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, procedure_newOrder_args, Void> {
-      public procedure_newOrder() {
-        super("procedure_newOrder");
+    public static class callProcedure<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, callProcedure_args, Void> {
+      public callProcedure() {
+        super("callProcedure");
       }
 
-      public procedure_newOrder_args getEmptyArgsInstance() {
-        return new procedure_newOrder_args();
+      public callProcedure_args getEmptyArgsInstance() {
+        return new callProcedure_args();
       }
 
       public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
         return new AsyncMethodCallback<Void>() { 
           public void onComplete(Void o) {
-            procedure_newOrder_result result = new procedure_newOrder_result();
+            callProcedure_result result = new callProcedure_result();
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -423,7 +349,7 @@ public class RococoCoordinator {
           public void onError(Exception e) {
             byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
             org.apache.thrift.TBase msg;
-            procedure_newOrder_result result = new procedure_newOrder_result();
+            callProcedure_result result = new callProcedure_result();
             {
               msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
               msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
@@ -443,58 +369,8 @@ public class RococoCoordinator {
         return false;
       }
 
-      public void start(I iface, procedure_newOrder_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.procedure_newOrder(args.w_id, args.d_id,resultHandler);
-      }
-    }
-
-    public static class procedure_micro<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, procedure_micro_args, Void> {
-      public procedure_micro() {
-        super("procedure_micro");
-      }
-
-      public procedure_micro_args getEmptyArgsInstance() {
-        return new procedure_micro_args();
-      }
-
-      public AsyncMethodCallback<Void> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
-        final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<Void>() { 
-          public void onComplete(Void o) {
-            procedure_micro_result result = new procedure_micro_result();
-            try {
-              fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
-              return;
-            } catch (Exception e) {
-              LOGGER.error("Exception writing to internal frame buffer", e);
-            }
-            fb.close();
-          }
-          public void onError(Exception e) {
-            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
-            org.apache.thrift.TBase msg;
-            procedure_micro_result result = new procedure_micro_result();
-            {
-              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
-              msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
-            }
-            try {
-              fcall.sendResponse(fb,msg,msgType,seqid);
-              return;
-            } catch (Exception ex) {
-              LOGGER.error("Exception writing to internal frame buffer", ex);
-            }
-            fb.close();
-          }
-        };
-      }
-
-      protected boolean isOneway() {
-        return false;
-      }
-
-      public void start(I iface, procedure_micro_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.procedure_micro(resultHandler);
+      public void start(I iface, callProcedure_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
+        iface.callProcedure(args.procedure, args.paras,resultHandler);
       }
     }
 
@@ -1100,25 +976,25 @@ public class RococoCoordinator {
 
   }
 
-  public static class procedure_newOrder_args implements org.apache.thrift.TBase<procedure_newOrder_args, procedure_newOrder_args._Fields>, java.io.Serializable, Cloneable, Comparable<procedure_newOrder_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("procedure_newOrder_args");
+  public static class callProcedure_args implements org.apache.thrift.TBase<callProcedure_args, callProcedure_args._Fields>, java.io.Serializable, Cloneable, Comparable<callProcedure_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("callProcedure_args");
 
-    private static final org.apache.thrift.protocol.TField W_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("w_id", org.apache.thrift.protocol.TType.I32, (short)1);
-    private static final org.apache.thrift.protocol.TField D_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("d_id", org.apache.thrift.protocol.TType.I32, (short)2);
+    private static final org.apache.thrift.protocol.TField PROCEDURE_FIELD_DESC = new org.apache.thrift.protocol.TField("procedure", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField PARAS_FIELD_DESC = new org.apache.thrift.protocol.TField("paras", org.apache.thrift.protocol.TType.LIST, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new procedure_newOrder_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new procedure_newOrder_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new callProcedure_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new callProcedure_argsTupleSchemeFactory());
     }
 
-    public int w_id; // required
-    public int d_id; // required
+    public String procedure; // required
+    public List<String> paras; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      W_ID((short)1, "w_id"),
-      D_ID((short)2, "d_id");
+      PROCEDURE((short)1, "procedure"),
+      PARAS((short)2, "paras");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -1133,10 +1009,10 @@ public class RococoCoordinator {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // W_ID
-            return W_ID;
-          case 2: // D_ID
-            return D_ID;
+          case 1: // PROCEDURE
+            return PROCEDURE;
+          case 2: // PARAS
+            return PARAS;
           default:
             return null;
         }
@@ -1177,116 +1053,131 @@ public class RococoCoordinator {
     }
 
     // isset id assignments
-    private static final int __W_ID_ISSET_ID = 0;
-    private static final int __D_ID_ISSET_ID = 1;
-    private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.W_ID, new org.apache.thrift.meta_data.FieldMetaData("w_id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-      tmpMap.put(_Fields.D_ID, new org.apache.thrift.meta_data.FieldMetaData("d_id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      tmpMap.put(_Fields.PROCEDURE, new org.apache.thrift.meta_data.FieldMetaData("procedure", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.PARAS, new org.apache.thrift.meta_data.FieldMetaData("paras", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(procedure_newOrder_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(callProcedure_args.class, metaDataMap);
     }
 
-    public procedure_newOrder_args() {
+    public callProcedure_args() {
     }
 
-    public procedure_newOrder_args(
-      int w_id,
-      int d_id)
+    public callProcedure_args(
+      String procedure,
+      List<String> paras)
     {
       this();
-      this.w_id = w_id;
-      setW_idIsSet(true);
-      this.d_id = d_id;
-      setD_idIsSet(true);
+      this.procedure = procedure;
+      this.paras = paras;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public procedure_newOrder_args(procedure_newOrder_args other) {
-      __isset_bitfield = other.__isset_bitfield;
-      this.w_id = other.w_id;
-      this.d_id = other.d_id;
+    public callProcedure_args(callProcedure_args other) {
+      if (other.isSetProcedure()) {
+        this.procedure = other.procedure;
+      }
+      if (other.isSetParas()) {
+        List<String> __this__paras = new ArrayList<String>(other.paras);
+        this.paras = __this__paras;
+      }
     }
 
-    public procedure_newOrder_args deepCopy() {
-      return new procedure_newOrder_args(this);
+    public callProcedure_args deepCopy() {
+      return new callProcedure_args(this);
     }
 
     @Override
     public void clear() {
-      setW_idIsSet(false);
-      this.w_id = 0;
-      setD_idIsSet(false);
-      this.d_id = 0;
+      this.procedure = null;
+      this.paras = null;
     }
 
-    public int getW_id() {
-      return this.w_id;
+    public String getProcedure() {
+      return this.procedure;
     }
 
-    public procedure_newOrder_args setW_id(int w_id) {
-      this.w_id = w_id;
-      setW_idIsSet(true);
+    public callProcedure_args setProcedure(String procedure) {
+      this.procedure = procedure;
       return this;
     }
 
-    public void unsetW_id() {
-      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __W_ID_ISSET_ID);
+    public void unsetProcedure() {
+      this.procedure = null;
     }
 
-    /** Returns true if field w_id is set (has been assigned a value) and false otherwise */
-    public boolean isSetW_id() {
-      return EncodingUtils.testBit(__isset_bitfield, __W_ID_ISSET_ID);
+    /** Returns true if field procedure is set (has been assigned a value) and false otherwise */
+    public boolean isSetProcedure() {
+      return this.procedure != null;
     }
 
-    public void setW_idIsSet(boolean value) {
-      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __W_ID_ISSET_ID, value);
+    public void setProcedureIsSet(boolean value) {
+      if (!value) {
+        this.procedure = null;
+      }
     }
 
-    public int getD_id() {
-      return this.d_id;
+    public int getParasSize() {
+      return (this.paras == null) ? 0 : this.paras.size();
     }
 
-    public procedure_newOrder_args setD_id(int d_id) {
-      this.d_id = d_id;
-      setD_idIsSet(true);
+    public java.util.Iterator<String> getParasIterator() {
+      return (this.paras == null) ? null : this.paras.iterator();
+    }
+
+    public void addToParas(String elem) {
+      if (this.paras == null) {
+        this.paras = new ArrayList<String>();
+      }
+      this.paras.add(elem);
+    }
+
+    public List<String> getParas() {
+      return this.paras;
+    }
+
+    public callProcedure_args setParas(List<String> paras) {
+      this.paras = paras;
       return this;
     }
 
-    public void unsetD_id() {
-      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __D_ID_ISSET_ID);
+    public void unsetParas() {
+      this.paras = null;
     }
 
-    /** Returns true if field d_id is set (has been assigned a value) and false otherwise */
-    public boolean isSetD_id() {
-      return EncodingUtils.testBit(__isset_bitfield, __D_ID_ISSET_ID);
+    /** Returns true if field paras is set (has been assigned a value) and false otherwise */
+    public boolean isSetParas() {
+      return this.paras != null;
     }
 
-    public void setD_idIsSet(boolean value) {
-      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __D_ID_ISSET_ID, value);
+    public void setParasIsSet(boolean value) {
+      if (!value) {
+        this.paras = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case W_ID:
+      case PROCEDURE:
         if (value == null) {
-          unsetW_id();
+          unsetProcedure();
         } else {
-          setW_id((Integer)value);
+          setProcedure((String)value);
         }
         break;
 
-      case D_ID:
+      case PARAS:
         if (value == null) {
-          unsetD_id();
+          unsetParas();
         } else {
-          setD_id((Integer)value);
+          setParas((List<String>)value);
         }
         break;
 
@@ -1295,11 +1186,11 @@ public class RococoCoordinator {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case W_ID:
-        return Integer.valueOf(getW_id());
+      case PROCEDURE:
+        return getProcedure();
 
-      case D_ID:
-        return Integer.valueOf(getD_id());
+      case PARAS:
+        return getParas();
 
       }
       throw new IllegalStateException();
@@ -1312,10 +1203,10 @@ public class RococoCoordinator {
       }
 
       switch (field) {
-      case W_ID:
-        return isSetW_id();
-      case D_ID:
-        return isSetD_id();
+      case PROCEDURE:
+        return isSetProcedure();
+      case PARAS:
+        return isSetParas();
       }
       throw new IllegalStateException();
     }
@@ -1324,30 +1215,30 @@ public class RococoCoordinator {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof procedure_newOrder_args)
-        return this.equals((procedure_newOrder_args)that);
+      if (that instanceof callProcedure_args)
+        return this.equals((callProcedure_args)that);
       return false;
     }
 
-    public boolean equals(procedure_newOrder_args that) {
+    public boolean equals(callProcedure_args that) {
       if (that == null)
         return false;
 
-      boolean this_present_w_id = true;
-      boolean that_present_w_id = true;
-      if (this_present_w_id || that_present_w_id) {
-        if (!(this_present_w_id && that_present_w_id))
+      boolean this_present_procedure = true && this.isSetProcedure();
+      boolean that_present_procedure = true && that.isSetProcedure();
+      if (this_present_procedure || that_present_procedure) {
+        if (!(this_present_procedure && that_present_procedure))
           return false;
-        if (this.w_id != that.w_id)
+        if (!this.procedure.equals(that.procedure))
           return false;
       }
 
-      boolean this_present_d_id = true;
-      boolean that_present_d_id = true;
-      if (this_present_d_id || that_present_d_id) {
-        if (!(this_present_d_id && that_present_d_id))
+      boolean this_present_paras = true && this.isSetParas();
+      boolean that_present_paras = true && that.isSetParas();
+      if (this_present_paras || that_present_paras) {
+        if (!(this_present_paras && that_present_paras))
           return false;
-        if (this.d_id != that.d_id)
+        if (!this.paras.equals(that.paras))
           return false;
       }
 
@@ -1360,29 +1251,29 @@ public class RococoCoordinator {
     }
 
     @Override
-    public int compareTo(procedure_newOrder_args other) {
+    public int compareTo(callProcedure_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetW_id()).compareTo(other.isSetW_id());
+      lastComparison = Boolean.valueOf(isSetProcedure()).compareTo(other.isSetProcedure());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetW_id()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.w_id, other.w_id);
+      if (isSetProcedure()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.procedure, other.procedure);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetD_id()).compareTo(other.isSetD_id());
+      lastComparison = Boolean.valueOf(isSetParas()).compareTo(other.isSetParas());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetD_id()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.d_id, other.d_id);
+      if (isSetParas()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.paras, other.paras);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -1404,15 +1295,23 @@ public class RococoCoordinator {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("procedure_newOrder_args(");
+      StringBuilder sb = new StringBuilder("callProcedure_args(");
       boolean first = true;
 
-      sb.append("w_id:");
-      sb.append(this.w_id);
+      sb.append("procedure:");
+      if (this.procedure == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.procedure);
+      }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("d_id:");
-      sb.append(this.d_id);
+      sb.append("paras:");
+      if (this.paras == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.paras);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -1433,23 +1332,21 @@ public class RococoCoordinator {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
       }
     }
 
-    private static class procedure_newOrder_argsStandardSchemeFactory implements SchemeFactory {
-      public procedure_newOrder_argsStandardScheme getScheme() {
-        return new procedure_newOrder_argsStandardScheme();
+    private static class callProcedure_argsStandardSchemeFactory implements SchemeFactory {
+      public callProcedure_argsStandardScheme getScheme() {
+        return new callProcedure_argsStandardScheme();
       }
     }
 
-    private static class procedure_newOrder_argsStandardScheme extends StandardScheme<procedure_newOrder_args> {
+    private static class callProcedure_argsStandardScheme extends StandardScheme<callProcedure_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, procedure_newOrder_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, callProcedure_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -1459,18 +1356,28 @@ public class RococoCoordinator {
             break;
           }
           switch (schemeField.id) {
-            case 1: // W_ID
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.w_id = iprot.readI32();
-                struct.setW_idIsSet(true);
+            case 1: // PROCEDURE
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.procedure = iprot.readString();
+                struct.setProcedureIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // D_ID
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.d_id = iprot.readI32();
-                struct.setD_idIsSet(true);
+            case 2: // PARAS
+              if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+                {
+                  org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
+                  struct.paras = new ArrayList<String>(_list0.size);
+                  for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+                  {
+                    String _elem2;
+                    _elem2 = iprot.readString();
+                    struct.paras.add(_elem2);
+                  }
+                  iprot.readListEnd();
+                }
+                struct.setParasIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -1486,74 +1393,100 @@ public class RococoCoordinator {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, procedure_newOrder_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, callProcedure_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldBegin(W_ID_FIELD_DESC);
-        oprot.writeI32(struct.w_id);
-        oprot.writeFieldEnd();
-        oprot.writeFieldBegin(D_ID_FIELD_DESC);
-        oprot.writeI32(struct.d_id);
-        oprot.writeFieldEnd();
+        if (struct.procedure != null) {
+          oprot.writeFieldBegin(PROCEDURE_FIELD_DESC);
+          oprot.writeString(struct.procedure);
+          oprot.writeFieldEnd();
+        }
+        if (struct.paras != null) {
+          oprot.writeFieldBegin(PARAS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.paras.size()));
+            for (String _iter3 : struct.paras)
+            {
+              oprot.writeString(_iter3);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
 
     }
 
-    private static class procedure_newOrder_argsTupleSchemeFactory implements SchemeFactory {
-      public procedure_newOrder_argsTupleScheme getScheme() {
-        return new procedure_newOrder_argsTupleScheme();
+    private static class callProcedure_argsTupleSchemeFactory implements SchemeFactory {
+      public callProcedure_argsTupleScheme getScheme() {
+        return new callProcedure_argsTupleScheme();
       }
     }
 
-    private static class procedure_newOrder_argsTupleScheme extends TupleScheme<procedure_newOrder_args> {
+    private static class callProcedure_argsTupleScheme extends TupleScheme<callProcedure_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, procedure_newOrder_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, callProcedure_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetW_id()) {
+        if (struct.isSetProcedure()) {
           optionals.set(0);
         }
-        if (struct.isSetD_id()) {
+        if (struct.isSetParas()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
-        if (struct.isSetW_id()) {
-          oprot.writeI32(struct.w_id);
+        if (struct.isSetProcedure()) {
+          oprot.writeString(struct.procedure);
         }
-        if (struct.isSetD_id()) {
-          oprot.writeI32(struct.d_id);
+        if (struct.isSetParas()) {
+          {
+            oprot.writeI32(struct.paras.size());
+            for (String _iter4 : struct.paras)
+            {
+              oprot.writeString(_iter4);
+            }
+          }
         }
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, procedure_newOrder_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, callProcedure_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.w_id = iprot.readI32();
-          struct.setW_idIsSet(true);
+          struct.procedure = iprot.readString();
+          struct.setProcedureIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.d_id = iprot.readI32();
-          struct.setD_idIsSet(true);
+          {
+            org.apache.thrift.protocol.TList _list5 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.paras = new ArrayList<String>(_list5.size);
+            for (int _i6 = 0; _i6 < _list5.size; ++_i6)
+            {
+              String _elem7;
+              _elem7 = iprot.readString();
+              struct.paras.add(_elem7);
+            }
+          }
+          struct.setParasIsSet(true);
         }
       }
     }
 
   }
 
-  public static class procedure_newOrder_result implements org.apache.thrift.TBase<procedure_newOrder_result, procedure_newOrder_result._Fields>, java.io.Serializable, Cloneable, Comparable<procedure_newOrder_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("procedure_newOrder_result");
+  public static class callProcedure_result implements org.apache.thrift.TBase<callProcedure_result, callProcedure_result._Fields>, java.io.Serializable, Cloneable, Comparable<callProcedure_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("callProcedure_result");
 
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new procedure_newOrder_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new procedure_newOrder_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new callProcedure_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new callProcedure_resultTupleSchemeFactory());
     }
 
 
@@ -1616,20 +1549,20 @@ public class RococoCoordinator {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(procedure_newOrder_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(callProcedure_result.class, metaDataMap);
     }
 
-    public procedure_newOrder_result() {
+    public callProcedure_result() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public procedure_newOrder_result(procedure_newOrder_result other) {
+    public callProcedure_result(callProcedure_result other) {
     }
 
-    public procedure_newOrder_result deepCopy() {
-      return new procedure_newOrder_result(this);
+    public callProcedure_result deepCopy() {
+      return new callProcedure_result(this);
     }
 
     @Override
@@ -1662,12 +1595,12 @@ public class RococoCoordinator {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof procedure_newOrder_result)
-        return this.equals((procedure_newOrder_result)that);
+      if (that instanceof callProcedure_result)
+        return this.equals((callProcedure_result)that);
       return false;
     }
 
-    public boolean equals(procedure_newOrder_result that) {
+    public boolean equals(callProcedure_result that) {
       if (that == null)
         return false;
 
@@ -1680,7 +1613,7 @@ public class RococoCoordinator {
     }
 
     @Override
-    public int compareTo(procedure_newOrder_result other) {
+    public int compareTo(callProcedure_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
@@ -1704,7 +1637,7 @@ public class RococoCoordinator {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("procedure_newOrder_result(");
+      StringBuilder sb = new StringBuilder("callProcedure_result(");
       boolean first = true;
 
       sb.append(")");
@@ -1732,15 +1665,15 @@ public class RococoCoordinator {
       }
     }
 
-    private static class procedure_newOrder_resultStandardSchemeFactory implements SchemeFactory {
-      public procedure_newOrder_resultStandardScheme getScheme() {
-        return new procedure_newOrder_resultStandardScheme();
+    private static class callProcedure_resultStandardSchemeFactory implements SchemeFactory {
+      public callProcedure_resultStandardScheme getScheme() {
+        return new callProcedure_resultStandardScheme();
       }
     }
 
-    private static class procedure_newOrder_resultStandardScheme extends StandardScheme<procedure_newOrder_result> {
+    private static class callProcedure_resultStandardScheme extends StandardScheme<callProcedure_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, procedure_newOrder_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, callProcedure_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -1761,7 +1694,7 @@ public class RococoCoordinator {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, procedure_newOrder_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, callProcedure_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -1771,513 +1704,21 @@ public class RococoCoordinator {
 
     }
 
-    private static class procedure_newOrder_resultTupleSchemeFactory implements SchemeFactory {
-      public procedure_newOrder_resultTupleScheme getScheme() {
-        return new procedure_newOrder_resultTupleScheme();
+    private static class callProcedure_resultTupleSchemeFactory implements SchemeFactory {
+      public callProcedure_resultTupleScheme getScheme() {
+        return new callProcedure_resultTupleScheme();
       }
     }
 
-    private static class procedure_newOrder_resultTupleScheme extends TupleScheme<procedure_newOrder_result> {
+    private static class callProcedure_resultTupleScheme extends TupleScheme<callProcedure_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, procedure_newOrder_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, callProcedure_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, procedure_newOrder_result struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-      }
-    }
-
-  }
-
-  public static class procedure_micro_args implements org.apache.thrift.TBase<procedure_micro_args, procedure_micro_args._Fields>, java.io.Serializable, Cloneable, Comparable<procedure_micro_args>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("procedure_micro_args");
-
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new procedure_micro_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new procedure_micro_argsTupleSchemeFactory());
-    }
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(procedure_micro_args.class, metaDataMap);
-    }
-
-    public procedure_micro_args() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public procedure_micro_args(procedure_micro_args other) {
-    }
-
-    public procedure_micro_args deepCopy() {
-      return new procedure_micro_args(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof procedure_micro_args)
-        return this.equals((procedure_micro_args)that);
-      return false;
-    }
-
-    public boolean equals(procedure_micro_args that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    @Override
-    public int compareTo(procedure_micro_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("procedure_micro_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class procedure_micro_argsStandardSchemeFactory implements SchemeFactory {
-      public procedure_micro_argsStandardScheme getScheme() {
-        return new procedure_micro_argsStandardScheme();
-      }
-    }
-
-    private static class procedure_micro_argsStandardScheme extends StandardScheme<procedure_micro_args> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, procedure_micro_args struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, procedure_micro_args struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class procedure_micro_argsTupleSchemeFactory implements SchemeFactory {
-      public procedure_micro_argsTupleScheme getScheme() {
-        return new procedure_micro_argsTupleScheme();
-      }
-    }
-
-    private static class procedure_micro_argsTupleScheme extends TupleScheme<procedure_micro_args> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, procedure_micro_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, procedure_micro_args struct) throws org.apache.thrift.TException {
-        TTupleProtocol iprot = (TTupleProtocol) prot;
-      }
-    }
-
-  }
-
-  public static class procedure_micro_result implements org.apache.thrift.TBase<procedure_micro_result, procedure_micro_result._Fields>, java.io.Serializable, Cloneable, Comparable<procedure_micro_result>   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("procedure_micro_result");
-
-
-    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-    static {
-      schemes.put(StandardScheme.class, new procedure_micro_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new procedure_micro_resultTupleSchemeFactory());
-    }
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(procedure_micro_result.class, metaDataMap);
-    }
-
-    public procedure_micro_result() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public procedure_micro_result(procedure_micro_result other) {
-    }
-
-    public procedure_micro_result deepCopy() {
-      return new procedure_micro_result(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof procedure_micro_result)
-        return this.equals((procedure_micro_result)that);
-      return false;
-    }
-
-    public boolean equals(procedure_micro_result that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    @Override
-    public int compareTo(procedure_micro_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-      }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("procedure_micro_result(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-      // check for sub-struct validity
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private static class procedure_micro_resultStandardSchemeFactory implements SchemeFactory {
-      public procedure_micro_resultStandardScheme getScheme() {
-        return new procedure_micro_resultStandardScheme();
-      }
-    }
-
-    private static class procedure_micro_resultStandardScheme extends StandardScheme<procedure_micro_result> {
-
-      public void read(org.apache.thrift.protocol.TProtocol iprot, procedure_micro_result struct) throws org.apache.thrift.TException {
-        org.apache.thrift.protocol.TField schemeField;
-        iprot.readStructBegin();
-        while (true)
-        {
-          schemeField = iprot.readFieldBegin();
-          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
-            break;
-          }
-          switch (schemeField.id) {
-            default:
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-          }
-          iprot.readFieldEnd();
-        }
-        iprot.readStructEnd();
-
-        // check for required fields of primitive type, which can't be checked in the validate method
-        struct.validate();
-      }
-
-      public void write(org.apache.thrift.protocol.TProtocol oprot, procedure_micro_result struct) throws org.apache.thrift.TException {
-        struct.validate();
-
-        oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldStop();
-        oprot.writeStructEnd();
-      }
-
-    }
-
-    private static class procedure_micro_resultTupleSchemeFactory implements SchemeFactory {
-      public procedure_micro_resultTupleScheme getScheme() {
-        return new procedure_micro_resultTupleScheme();
-      }
-    }
-
-    private static class procedure_micro_resultTupleScheme extends TupleScheme<procedure_micro_result> {
-
-      @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, procedure_micro_result struct) throws org.apache.thrift.TException {
-        TTupleProtocol oprot = (TTupleProtocol) prot;
-      }
-
-      @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, procedure_micro_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, callProcedure_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }

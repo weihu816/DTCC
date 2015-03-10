@@ -1,5 +1,7 @@
 package cn.ict.rcc.server.coordinator.txn;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
@@ -14,6 +16,15 @@ import cn.ict.rcc.messaging.RococoCoordinator;
 
 public class CoordinatorClient {
 
+	public static final String MICRO_BENCHMARK = "MicroBenchmark";
+	public static final String TPCC_BENCHMARK = "TPCCBenchmark";
+	public static final String FUNDS_BENCHMARK = "FundsBenchmark";
+	public static final String TPCC_NEWORDER = "TPCC_newOrder";
+	public static final String TPCC_PAYMENT = "TPCC_payment";
+	public static final String TPCC_ORDERSTATUS = "TPCC_orderStatus";
+	public static final String TPCC_DELIVERY = "TPCC_delivery";
+	public static final String TPCC_STOCKLEVEL = "TPCC_stockLevel";
+	
 	private static final Log log = LogFactory.getLog(CoordinatorClient.class);
 	
 	private CoordinatorClientConfiguration configuration;
@@ -44,28 +55,13 @@ public class CoordinatorClient {
         }
 	}
 
-	public void NewOrder(int w_id, int d_id) {
+	public void callProcedure(String procedure, List<String> paras) {
 		final String host = configuration.getHost();
 		final int port 	  = configuration.getPort();
         TTransport transport = new TFramedTransport(new TSocket(host, port));
         try {
             RococoCoordinator.Client client = getClient(transport);
-            client.procedure_newOrder(w_id, d_id);
-        } catch (TException e) {
-        	e.printStackTrace();
-            //handleException(host, e);
-        } finally {
-            close(transport);
-        }
-	}
-	
-	public void MicroBench() {
-		final String host = configuration.getHost();
-		final int port 	  = configuration.getPort();
-        TTransport transport = new TFramedTransport(new TSocket(host, port));
-        try {
-            RococoCoordinator.Client client = getClient(transport);
-            client.procedure_micro();
+            client.callProcedure(procedure, paras);
         } catch (TException e) {
         	e.printStackTrace();
             //handleException(host, e);
