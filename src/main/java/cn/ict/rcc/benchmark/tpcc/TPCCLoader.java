@@ -153,7 +153,7 @@ public class TPCCLoader {
 			String key = String.valueOf(i_id);
 			List<String> columns = TPCCGenerator.buildColumns("i_id", "i_name", "i_price", "i_data");
 			List<String> values = TPCCGenerator.buildColumns(i_id, i_name, i_price, i_data);
-			LOG.info("write: "  + TPCCConstants.TABLENAME_ITEM  + " "+ key);
+//			LOG.info("write: "  + TPCCConstants.TABLENAME_ITEM  + " "+ key);
 			write(TPCCConstants.TABLENAME_ITEM, key, columns, values);
 		}
 		LOG.info("Item Done.");

@@ -18,7 +18,9 @@ import cn.ict.rcc.Member;
 import cn.ict.rcc.exception.RococoException;
 
 public class ServerConfiguration {
-		
+	
+	private String benchmark = "tpcc";
+
 	private int myShardId = 0;
 	private int myProcessId = 0;
 	private Map<Integer,Member[]> members = new HashMap<Integer, Member[]>();
@@ -78,7 +80,7 @@ public class ServerConfiguration {
 				if (config == null) {
 					String configPath = System.getProperty("server.config.dir", "conf");
 					Properties props = new Properties();
-					File configFile = new File(configPath, "microServer.properties");
+					File configFile = new File(configPath, "tpccServer.properties");
 					try {
 						props.load(new FileInputStream(configFile));
 						config = new ServerConfiguration(props);
@@ -94,13 +96,11 @@ public class ServerConfiguration {
 	}
 	
 	public Member getShardMember(String table, String key) {
-		switch (table) {
-		case "table1":
-			return members.get(0)[0];
-		case "table2":
-			 return members.get(0)[1];
-		case "table3":
-			 return members.get(0)[2];
+		switch (benchmark) {
+		case "tpcc":
+			return Sharding_tpcc.getShardMember(members, table, key);
+		case "micro":
+			return Sharding_micro.getShardMember(members, table, key);
 		default:
 			break;
 		}

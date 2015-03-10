@@ -110,15 +110,6 @@ public class StorageNode {
 	public ReturnType commit_req(String transactionId, Graph dep) throws TException {
 		LOG.debug("commit_req(String transactionId, Piece piece): txn " + transactionId);
 		// s.dep union dep
-//		for (Entry<String, Set<Node>> entry : dep.getVertexes().entrySet()) {
-//			if (dep_server.containsKey(entry.getKey())) {
-//				dep_server.get(entry.getKey()).addAll(entry.getValue());
-//			} else {
-//				dep_server.put(entry.getKey(), entry.getValue());
-//			}
-//		}
-//		TarjanSCC scc = new TarjanSCC(transactionId, dep_server);
-		
 		ReturnType returnType = new ReturnType();
 		Map<String, String> output = new HashMap<String, String>();
 		returnType.setOutput(output);
@@ -206,7 +197,7 @@ public class StorageNode {
 
 	public synchronized boolean write(String table, String key,
 			List<String> names, List<String> values) {
-		LOG.debug("write: " + table + " " + key);
+//		LOG.debug("write: " + table + " " + key);
 		return db.write(table, key, names, values);
 	}
 
