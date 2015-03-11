@@ -14,8 +14,9 @@ import org.apache.thrift.TEnum;
 public enum Action implements org.apache.thrift.TEnum {
   READROW(1),
   READSELECT(2),
-  READPROJECT(3),
-  WRITE(4),
+  FETCHONE(3),
+  FETCHALL(4),
+  WRITE(5),
   ADDVALUE(6),
   REDUCEVALUE(7),
   DELETE(8);
@@ -44,8 +45,10 @@ public enum Action implements org.apache.thrift.TEnum {
       case 2:
         return READSELECT;
       case 3:
-        return READPROJECT;
+        return FETCHONE;
       case 4:
+        return FETCHALL;
+      case 5:
         return WRITE;
       case 6:
         return ADDVALUE;

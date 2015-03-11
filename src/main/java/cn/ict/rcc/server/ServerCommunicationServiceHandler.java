@@ -1,14 +1,11 @@
 package cn.ict.rcc.server;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
-import cn.ict.rcc.messaging.Edge;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
@@ -51,5 +48,13 @@ public class ServerCommunicationServiceHandler implements Iface {
 	public ReturnType commit_req(String transactionId, Graph dep) throws TException {
 		return node.commit_req(transactionId, dep);
 	}
+
+	@Override
+	public boolean createSecondaryIndex(String table, List<String> fields)
+			throws TException {
+		return node.createSecondaryIndex(table, fields);
+	}
+
+	
 
 }

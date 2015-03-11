@@ -36,7 +36,7 @@ public class RococoTransaction {
 	private List<Piece> pieces = new ArrayList<Piece>();
 	CoordinatorCommunicator communicator;
 	int piece_number;
-	private Map<Integer, HashMap<String, String>> readSet = new ConcurrentHashMap<Integer, HashMap<String, String>>();
+	private Map<Integer, List<Map<String, String>>> readSet = new ConcurrentHashMap<Integer, List<Map<String, String>>>();
 	ExecutorService cachedThreadPool;
 //	private Set<Edge> dep = new ConcurrentSkipListSet<Edge>();
 //	private RccGraph dep = new RccGraph();
@@ -87,14 +87,14 @@ public class RococoTransaction {
 			tempPiece = piece;
 			try {
 				MethodCallback callback = communicator.fistRound(tempPiece);
-				HashMap<String, String> map = readSet.get(piece_number);
+				List<Map<String, String>> map = readSet.get(piece_number);
 				if (map == null) {
-					map = new HashMap<String, String>();
+					map = new ArrayList<Map<String,String>>();
 					readSet.put(piece_number, map);
 				}
 				ReturnType returnType = callback.getResult();
 				// update the dependency information
-				map.putAll(returnType.getOutput());
+				map.addAll(returnType.getOutput());
 				dep.putAll(returnType.getDep().getVertexes());
 //				for(Entry<String, String> entry : returnType.getDep().getVertexes().entrySet()) {
 //					if (dep.containsKey(entry.getKey())) {
@@ -115,7 +115,8 @@ public class RococoTransaction {
 	public String get(int piece_number, String key) {
 		String value;
 
-		HashMap<String, String> map = readSet.get(piece_number);
+		List<Map<String, String>> maps = readSet.get(piece_number);
+		Map<String, String> map = maps.get(0);
 		while (map == null || map.get(key) == null) {
 			try {
 				Thread.sleep(1000);
@@ -123,11 +124,26 @@ public class RococoTransaction {
 				e.printStackTrace();
 			}
 			LOG.info("sleep...");
-			map = readSet.get(piece_number);
+			maps = readSet.get(piece_number);
+			map = maps.get(0);
 		}
 		value = map.get(key);
 
 		return value;
+	}
+	
+	public List<Map<String ,String>> getAll(int piece_number) {
+		List<Map<String, String>> maps = readSet.get(piece_number);
+		while (maps == null || maps.size() == 0) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			LOG.info("sleep...");
+			maps = readSet.get(piece_number);
+		}
+		return maps;
 	}
 	
 	public void addvalue(String name, int value) throws TransactionException {
@@ -136,40 +152,33 @@ public class RococoTransaction {
 		names.add(name);
 		List<String> values = new ArrayList<String>();
 		values.add(String.valueOf(value));
-		Vertex v = new Vertex(Action.ADDVALUE, names);
-		v.setValue(values);
-		piece.getVertexs().add(v);
-	}
-	
-	public void reducevalue(String name, int value) {
-		List<String> names = new ArrayList<String>();
-		names.add(name);
-		List<String> values = new ArrayList<String>();
-		values.add(String.valueOf(value));
-		Vertex v = new Vertex(Action.REDUCEVALUE, names);
+		Vertex v = new Vertex(Action.ADDVALUE);
+		v.setName(names);
 		v.setValue(values);
 		piece.getVertexs().add(v);
 	}
 
-	
 	public void read(String name) throws TransactionException {
 		assertState();
 		List<String> names = new ArrayList<String>();
 		names.add(name);
-		Vertex v = new Vertex(Action.READSELECT, names);
+		Vertex v = new Vertex(Action.READSELECT);
+		v.setName(names);
 		piece.getVertexs().add(v);
 	}
 	
 	public void readSelect(List<String> names) throws TransactionException {
 		assertState();
-		Vertex v = new Vertex(Action.READSELECT, names);
+		Vertex v = new Vertex(Action.READSELECT);
+		v.setName(names);
 		piece.getVertexs().add(v);
 	}
 	
 	
 	public void write(List<String> names, List<String> values) throws TransactionException {
 		assertState();
-		Vertex v = new Vertex(Action.WRITE, names);
+		Vertex v = new Vertex(Action.WRITE);
+		v.setName(names);
 		v.setValue(values);
 		piece.getVertexs().add(v);
 	}
@@ -179,12 +188,31 @@ public class RococoTransaction {
 		List<String> names = new ArrayList<String>(), values = new ArrayList<String>();
 		names.add(name);
 		values.add(value);
-		Vertex v = new Vertex(Action.WRITE, names);
+		Vertex v = new Vertex(Action.WRITE);
+		v.setName(names);
 		v.setValue(values);
 		piece.getVertexs().add(v);
 	}
+	
+	public void fetchOne(List<String> names) throws TransactionException {
+		assertState();
+		Vertex v = new Vertex(Action.FETCHONE);
+		v.setName(names);
+		piece.getVertexs().add(v);
+	}
+	
+	public void fetchAll(List<String> names) throws TransactionException {
+		assertState();
+		Vertex v = new Vertex(Action.FETCHALL);
+		v.setName(names);
+		piece.getVertexs().add(v);
+	}
 
-
+	public void delete() throws TransactionException {
+		assertState();
+		Vertex v = new Vertex(Action.DELETE);
+		piece.getVertexs().add(v);
+	}
 	//---------------------------------------------------------
 	public String getTransactionId() {
 		return transactionId;

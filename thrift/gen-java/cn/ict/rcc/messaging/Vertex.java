@@ -50,7 +50,7 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
    * @see Action
    */
   public Action action; // required
-  public List<String> name; // required
+  public List<String> name; // optional
   public List<String> value; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -122,13 +122,13 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
   }
 
   // isset id assignments
-  private _Fields optionals[] = {_Fields.VALUE};
+  private _Fields optionals[] = {_Fields.NAME,_Fields.VALUE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ACTION, new org.apache.thrift.meta_data.FieldMetaData("action", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, Action.class)));
-    tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -142,12 +142,10 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
   }
 
   public Vertex(
-    Action action,
-    List<String> name)
+    Action action)
   {
     this();
     this.action = action;
-    this.name = name;
   }
 
   /**
@@ -462,14 +460,16 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
       sb.append(this.action);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("name:");
-    if (this.name == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.name);
+    if (isSetName()) {
+      if (!first) sb.append(", ");
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
     }
-    first = false;
     if (isSetValue()) {
       if (!first) sb.append(", ");
       sb.append("value:");
@@ -488,9 +488,6 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
     // check for required fields
     if (action == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'action' was not present! Struct: " + toString());
-    }
-    if (name == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'name' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
   }
@@ -594,16 +591,18 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
         oprot.writeFieldEnd();
       }
       if (struct.name != null) {
-        oprot.writeFieldBegin(NAME_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.name.size()));
-          for (String _iter6 : struct.name)
+        if (struct.isSetName()) {
+          oprot.writeFieldBegin(NAME_FIELD_DESC);
           {
-            oprot.writeString(_iter6);
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.name.size()));
+            for (String _iter6 : struct.name)
+            {
+              oprot.writeString(_iter6);
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       if (struct.value != null) {
         if (struct.isSetValue()) {
@@ -637,18 +636,23 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
     public void write(org.apache.thrift.protocol.TProtocol prot, Vertex struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI32(struct.action.getValue());
-      {
-        oprot.writeI32(struct.name.size());
-        for (String _iter8 : struct.name)
-        {
-          oprot.writeString(_iter8);
-        }
-      }
       BitSet optionals = new BitSet();
-      if (struct.isSetValue()) {
+      if (struct.isSetName()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetValue()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetName()) {
+        {
+          oprot.writeI32(struct.name.size());
+          for (String _iter8 : struct.name)
+          {
+            oprot.writeString(_iter8);
+          }
+        }
+      }
       if (struct.isSetValue()) {
         {
           oprot.writeI32(struct.value.size());
@@ -665,19 +669,21 @@ public class Vertex implements org.apache.thrift.TBase<Vertex, Vertex._Fields>, 
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.action = Action.findByValue(iprot.readI32());
       struct.setActionIsSet(true);
-      {
-        org.apache.thrift.protocol.TList _list10 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.name = new ArrayList<String>(_list10.size);
-        for (int _i11 = 0; _i11 < _list10.size; ++_i11)
-        {
-          String _elem12;
-          _elem12 = iprot.readString();
-          struct.name.add(_elem12);
-        }
-      }
-      struct.setNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
+        {
+          org.apache.thrift.protocol.TList _list10 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.name = new ArrayList<String>(_list10.size);
+          for (int _i11 = 0; _i11 < _list10.size; ++_i11)
+          {
+            String _elem12;
+            _elem12 = iprot.readString();
+            struct.name.add(_elem12);
+          }
+        }
+        struct.setNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         {
           org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.value = new ArrayList<String>(_list13.size);

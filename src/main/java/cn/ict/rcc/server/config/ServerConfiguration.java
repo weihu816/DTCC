@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -121,6 +122,16 @@ public class ServerConfiguration {
 
 	public String getAppServerUrl() {
         return appServerUrl;
+    }
+	
+	public List<Member> getMembers() {
+		List<Member> allMembers = new ArrayList<Member>();
+		for (Entry<Integer, Member[]> e : members.entrySet()) {
+			for (Member m : e.getValue()) {
+				allMembers.add(m);
+			}	
+		}
+        return allMembers;
     }
 	
 	public Member[] getMembers(int shardId) {

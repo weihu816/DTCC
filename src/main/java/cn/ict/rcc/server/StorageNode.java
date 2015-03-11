@@ -62,7 +62,7 @@ public class StorageNode {
 		String id = piece.transactionId;
 		String theKey = piece.getTable() + "_" + piece.getKey();
 
-		Map<String, String> output = new HashMap<String, String>();
+		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 
 		/* S.dep[p.owner].status = STARTED */
 		status.put(id, STARTED);
@@ -111,7 +111,7 @@ public class StorageNode {
 		LOG.debug("commit_req(String transactionId, Piece piece): txn " + transactionId);
 		// s.dep union dep
 		ReturnType returnType = new ReturnType();
-		Map<String, String> output = new HashMap<String, String>();
+		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 		returnType.setOutput(output);
 		
 		if (status.get(transactionId) == DECIDED) {
@@ -147,7 +147,7 @@ public class StorageNode {
 					status.put(v, DECIDED);
 					LOG.debug("execute " + v);
 					for (Piece p : pieces.get(v)) {
-						output.putAll(execute(p));
+						output.addAll(execute(p));
 					}
 				}
 			}
@@ -158,10 +158,10 @@ public class StorageNode {
 		}
 	}
 
-	public synchronized Map<String, String> execute(Piece piece)
+	public synchronized List<Map<String, String>> execute(Piece piece)
 			throws TException {
 		LOG.debug("execute(Piece piece)");
-		Map<String, String> output = new HashMap<String, String>();
+		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 		List<Vertex> vertexs = piece.getVertexs();
 		for (Vertex v : vertexs) {
 			Action action = v.getAction();
@@ -169,13 +169,27 @@ public class StorageNode {
 			String key = piece.getKey();
 			List<String> names = v.getName();
 			List<String> values = v.getValue();
+			List<Map<String, String>> m = null;
 			switch (action) {
 			case READSELECT:
-				Map<String, String> m = db.read(table, key, names);
-				if (m != null) {
-					output.putAll(m);
+				Map<String, String> tmp = db.read(table, key, names);
+				if (tmp != null) {
+					output.add(tmp);
 				}
 				LOG.debug("Read - Table:" + table + " Key:" + key + " names: " + names);
+			case FETCHONE:
+				m = db.read_secondaryIndex(table, key, names, false);
+				if (m != null) {
+					output.addAll(m);
+				}
+				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
+				break;
+			case FETCHALL:
+				m = db.read_secondaryIndex(table, key, names, true);
+				if (m != null) {
+					output.addAll(m);
+				}
+				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
 				break;
 			case WRITE:
 				if (!db.write(table, key, names, values)) {
@@ -189,6 +203,12 @@ public class StorageNode {
 				}
 				LOG.debug("Addvalue - Table:" + table + " Key:" + key + " names: " + names);
 				break;
+			case DELETE:
+				if (!db.delete(table, key)) {
+					LOG.debug("Error Delete - ");
+				}
+				LOG.debug("Delete - Table:" + table + " Key:");
+				break;
 			default:
 			}
 		}
@@ -199,6 +219,10 @@ public class StorageNode {
 			List<String> names, List<String> values) {
 //		LOG.debug("write: " + table + " " + key);
 		return db.write(table, key, names, values);
+	}
+	
+	public boolean createSecondaryIndex(String table, List<String> fields) {
+		return db.createSecondaryIndex(table, fields);
 	}
 
 	public static void main(String[] args) {

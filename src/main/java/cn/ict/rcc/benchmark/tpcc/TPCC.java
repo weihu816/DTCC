@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.logging.Log;
@@ -130,6 +131,8 @@ public class TPCC {
 		values = TPCCGenerator.buildColumns(o_id, d_id, w_id);
 		transaction.write(columns, values);
 		transaction.completePiece();
+		// TODO :index
+
 		LOG.debug("Piece 5: W new_order");
 
 		/* for each order in the order line*/
@@ -230,83 +233,104 @@ public class TPCC {
 	
 	public static void Payment(int w_id, int d_id, Object c_id_or_c_last) throws TransactionException {
 		
-//		Boolean byname = false;
-//		if (c_id_or_c_last instanceof String) {
-//			byname = true;
-//		}
-//		float h_amount = randomFloat(0, 5000);
-//		int x = randomInt(1, 100);
-//		/*  the customer resident warehouse is the home 85% , remote 15% of the time  */
-//		int c_d_id, c_w_id;
-//		if (x <= 85 ) { 
-//			c_w_id = w_id;
-//			c_d_id = d_id;
-//		} else {
-//			c_d_id = randomInt(1, 10);
-//			do {
-//				c_w_id = randomInt(1, COUNT_WARE);
-//			} while (c_w_id == w_id && COUNT_WARE > 1);
-//		}
-//		String h_date = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
-//		HashMap<String, String> result;
-//		List <HashMap<String, String>> results;
-//		String[] columns, values;
-//		
-//		
-//		/* retrieve and update warehouse w_ytd */
-//		float w_ytd = 0;
-//		String w_name = null, w_street_1 = null, w_street_2 = null, w_city = null, w_state = null, w_zip = null;
-//		String key_warehouse = String.valueOf(w_id);
-//		columns = buildColumns("w_ytd", "w_name", "w_street_1", "w_street_2", "w_city", "w_state", "w_zip");
-//		result = db.read(WAREHOUSE, key_warehouse, columns);
-//		w_ytd = Float.valueOf(result.get(columns[0]));
-//		w_name = (result.get(columns[1]));
-//		w_street_1 = (result.get(columns[2]));
-//		w_street_2 = (result.get(columns[3]));
-//		w_city = (result.get(columns[4]));
-//		w_state = (result.get(columns[5]));
-//		w_zip = (result.get(columns[6]));
-//		
-//		w_ytd += h_amount;
-//		
-//		columns = buildColumns("w_ytd");
-//		values = buildColumns(w_ytd);
-//		db.write(WAREHOUSE, key_warehouse, columns, values, 1);
-//		
-//		/* retrieve and update district d_ytd */
-//		float d_ytd = 0;
-//		String d_name = null,  d_street_1 = null, d_street_2 = null, d_city = null, d_state = null, d_zip = null;
-//		String key_district = buildString(w_id, "_", d_id);
-//		columns = buildColumns("d_ytd", "d_name", "d_street_1", "d_street_2", "d_city", "d_state", "d_zip");
-//		result = db.read(DISTRICT, key_district, columns);
-//		d_ytd = Float.valueOf((result.get(columns[0])));
-//		d_name = (result.get(columns[1]));
-//		d_street_1 = (result.get(columns[2]));
-//		d_street_2 = (result.get(columns[3]));
-//		d_city = (result.get(columns[4]));
-//		d_state = (result.get(columns[5]));
-//		d_zip = (result.get(columns[6]));
-//
-//		/* update district d_ytd */
-//		d_ytd += h_amount;
-//		columns = buildColumns("d_ytd");
-//		values = buildColumns(d_ytd);
-//		db.write(DISTRICT, key_district, columns, values, 1);
-//		
-//		/* retrieve customer information */
-//		float c_balance = 0.0f;
-//		String c_data = null, h_data = null, c_first = null, c_middle = null, c_last = null;
-//		String c_street_1 = null, c_street_2 = null, c_city = null, c_state = null, c_zip = null;
-//		String c_phone = null, c_credit = null, c_credit_lim = null, c_since = null;
-//		int c_id = 0;
-//		String key_customer = null, key_prefix_customer = null;
-//		if (byname) {
-//
-//			key_prefix_customer = (buildString(c_w_id + "_" + c_d_id));
-//			columns = buildColumns("c_id", "c_balance", "c_credit", "c_data",
-//					"c_first", "c_middle", "c_last", "c_street_1",
-//					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
-//					"c_credit", "c_credit_lim", "c_since");
+		// begin
+		RococoTransaction transaction = transactionFactory.create();
+		transaction.begin();
+		
+		/* c_id or c_last */
+		Boolean byname = false;
+		if (c_id_or_c_last instanceof String) {
+			byname = true;
+		} 
+		int h_amount = TPCCGenerator.randomInt(0, 5000);
+		int x = TPCCGenerator.randomInt(1, 100);
+		/*  the customer resident warehouse is the home 85% , remote 15% of the time  */
+		int c_d_id, c_w_id;
+		if (x <= 85 ) { 
+			c_w_id = w_id;
+			c_d_id = d_id;
+		} else {
+			c_d_id = TPCCGenerator.randomInt(1, 10);
+			do {
+				c_w_id = TPCCGenerator.randomInt(1, COUNT_WARE);
+			} while (c_w_id == w_id && COUNT_WARE > 1);
+		}
+		String h_date = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
+		List<String> columns, values;
+		
+		
+		
+		// piece 1 Ri&W warehouse
+		String key_warehouse = String.valueOf(w_id);
+		int pieceNum_warehouse = transaction.createPiece(TPCCConstants.TABLENAME_WAREHOUSE, key_warehouse, true);
+		String w_name = null, w_street_1 = null, w_street_2 = null, w_city = null, w_state = null, w_zip = null;
+		float w_ytd = 0;
+		columns = TPCCGenerator.buildColumns("w_ytd", "w_name", "w_street_1", "w_street_2", "w_city", "w_state", "w_zip");
+		transaction.readSelect(columns);
+		transaction.addvalue("w_tyd", h_amount);
+		transaction.completePiece();
+		w_ytd = Float.valueOf(transaction.get(pieceNum_warehouse, "w_ytd"));
+		w_name = transaction.get(pieceNum_warehouse, "w_name");
+		w_street_1 = transaction.get(pieceNum_warehouse, "w_street_1");
+		w_street_2 = transaction.get(pieceNum_warehouse, "w_street_2");
+		w_city = transaction.get(pieceNum_warehouse, "w_city");
+		w_state = transaction.get(pieceNum_warehouse, "w_state");
+		w_zip = transaction.get(pieceNum_warehouse, "w_zip");
+		LOG.debug("Piece1: Ri&R Warehouse");
+		LOG.debug("w_ytd = " + w_ytd);
+		LOG.debug("w_name = " + w_name);
+		LOG.debug("w_street_1 = " + w_street_1);
+		LOG.debug("w_street_2 = " + w_street_2);
+		LOG.debug("w_city = " + w_city);
+		LOG.debug("w_state = " + w_state);
+		LOG.debug("w_zip = " + w_zip);
+		
+		// piece 2 Ri district & W district
+		float d_ytd = 0;
+		String d_name = null,  d_street_1 = null, d_street_2 = null, d_city = null, d_state = null, d_zip = null;
+		String key_district = TPCCGenerator.buildString(w_id, "_", d_id);
+		columns = TPCCGenerator.buildColumns("d_ytd", "d_name", "d_street_1", "d_street_2", "d_city", "d_state", "d_zip");
+		int pieceNum_district = transaction.createPiece(TPCCConstants.TABLENAME_DISTRICT, key_district, true);
+		transaction.readSelect(columns);
+		transaction.completePiece();
+		
+		d_ytd 		= Float.valueOf(transaction.get(pieceNum_district, "d_ytd"));
+		d_name 		= (transaction.get(pieceNum_district, "d_name"));
+		d_street_1 	= (transaction.get(pieceNum_district, "d_street_1"));
+		d_street_2 	= (transaction.get(pieceNum_district, "d_street_2"));
+		d_city 		= (transaction.get(pieceNum_district, "d_city"));
+		d_state 	= (transaction.get(pieceNum_district, "d_state"));
+		d_zip 		= (transaction.get(pieceNum_district, "d_zip"));
+		LOG.debug("Piece1: Ri district");
+		LOG.debug("d_ytd = " + d_ytd);
+		LOG.debug("d_name = " + d_name);
+		LOG.debug("d_street_1 = " + d_street_1);
+		LOG.debug("d_street_2 = " + d_street_2);
+		LOG.debug("d_city = " + d_city);
+		LOG.debug("d_state = " + d_state);
+		LOG.debug("d_zip = " + d_zip);
+		
+		d_ytd += h_amount;
+		transaction.createPiece(TPCCConstants.TABLENAME_DISTRICT, key_district, false);
+		transaction.write("d_tyd", String.valueOf(d_ytd));
+		transaction.completePiece();
+		
+		// piece 3, R customer secondary index, c_last -> c_id
+		float c_balance = 0.0f;
+		String c_data = null, h_data = null, c_first = null, c_middle = null, c_last = null;
+		String c_street_1 = null, c_street_2 = null, c_city = null, c_state = null, c_zip = null;
+		String c_phone = null, c_credit = null, c_credit_lim = null, c_since = null;
+		int c_id = 0;
+		String key_customer = null, key_prefix_customer = null;
+		if (byname) {
+			key_prefix_customer = (TPCCGenerator.buildString(c_w_id + "_" + c_d_id));
+			columns = TPCCGenerator.buildColumns("c_id", "c_balance", "c_credit", "c_data",
+					"c_first", "c_middle", "c_last", "c_street_1",
+					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
+					"c_credit", "c_credit_lim", "c_since");
+			int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
+			transaction.readSelect(columns);
+			transaction.completePiece();
 //			String constraintColumn = "c_last";
 //			String ConstraintValue = ((String)c_id_or_c_last);
 //			String orderColumn =  ("c_first");
@@ -331,61 +355,203 @@ public class TPCC {
 //			c_credit_lim = (result.get(columns[14]));
 //			c_since = (result.get(columns[15]));
 //			key_customer = buildString(c_w_id, "_", c_d_id, "_", c_id);
-//		} else {
-//			key_customer = buildString(c_w_id, "_", c_d_id, "_", c_id_or_c_last);
-//			columns = buildColumns("c_balance", "c_credit", "c_data",
-//					"c_first", "c_middle", "c_last", "c_street_1",
-//					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
-//					"c_credit", "c_credit_lim", "c_since");
-//			result = db.read(CUSTOMER, key_customer, columns);
-//			c_id = (int) c_id_or_c_last;
-//			c_balance = Float.valueOf((result.get(columns[0])));
-//			c_credit = (result.get(columns[1]));
-//			c_data = (result.get(columns[2]));
-//			c_first = (result.get(columns[3]));
-//			c_middle = (result.get(columns[4]));
-//			c_last = (result.get(columns[5]));
-//			c_street_1 = (result.get(columns[6]));
-//			c_street_2 = (result.get(columns[7]));
-//			c_city = (result.get(columns[8]));
-//			c_state = (result.get(columns[9]));
-//			c_zip = (result.get(columns[10]));
-//			c_phone = (result.get(columns[11]));
-//			c_credit = (result.get(columns[12]));
-//			c_credit_lim = (result.get(columns[13]));
-//			c_since = (result.get(columns[14]));
-//		}
-//		
-//		
-//		c_balance -= h_amount;
-//		h_data = w_name + "    " + d_name;
-//		if (c_credit.equals("BC")) {
-//			String c_new_data = String.format("| %4d %2d %4d %2d %4d $%7.2f %12s %24s", 
-//					c_id,c_d_id, c_w_id, d_id, w_id, h_amount, h_date, h_data);
-//			c_new_data += c_data;
-//			
-//			/* update customer c_balance， c_data */
-//			columns = buildColumns("c_balance", "c_data");
-//			values = buildColumns(c_balance, c_new_data);
-//			db.write(CUSTOMER, key_customer, columns, values, 1);
-//			
-//		} else {
-//			/* update customer c_balance */
-//			columns = buildColumns("c_balance");
-//			values = buildColumns(c_balance);
-//			db.write(CUSTOMER, key_customer, columns, values, 1);
-//		}
-//		
-//		
-//		/* retrieve history key */
-//		String key_history = String.valueOf(System.currentTimeMillis());
-//		/* insert into history table */
-//		columns = buildColumns("h_c_d_id", "h_c_w_id", "h_c_id", "h_d_id",
-//				"h_w_id", "h_date", "h_amount", "h_data");
-//		values = buildColumns(c_d_id, c_w_id, c_id, d_id, w_id, h_date,
-//				h_amount, h_data);
-//		db.write(HISTORY, key_history, columns, values, 0);
+		} else {
+			key_customer = TPCCGenerator.buildString(c_w_id, "_", c_d_id, "_", c_id_or_c_last);
+			columns = TPCCGenerator.buildColumns("c_balance", "c_credit", "c_data",
+					"c_first", "c_middle", "c_last", "c_street_1",
+					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
+					"c_credit", "c_credit_lim", "c_since");
+			int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
+			transaction.readSelect(columns);
+			transaction.completePiece();
+			c_id = (int) c_id_or_c_last;
+			c_balance = Float.valueOf(transaction.get(pieceNum_customer, "c_balance"));
+			c_credit = (transaction.get(pieceNum_customer, "c_credit"));
+			c_data = (transaction.get(pieceNum_customer, "c_data"));
+			c_first = (transaction.get(pieceNum_customer, "c_first"));
+			c_middle = (transaction.get(pieceNum_customer, "c_middle"));
+			c_last = (transaction.get(pieceNum_customer, "c_last"));
+			c_street_1 = (transaction.get(pieceNum_customer, "c_street_1"));
+			c_street_2 = (transaction.get(pieceNum_customer, "c_street_2"));
+			c_city = (transaction.get(pieceNum_customer, "c_city"));
+			c_state = (transaction.get(pieceNum_customer, "c_state"));
+			c_zip = (transaction.get(pieceNum_customer, "c_zip"));
+			c_phone = (transaction.get(pieceNum_customer, "c_phone"));
+			c_credit = (transaction.get(pieceNum_customer, "c_credit"));
+			c_credit_lim = (transaction.get(pieceNum_customer, "c_credit_lim"));
+			c_since = (transaction.get(pieceNum_customer, "c_since"));
+		}
 		
+		
+		c_balance -= h_amount;
+		h_data = TPCCGenerator.buildString(w_name, "    ", d_name);
+		if (c_credit.equals("BC")) {
+			String c_new_data = String.format("| %4d %2d %4d %2d %4d $%7.2f %12s %24s", 
+					c_id,c_d_id, c_w_id, d_id, w_id, h_amount, h_date, h_data);
+			c_new_data += c_data;
+			
+			/* update customer c_balance， c_data */
+			columns = TPCCGenerator.buildColumns("c_balance", "c_data");
+			values = TPCCGenerator.buildColumns(c_balance, c_new_data);
+			transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, false);
+			transaction.write(columns, values);
+			transaction.completePiece();
+			
+		} else {
+			/* update customer c_balance */
+			columns = TPCCGenerator.buildColumns("c_balance");
+			values = TPCCGenerator.buildColumns(c_balance);
+			transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, false);
+			transaction.write(columns, values);
+			transaction.completePiece();
+		}
+		
+		
+		/* retrieve history key */
+		String key_history = String.valueOf(System.currentTimeMillis());
+		/* insert into history table */
+		columns = TPCCGenerator.buildColumns("h_c_d_id", "h_c_w_id", "h_c_id", "h_d_id", "h_w_id", "h_date", "h_amount", "h_data");
+		values = TPCCGenerator.buildColumns(c_d_id, c_w_id, c_id, d_id, w_id, h_date, h_amount, h_data);
+		transaction.createPiece(TPCCConstants.TABLENAME_HISTORY, key_history, false);
+		transaction.write(columns, values);
+		transaction.completePiece();
+		
+	
+		System.out.println("==============================Payment====================================");
+		System.out.println("Date: " + h_date + " District: " + d_id);
+		System.out.println("Warehouse: " + w_id + "\t\t\tDistrict");
+		System.out.println(w_street_1 + "\t\t\t\t" + d_street_1);
+		System.out.println(w_street_2 + "\t\t\t" + d_street_2);
+		System.out.println(w_city + " " + w_state + " " + w_zip + "\t" + d_city + " " + d_state + " " + d_zip);
+		System.out.println("");
+		System.out.println("Customer: " + c_id + "\tCustomer-Warehouse: " + c_w_id + "\tCustomer-District: " + c_d_id);
+		System.out.println("Name:" + c_first + " " + c_middle + " " + c_last + "\tCust-Since:" + c_since);
+		System.out.println(c_street_1 + "\t\t\tCust-Credit:" + c_credit);
+		System.out.println(c_street_2);
+		System.out.println(c_city + " " + c_state + " " + c_zip + " \tCust-Phone:" + c_phone);
+		System.out.println("");
+		System.out.println("Amount Paid:" + h_amount  + "\t\t\tNew Cust-Balance: " + c_balance);
+		System.out.println("Credit Limit:" + c_credit_lim);
+		System.out.println("");
+		if (c_credit.equals("BC")) {
+			c_data = c_data.substring(0, 200);
+		} 
+		int length = c_data.length();
+		int n = 50;
+		int num_line = length / n;
+		if (length % n != 0) num_line += 1;
+		System.out.println( "Cust-data: \t" + c_data.substring(0, n));
+		for (int i = 1; i < num_line - 1; i++) {
+			System.out.println("\t\t" + c_data.substring(n*i, n*(i+1)));
+		}
+		System.out.println("\t\t" + c_data.substring(n*(num_line-1)));
+		System.out.println("=========================================================================");
+		
+		
+	}
+	
+	/*
+	 * Function name: Delivery
+	 * Description: The Delivery business transaction consists of processing a batch of 10 new (not yet delivered) orders.
+	 * 				Each order is processed (delivered) in full within the scope of a read-write database transaction.
+	 * Argument: o_carrier_id - randomly selected within [1 .. 10]
+	 */
+	public void Delivery(int o_carrier_id) throws TransactionException {
+		
+		// begin
+		RococoTransaction transaction = transactionFactory.create();
+		transaction.begin();
+		
+		int w_id = TPCCGenerator.randomInt(1, COUNT_WARE), d_id = TPCCGenerator.randomInt(1, TPCCScaleParameters.DIST_PER_WARE);
+		List<String> columns, values;
+		
+		/* choose an new order */
+		int no_o_id = 0;
+		/* ORDER BY no_o_id ASC*/
+		String key_neworder_secondary = (TPCCGenerator.buildString(w_id, "_", d_id));		
+		// piece 0, R customer secondary index, c_last -> c_id
+		int pieceNum_neworder = transaction.createPiece(TPCCConstants.TABLENAME_NEW_ORDER, key_neworder_secondary, true);
+		columns = TPCCGenerator.buildColumns("no_o_id");
+		transaction.fetchOne(columns);
+		transaction.completePiece();
+		/*  If no matching row is found, then the delivery of an order for this district is skipped. */
+		no_o_id = Integer.valueOf(transaction.get(pieceNum_neworder, "n_o_id"));
+		/* delete this new order for delivery */
+		String key_neworder = TPCCGenerator.buildString(w_id, "_", d_id, "_", no_o_id);
+		columns = TPCCGenerator.buildColumns("new_order");
+		transaction.createPiece(TPCCConstants.TABLENAME_NEW_ORDER, key_neworder, true);
+		transaction.delete();
+		transaction.completePiece();
+		
+		// Ri & W order
+		/* get the customer id for this order */
+		String key_order = TPCCGenerator.buildString(w_id, "_", d_id, "_", no_o_id);
+		columns = TPCCGenerator.buildColumns("o_c_id");
+		int pieceNum_order = transaction.createPiece(TPCCConstants.TABLENAME_ORDER, key_order, true);
+		transaction.read("o_c_id");
+		/* set carrier id for order */
+		transaction.write("o_carrier_id", String.valueOf(o_carrier_id));
+		transaction.completePiece();
+		int o_c_id = Integer.valueOf(transaction.get(pieceNum_order, "o_c_id"));
+
+		String key_customer = TPCCGenerator.buildString(w_id, "_", d_id, "_", o_c_id);
+		
+		/* calculate the total amount for all items */
+		String ol_delivery_d = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
+		float ol_total = 0.0f;
+		String ol_number = null;
+		String key_prefix_orderline = TPCCGenerator.buildString(w_id, "_", d_id, "_", no_o_id);
+		columns = TPCCGenerator.buildColumns("ol_number", "ol_amount");
+		
+		// piece : Ri & W order_line
+		int pieceNum_orderline = transaction.createPiece(TPCCConstants.TABLENAME_ORDER_LINE, key_prefix_orderline, true);
+		transaction.fetchAll(columns);
+		transaction.completePiece();
+		
+		List<Map<String, String>> results = transaction.getAll(pieceNum_orderline);
+		for (Map<String, String> maps : results) {
+			ol_number = (maps.get("ol_number"));
+			ol_total += Float.valueOf(maps.get("ol_amount")); 
+			String key_orderline = TPCCGenerator.buildString(w_id, "_", d_id, "_", no_o_id, "_", ol_number);
+
+			List<String> columns_neworder = TPCCGenerator.buildColumns("ol_delivery_d");
+			List<String> values_neworder = TPCCGenerator.buildColumns(ol_delivery_d);
+			
+			pieceNum_orderline = transaction.createPiece(TPCCConstants.TABLENAME_ORDER_LINE, key_orderline, false);
+			transaction.write(columns_neworder, values_neworder);
+			transaction.completePiece();
+		}
+		
+		// W customer
+		/* retrieve balance of customers and c_delivery_cnt*/
+		float c_balance =  0.0f;
+		int c_delivery_cnt = 0;
+		
+		columns = TPCCGenerator.buildColumns("c_balance", "c_delivery_cnt");
+		
+		int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
+		transaction.readSelect(columns);
+		transaction.completePiece();
+		
+		c_balance = Float.valueOf(transaction.get(pieceNum_customer, "c_balance"));
+		c_delivery_cnt = Integer.valueOf(transaction.get(pieceNum_customer, "c_delivery_cnt"));
+		
+		/* update c_balance, c_delivery_cnt of customers */
+		columns = TPCCGenerator.buildColumns("c_balance", "c_delivery_cnt");
+		values = TPCCGenerator.buildColumns(c_balance + ol_total, c_delivery_cnt + 1);
+		
+		transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
+		transaction.write(columns, values);
+		transaction.completePiece();
+		
+		System.out.println("==============================Delivery==================================");
+		System.out.println("INPUT	o_carrier_id: " + o_carrier_id);
+		System.out.println();
+		System.out.println("Warehouse: " + w_id);
+		System.out.println("o_carrier_id: " + o_carrier_id);
+		System.out.println("Execution Status: Delivery has been queued");
+		System.out.println("=========================================================================");
+
 	}
 	
 	public static void main(String[] args) {
@@ -397,6 +563,7 @@ public class TPCC {
 		List<String> paras = new ArrayList<String>();
 		paras.add("1");
 		paras.add("1");
+		client.callProcedure(Procedure.TPCC_NEWORDER, paras);
 		client.callProcedure(Procedure.TPCC_NEWORDER, paras);
 
 	}

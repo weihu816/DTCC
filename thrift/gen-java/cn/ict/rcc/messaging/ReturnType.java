@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnType._Fields>, java.io.Serializable, Cloneable, Comparable<ReturnType> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ReturnType");
 
-  private static final org.apache.thrift.protocol.TField OUTPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("output", org.apache.thrift.protocol.TType.MAP, (short)1);
+  private static final org.apache.thrift.protocol.TField OUTPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("output", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField DEP_FIELD_DESC = new org.apache.thrift.protocol.TField("dep", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -44,7 +44,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     schemes.put(TupleScheme.class, new ReturnTypeTupleSchemeFactory());
   }
 
-  public Map<String,String> output; // required
+  public List<Map<String,String>> output; // required
   public Graph dep; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -114,9 +114,10 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.OUTPUT, new org.apache.thrift.meta_data.FieldMetaData("output", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
     tmpMap.put(_Fields.DEP, new org.apache.thrift.meta_data.FieldMetaData("dep", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Graph.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -127,7 +128,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
   }
 
   public ReturnType(
-    Map<String,String> output)
+    List<Map<String,String>> output)
   {
     this();
     this.output = output;
@@ -138,7 +139,11 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
    */
   public ReturnType(ReturnType other) {
     if (other.isSetOutput()) {
-      Map<String,String> __this__output = new HashMap<String,String>(other.output);
+      List<Map<String,String>> __this__output = new ArrayList<Map<String,String>>(other.output.size());
+      for (Map<String,String> other_element : other.output) {
+        Map<String,String> __this__output_copy = new HashMap<String,String>(other_element);
+        __this__output.add(__this__output_copy);
+      }
       this.output = __this__output;
     }
     if (other.isSetDep()) {
@@ -160,18 +165,22 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     return (this.output == null) ? 0 : this.output.size();
   }
 
-  public void putToOutput(String key, String val) {
-    if (this.output == null) {
-      this.output = new HashMap<String,String>();
-    }
-    this.output.put(key, val);
+  public java.util.Iterator<Map<String,String>> getOutputIterator() {
+    return (this.output == null) ? null : this.output.iterator();
   }
 
-  public Map<String,String> getOutput() {
+  public void addToOutput(Map<String,String> elem) {
+    if (this.output == null) {
+      this.output = new ArrayList<Map<String,String>>();
+    }
+    this.output.add(elem);
+  }
+
+  public List<Map<String,String>> getOutput() {
     return this.output;
   }
 
-  public ReturnType setOutput(Map<String,String> output) {
+  public ReturnType setOutput(List<Map<String,String>> output) {
     this.output = output;
     return this;
   }
@@ -221,7 +230,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       if (value == null) {
         unsetOutput();
       } else {
-        setOutput((Map<String,String>)value);
+        setOutput((List<Map<String,String>>)value);
       }
       break;
 
@@ -417,19 +426,29 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
         }
         switch (schemeField.id) {
           case 1: // OUTPUT
-            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TMap _map34 = iprot.readMapBegin();
-                struct.output = new HashMap<String,String>(2*_map34.size);
-                for (int _i35 = 0; _i35 < _map34.size; ++_i35)
+                org.apache.thrift.protocol.TList _list34 = iprot.readListBegin();
+                struct.output = new ArrayList<Map<String,String>>(_list34.size);
+                for (int _i35 = 0; _i35 < _list34.size; ++_i35)
                 {
-                  String _key36;
-                  String _val37;
-                  _key36 = iprot.readString();
-                  _val37 = iprot.readString();
-                  struct.output.put(_key36, _val37);
+                  Map<String,String> _elem36;
+                  {
+                    org.apache.thrift.protocol.TMap _map37 = iprot.readMapBegin();
+                    _elem36 = new HashMap<String,String>(2*_map37.size);
+                    for (int _i38 = 0; _i38 < _map37.size; ++_i38)
+                    {
+                      String _key39;
+                      String _val40;
+                      _key39 = iprot.readString();
+                      _val40 = iprot.readString();
+                      _elem36.put(_key39, _val40);
+                    }
+                    iprot.readMapEnd();
+                  }
+                  struct.output.add(_elem36);
                 }
-                iprot.readMapEnd();
+                iprot.readListEnd();
               }
               struct.setOutputIsSet(true);
             } else { 
@@ -463,13 +482,20 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       if (struct.output != null) {
         oprot.writeFieldBegin(OUTPUT_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.output.size()));
-          for (Map.Entry<String, String> _iter38 : struct.output.entrySet())
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, struct.output.size()));
+          for (Map<String,String> _iter41 : struct.output)
           {
-            oprot.writeString(_iter38.getKey());
-            oprot.writeString(_iter38.getValue());
+            {
+              oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, _iter41.size()));
+              for (Map.Entry<String, String> _iter42 : _iter41.entrySet())
+              {
+                oprot.writeString(_iter42.getKey());
+                oprot.writeString(_iter42.getValue());
+              }
+              oprot.writeMapEnd();
+            }
           }
-          oprot.writeMapEnd();
+          oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
@@ -499,10 +525,16 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.output.size());
-        for (Map.Entry<String, String> _iter39 : struct.output.entrySet())
+        for (Map<String,String> _iter43 : struct.output)
         {
-          oprot.writeString(_iter39.getKey());
-          oprot.writeString(_iter39.getValue());
+          {
+            oprot.writeI32(_iter43.size());
+            for (Map.Entry<String, String> _iter44 : _iter43.entrySet())
+            {
+              oprot.writeString(_iter44.getKey());
+              oprot.writeString(_iter44.getValue());
+            }
+          }
         }
       }
       BitSet optionals = new BitSet();
@@ -519,15 +551,24 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     public void read(org.apache.thrift.protocol.TProtocol prot, ReturnType struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map40 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.output = new HashMap<String,String>(2*_map40.size);
-        for (int _i41 = 0; _i41 < _map40.size; ++_i41)
+        org.apache.thrift.protocol.TList _list45 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, iprot.readI32());
+        struct.output = new ArrayList<Map<String,String>>(_list45.size);
+        for (int _i46 = 0; _i46 < _list45.size; ++_i46)
         {
-          String _key42;
-          String _val43;
-          _key42 = iprot.readString();
-          _val43 = iprot.readString();
-          struct.output.put(_key42, _val43);
+          Map<String,String> _elem47;
+          {
+            org.apache.thrift.protocol.TMap _map48 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            _elem47 = new HashMap<String,String>(2*_map48.size);
+            for (int _i49 = 0; _i49 < _map48.size; ++_i49)
+            {
+              String _key50;
+              String _val51;
+              _key50 = iprot.readString();
+              _val51 = iprot.readString();
+              _elem47.put(_key50, _val51);
+            }
+          }
+          struct.output.add(_elem47);
         }
       }
       struct.setOutputIsSet(true);

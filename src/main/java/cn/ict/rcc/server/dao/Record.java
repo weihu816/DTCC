@@ -24,8 +24,4 @@ public class Record {
 		return column.put(name, value);
 	}
 	
-//	public String replace(String name, String value) {
-//		return column.replace(name, value);
-//	}
-	
 }

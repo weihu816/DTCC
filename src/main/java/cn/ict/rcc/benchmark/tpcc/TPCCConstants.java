@@ -20,7 +20,6 @@ public final class TPCCConstants {
     public static final String TABLENAME_ORDER 		= "ORDERS";
     public static final String TABLENAME_NEW_ORDER 	= "NEW_ORDER";
     public static final String TABLENAME_ORDER_LINE = "ORDER_LINE";
-    
 	
     public static final String TABLENAMES[] = {
         TABLENAME_WAREHOUSE,

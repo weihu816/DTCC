@@ -3,8 +3,9 @@ namespace java cn.ict.rcc.messaging
 enum Action {
 	READROW 	 = 1,
     READSELECT 	 = 2,
-    READPROJECT  = 3,
-    WRITE 		 = 4,
+    FETCHONE	 = 3,
+    FETCHALL	 = 4,
+    WRITE 		 = 5,
     ADDVALUE 	 = 6,
     REDUCEVALUE  = 7,
     DELETE 		 = 8 
@@ -12,7 +13,7 @@ enum Action {
 
 struct Vertex {
   1: required Action action
-  2: required list<string> name
+  2: optional list<string> name
   3: optional list<string> value
 }
 
@@ -44,7 +45,7 @@ struct Graph {
 }
 
 struct ReturnType {
-  1: required map<string, string> output
+  1: required list<map<string, string>> output
   2: optional Graph dep
 }
 
@@ -53,4 +54,5 @@ service RococoCommunicationService {
   ReturnType start_req(1:Piece piece),
   ReturnType commit_req(1:string transactionId, 2:Graph dep),
   bool write(1:string table, 2:string key, 3:list<string> names, 4:list<string> values)
+  bool createSecondaryIndex(1:string table, 2:list<string> fields)
 }

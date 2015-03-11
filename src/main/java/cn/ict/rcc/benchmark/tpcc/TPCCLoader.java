@@ -1,16 +1,12 @@
 package cn.ict.rcc.benchmark.tpcc;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,7 +19,7 @@ import org.apache.thrift.transport.TTransport;
 import cn.ict.rcc.Member;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.ThriftConnectionPool;
-import cn.ict.rcc.server.config.TpccServerConfiguration;
+import cn.ict.rcc.server.config.ServerConfiguration;
 
 /**
  * The loader function for initial state of tpcc benchmark
@@ -35,14 +31,22 @@ public class TPCCLoader {
 	private KeyedObjectPool<Member, TTransport> blockingPool = new 
 			StackKeyedObjectPool<Member, TTransport>(new ThriftConnectionPool());
 	private HashMap<Member, RococoCommunicationService.Client> clientPool = new HashMap<Member, RococoCommunicationService.Client>();
-	private TpccServerConfiguration config;
+	private ServerConfiguration config;
 	
 	
 	public TPCCLoader() { 
-		config = TpccServerConfiguration.getConfiguration();
+		config = ServerConfiguration.getConfiguration();
 	}
 	
 	public void load() {
+		List<String> fields = new ArrayList<String>();
+		fields.add("no_w_id");
+		fields.add("no_d_id");
+		createSecondaryIndex(TPCCConstants.TABLENAME_NEW_ORDER, fields);
+		fields.add("ol_w_id");
+		fields.add("ol_d_id");
+		fields.add("ol_o_id");
+		createSecondaryIndex(TPCCConstants.TABLENAME_ORDER_LINE, fields);
 		LoadItems();
 		LoadWare();
 		LoadCust();
@@ -70,44 +74,62 @@ public class TPCCLoader {
 		}
 	}
 	
+	private boolean createSecondaryIndex(String table, List<String> fields) {
+		TTransport transport = null;
+		try {
+			for(Member member : config.getMembers()) {
+				RococoCommunicationService.Client client = clientPool.get(member);
+				if (client == null) {
+					transport = blockingPool.borrowObject(member);
+					client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
+					clientPool.put(member, client);
+				}
+				client.createSecondaryIndex(table, fields);
+			}
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 	
 	/*
 	 * This function Load items into item table
 	 */
-	private class ItemLoader implements Callable<Integer> {
-		int start_id, end_id;
-		int[] orig;
-
-		private ItemLoader(int start_id, int end_id, int[] orig) {
-			this.start_id = start_id;
-			this.end_id = end_id;
-			this.orig = orig;
-		}
-
-		@Override
-		public Integer call() throws Exception {
-			String i_name, i_data;
-			float i_price;
-			int idatasiz, pos;
-			for (int i_id = start_id; i_id <= end_id; i_id++) {
-				i_name 	= TPCCGenerator.makeAlphaString(14, 24);
-				i_price = TPCCGenerator.randomFloat(100, 10000) / 100.0f;
-				i_data 	= TPCCGenerator.makeAlphaString(26, 50);
-				idatasiz = i_data.length();
-				if (orig[i_id - 1] == 1) {
-					pos = TPCCGenerator.randomInt(0, idatasiz - 8);
-					i_data = i_data.substring(0, pos) + "original" + i_data.substring(pos + 8);
-				}
-				String key = String.valueOf(i_id);
-				List<String> columns = TPCCGenerator.buildColumns("i_id", "i_name", "i_price", "i_data");
-				List<String> values = TPCCGenerator.buildColumns(i_id, i_name, i_price, i_data);
-				LOG.info("write: "  + TPCCConstants.TABLENAME_ITEM  + " "+ key);
-				write(TPCCConstants.TABLENAME_ITEM, key, columns, values);
-			}
-			LOG.info("Item Done. (" + start_id + "-" + end_id + ")");
-			return 0;
-		}
-	}
+//	private class ItemLoader implements Callable<Integer> {
+//		int start_id, end_id;
+//		int[] orig;
+//
+//		private ItemLoader(int start_id, int end_id, int[] orig) {
+//			this.start_id = start_id;
+//			this.end_id = end_id;
+//			this.orig = orig;
+//		}
+//
+//		@Override
+//		public Integer call() throws Exception {
+//			String i_name, i_data;
+//			float i_price;
+//			int idatasiz, pos;
+//			for (int i_id = start_id; i_id <= end_id; i_id++) {
+//				i_name 	= TPCCGenerator.makeAlphaString(14, 24);
+//				i_price = TPCCGenerator.randomFloat(100, 10000) / 100.0f;
+//				i_data 	= TPCCGenerator.makeAlphaString(26, 50);
+//				idatasiz = i_data.length();
+//				if (orig[i_id - 1] == 1) {
+//					pos = TPCCGenerator.randomInt(0, idatasiz - 8);
+//					i_data = i_data.substring(0, pos) + "original" + i_data.substring(pos + 8);
+//				}
+//				String key = String.valueOf(i_id);
+//				List<String> columns = TPCCGenerator.buildColumns("i_id", "i_name", "i_price", "i_data");
+//				List<String> values = TPCCGenerator.buildColumns(i_id, i_name, i_price, i_data);
+//				LOG.info("write: "  + TPCCConstants.TABLENAME_ITEM  + " "+ key);
+//				write(TPCCConstants.TABLENAME_ITEM, key, columns, values);
+//			}
+//			LOG.info("Item Done. (" + start_id + "-" + end_id + ")");
+//			return 0;
+//		}
+//	}
 
 	public void LoadItems() {
 		String i_name, i_data;
@@ -483,7 +505,7 @@ public class TPCCLoader {
 	}
 
 	public static void main(String[] args) {
-		PropertyConfigurator.configure(TpccServerConfiguration.getConfiguration().getLogConfigFilePath());
+		PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
 		TPCCLoader loader = new TPCCLoader();
 		loader.load();
 	}
