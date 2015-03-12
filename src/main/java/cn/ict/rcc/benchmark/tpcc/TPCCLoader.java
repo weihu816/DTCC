@@ -67,7 +67,7 @@ public class TPCCLoader {
 			return client.write(table, key, names, values);
 		} catch (Exception e) {
 			if (member != null) {
-				String msg = "Error contacting the remote member: " + member.getHostName();
+				String msg = "Error contacting the remote member: " + member.getHostName() + member.getPort();
 				LOG.warn(msg, e);
 			}
 			return false;

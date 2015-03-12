@@ -81,7 +81,7 @@ public class ServerConfiguration {
 				if (config == null) {
 					String configPath = System.getProperty("server.config.dir", "conf");
 					Properties props = new Properties();
-					File configFile = new File(configPath, "tpccServer.properties");
+					File configFile = new File(configPath, "server.properties");
 					try {
 						props.load(new FileInputStream(configFile));
 						config = new ServerConfiguration(props);
