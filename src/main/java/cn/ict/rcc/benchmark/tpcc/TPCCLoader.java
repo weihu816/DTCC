@@ -39,14 +39,15 @@ public class TPCCLoader {
 	}
 	
 	public void load() {
-		List<String> fields = new ArrayList<String>();
-		fields.add("no_w_id");
-		fields.add("no_d_id");
-		createSecondaryIndex(TPCCConstants.TABLENAME_NEW_ORDER, fields);
-		fields.add("ol_w_id");
-		fields.add("ol_d_id");
-		fields.add("ol_o_id");
-		createSecondaryIndex(TPCCConstants.TABLENAME_ORDER_LINE, fields);
+		List<String> fields_neworder = new ArrayList<String>();
+		fields_neworder.add("no_w_id");
+		fields_neworder.add("no_d_id");
+		createSecondaryIndex(TPCCConstants.TABLENAME_NEW_ORDER, fields_neworder);
+		List<String> fields_orderline = new ArrayList<String>();
+		fields_orderline.add("ol_w_id");
+		fields_orderline.add("ol_d_id");
+		fields_orderline.add("ol_o_id");
+		createSecondaryIndex(TPCCConstants.TABLENAME_ORDER_LINE, fields_orderline);
 		LoadItems();
 		LoadWare();
 		LoadCust();

@@ -17,8 +17,8 @@ public enum Action implements org.apache.thrift.TEnum {
   FETCHONE(3),
   FETCHALL(4),
   WRITE(5),
-  ADDVALUE(6),
-  REDUCEVALUE(7),
+  ADDINTEGER(6),
+  ADDDECIMAL(7),
   DELETE(8);
 
   private final int value;
@@ -51,9 +51,9 @@ public enum Action implements org.apache.thrift.TEnum {
       case 5:
         return WRITE;
       case 6:
-        return ADDVALUE;
+        return ADDINTEGER;
       case 7:
-        return REDUCEVALUE;
+        return ADDDECIMAL;
       case 8:
         return DELETE;
       default:

@@ -1,6 +1,7 @@
 package cn.ict.rcc.server.coordinator.messaging;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -36,7 +37,8 @@ public class CoordinatorCommunicator {
 			new ThriftConnectionPool());
 	private KeyedObjectPool<Member, TNonblockingSocket> nonBlockingPool = new StackKeyedObjectPool<Member, TNonblockingSocket>(
 			new ThriftNonBlockingConnectionPool());
-	// TODO [wei] Client Pool
+	private HashMap<Member, RococoCommunicationService.AsyncClient> asyncClientPool = new HashMap<Member, RococoCommunicationService.AsyncClient>();
+	private HashMap<Member, RococoCommunicationService.Client> clientPool = new HashMap<Member, RococoCommunicationService.Client>();
 
 	private TAsyncClientManager clientManager;
 
@@ -57,11 +59,15 @@ public class CoordinatorCommunicator {
 		TNonblockingTransport transport = null;
 		try {
 			member = config.getShardMember(piece.getTable(), piece.getKey());
-			transport = nonBlockingPool.borrowObject(member);
-			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
-			RococoCommunicationService.AsyncClient AsyncClient = new
-					RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
-			AsyncClient.start_req(piece, callback);
+			LOG.info("fistRound(Piece piece) " + member.getHostName() + " " + member.getPort());
+			RococoCommunicationService.AsyncClient asyncClient = asyncClientPool.get(member);
+			if (asyncClient == null) {
+				transport = nonBlockingPool.borrowObject(member);
+				TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+				asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
+				asyncClientPool.put(member, asyncClient);
+			}
+			asyncClient.start_req(piece, callback);
 //			returnType = callback.getResult();
 		} catch (Exception e) {
 			if (member != null) {
@@ -78,9 +84,13 @@ public class CoordinatorCommunicator {
 		try {
 			 for (Piece p : pieces) {
 				member = config.getShardMember(p.getTable(), p.getKey());
-				transport = blockingPool.borrowObject(member);
-				RococoCommunicationService.Client client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
-				client.commit_req(transactionId, dep);
+				RococoCommunicationService.Client client = clientPool.get(member);
+				if (client == null) {
+					transport = blockingPool.borrowObject(member);
+					client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
+					client.commit_req(transactionId, dep);
+					clientPool.put(member, client);
+				}
 			 }
 		} catch (Exception e) {
 			if (member != null) {

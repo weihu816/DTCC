@@ -9,10 +9,10 @@ public class TPCCScaleParameters {
 
 	public static final int NUM_WAREHOUSE = 2;				// number of warehouses - tunable 
 	
-	public static final int CUST_PER_DIST = 3000; 			// 3000
+	public static final int CUST_PER_DIST = 30; 			// 3000
 	
-	public static final int ORD_PER_DIST  = 3000; 			// 3000
-	public static final int ORDER_INIT_DELEVERED = 2100;	// if (o_id > #e.g.2100) then it is not delivered when initilized
+	public static final int ORD_PER_DIST  = 30; 			// 3000
+	public static final int ORDER_INIT_DELEVERED = 21;	// if (o_id > #e.g.2100) then it is not delivered when initilized
 
 	// W1					W2
 	// Node1	Node2		Node1	Node2

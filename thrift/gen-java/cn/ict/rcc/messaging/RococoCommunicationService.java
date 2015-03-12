@@ -40,7 +40,7 @@ public class RococoCommunicationService {
 
     public ReturnType start_req(Piece piece) throws org.apache.thrift.TException;
 
-    public ReturnType commit_req(String transactionId, Graph dep) throws org.apache.thrift.TException;
+    public boolean commit_req(String transactionId, Graph dep) throws org.apache.thrift.TException;
 
     public boolean write(String table, String key, List<String> names, List<String> values) throws org.apache.thrift.TException;
 
@@ -127,7 +127,7 @@ public class RococoCommunicationService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "start_req failed: unknown result");
     }
 
-    public ReturnType commit_req(String transactionId, Graph dep) throws org.apache.thrift.TException
+    public boolean commit_req(String transactionId, Graph dep) throws org.apache.thrift.TException
     {
       send_commit_req(transactionId, dep);
       return recv_commit_req();
@@ -141,7 +141,7 @@ public class RococoCommunicationService {
       sendBase("commit_req", args);
     }
 
-    public ReturnType recv_commit_req() throws org.apache.thrift.TException
+    public boolean recv_commit_req() throws org.apache.thrift.TException
     {
       commit_req_result result = new commit_req_result();
       receiveBase(result, "commit_req");
@@ -305,7 +305,7 @@ public class RococoCommunicationService {
         prot.writeMessageEnd();
       }
 
-      public ReturnType getResult() throws org.apache.thrift.TException {
+      public boolean getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -469,6 +469,7 @@ public class RococoCommunicationService {
       public commit_req_result getResult(I iface, commit_req_args args) throws org.apache.thrift.TException {
         commit_req_result result = new commit_req_result();
         result.success = iface.commit_req(args.transactionId, args.dep);
+        result.setSuccessIsSet(true);
         return result;
       }
     }
@@ -639,7 +640,7 @@ public class RococoCommunicationService {
       }
     }
 
-    public static class commit_req<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, commit_req_args, ReturnType> {
+    public static class commit_req<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, commit_req_args, Boolean> {
       public commit_req() {
         super("commit_req");
       }
@@ -648,12 +649,13 @@ public class RococoCommunicationService {
         return new commit_req_args();
       }
 
-      public AsyncMethodCallback<ReturnType> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+      public AsyncMethodCallback<Boolean> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<ReturnType>() { 
-          public void onComplete(ReturnType o) {
+        return new AsyncMethodCallback<Boolean>() { 
+          public void onComplete(Boolean o) {
             commit_req_result result = new commit_req_result();
             result.success = o;
+            result.setSuccessIsSet(true);
             try {
               fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
               return;
@@ -685,7 +687,7 @@ public class RococoCommunicationService {
         return false;
       }
 
-      public void start(I iface, commit_req_args args, org.apache.thrift.async.AsyncMethodCallback<ReturnType> resultHandler) throws TException {
+      public void start(I iface, commit_req_args args, org.apache.thrift.async.AsyncMethodCallback<Boolean> resultHandler) throws TException {
         iface.commit_req(args.transactionId, args.dep,resultHandler);
       }
     }
@@ -2576,7 +2578,7 @@ public class RococoCommunicationService {
   public static class commit_req_result implements org.apache.thrift.TBase<commit_req_result, commit_req_result._Fields>, java.io.Serializable, Cloneable, Comparable<commit_req_result>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("commit_req_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.BOOL, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -2584,7 +2586,7 @@ public class RococoCommunicationService {
       schemes.put(TupleScheme.class, new commit_req_resultTupleSchemeFactory());
     }
 
-    public ReturnType success; // required
+    public boolean success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -2645,11 +2647,13 @@ public class RococoCommunicationService {
     }
 
     // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ReturnType.class)));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(commit_req_result.class, metaDataMap);
     }
@@ -2658,19 +2662,19 @@ public class RococoCommunicationService {
     }
 
     public commit_req_result(
-      ReturnType success)
+      boolean success)
     {
       this();
       this.success = success;
+      setSuccessIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public commit_req_result(commit_req_result other) {
-      if (other.isSetSuccess()) {
-        this.success = new ReturnType(other.success);
-      }
+      __isset_bitfield = other.__isset_bitfield;
+      this.success = other.success;
     }
 
     public commit_req_result deepCopy() {
@@ -2679,31 +2683,31 @@ public class RococoCommunicationService {
 
     @Override
     public void clear() {
-      this.success = null;
+      setSuccessIsSet(false);
+      this.success = false;
     }
 
-    public ReturnType getSuccess() {
+    public boolean isSuccess() {
       return this.success;
     }
 
-    public commit_req_result setSuccess(ReturnType success) {
+    public commit_req_result setSuccess(boolean success) {
       this.success = success;
+      setSuccessIsSet(true);
       return this;
     }
 
     public void unsetSuccess() {
-      this.success = null;
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SUCCESS_ISSET_ID);
     }
 
     /** Returns true if field success is set (has been assigned a value) and false otherwise */
     public boolean isSetSuccess() {
-      return this.success != null;
+      return EncodingUtils.testBit(__isset_bitfield, __SUCCESS_ISSET_ID);
     }
 
     public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SUCCESS_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -2712,7 +2716,7 @@ public class RococoCommunicationService {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((ReturnType)value);
+          setSuccess((Boolean)value);
         }
         break;
 
@@ -2722,7 +2726,7 @@ public class RococoCommunicationService {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return getSuccess();
+        return Boolean.valueOf(isSuccess());
 
       }
       throw new IllegalStateException();
@@ -2754,12 +2758,12 @@ public class RococoCommunicationService {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
+      boolean this_present_success = true;
+      boolean that_present_success = true;
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
-        if (!this.success.equals(that.success))
+        if (this.success != that.success)
           return false;
       }
 
@@ -2810,11 +2814,7 @@ public class RococoCommunicationService {
       boolean first = true;
 
       sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
+      sb.append(this.success);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -2823,9 +2823,6 @@ public class RococoCommunicationService {
     public void validate() throws org.apache.thrift.TException {
       // check for required fields
       // check for sub-struct validity
-      if (success != null) {
-        success.validate();
-      }
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -2838,6 +2835,8 @@ public class RococoCommunicationService {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -2863,9 +2862,8 @@ public class RococoCommunicationService {
           }
           switch (schemeField.id) {
             case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.success = new ReturnType();
-                struct.success.read(iprot);
+              if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+                struct.success = iprot.readBool();
                 struct.setSuccessIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -2886,9 +2884,9 @@ public class RococoCommunicationService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.success != null) {
+        if (struct.isSetSuccess()) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          struct.success.write(oprot);
+          oprot.writeBool(struct.success);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -2914,7 +2912,7 @@ public class RococoCommunicationService {
         }
         oprot.writeBitSet(optionals, 1);
         if (struct.isSetSuccess()) {
-          struct.success.write(oprot);
+          oprot.writeBool(struct.success);
         }
       }
 
@@ -2923,8 +2921,7 @@ public class RococoCommunicationService {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.success = new ReturnType();
-          struct.success.read(iprot);
+          struct.success = iprot.readBool();
           struct.setSuccessIsSet(true);
         }
       }

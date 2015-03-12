@@ -45,7 +45,7 @@ public class ServerCommunicationServiceHandler implements Iface {
 	}
 
 	@Override
-	public ReturnType commit_req(String transactionId, Graph dep) throws TException {
+	public boolean commit_req(String transactionId, Graph dep) throws TException {
 		return node.commit_req(transactionId, dep);
 	}
 

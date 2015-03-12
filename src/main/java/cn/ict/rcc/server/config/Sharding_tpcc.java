@@ -2,12 +2,16 @@ package cn.ict.rcc.server.config;
 
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import cn.ict.rcc.Member;
 import cn.ict.rcc.benchmark.tpcc.TPCCConstants;
 import cn.ict.rcc.benchmark.tpcc.TPCCScaleParameters;
 
 public class Sharding_tpcc {
-	
+	private static final Log LOG = LogFactory.getLog(Sharding_tpcc.class);
+
 	public static Member getShardMember(Map<Integer,Member[]> members, String table, String key) {
 		int shardId, procId, index;
 		switch (table) {
@@ -23,7 +27,11 @@ public class Sharding_tpcc {
 			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
 			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.lastIndexOf("_")));
 			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
-			return members.get(shardId - 1)[index];
+			LOG.info("2222222222222222");
+					Member m = members.get(shardId - 1)[index];
+			LOG.info("2222222222222222");
+
+			return m;
 		case TPCCConstants.TABLENAME_ORDER_LINE:
 			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
 			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.indexOf("_", key.indexOf("_") + 1)));			

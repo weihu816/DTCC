@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
 
+import cn.ict.rcc.exception.RococoException;
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
@@ -32,9 +33,7 @@ public class StorageNode {
 	private MemoryDB db = new MemoryDB();
 	private ServerConfiguration configuration;
 	private ServerCommunicator communicator;
-
 	private ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
-
 	private Map<String, String> dep_server = new ConcurrentHashMap<String, String>();
 
 	private ConcurrentHashMap<String, List<String>> pieces_conflict = new ConcurrentHashMap<String, List<String>>();
@@ -60,8 +59,12 @@ public class StorageNode {
 		LOG.debug("start_req(piece)");
 
 		String id = piece.transactionId;
-		String theKey = piece.getTable() + "_" + piece.getKey();
-
+		StringBuffer stringBuffer = new StringBuffer();
+		stringBuffer.append(piece.getTable());
+		stringBuffer.append("_");
+		stringBuffer.append(piece.getKey());
+		String theKey = stringBuffer.toString();
+		
 		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 
 		/* S.dep[p.owner].status = STARTED */
@@ -71,14 +74,13 @@ public class StorageNode {
 		List<String> conflictPieces = pieces_conflict.get(theKey);
 		if (piece.isImmediate() && conflictPieces != null && conflictPieces.size() > 0) {
 			String p_id = conflictPieces.get(conflictPieces.size() - 1);
-			if (p_id != piece.getTransactionId() && status.get(p_id) != DECIDED) {
+			if (!p_id.equals(piece.getTransactionId()) && status.get(p_id) != DECIDED) {
 				LOG.debug(piece.getTransactionId() + "<-" + p_id);
 				dep_server.put(piece.getTransactionId(), p_id);
 			}
 		}
 		if (piece.isImmediate()) {
 			output = execute(piece);
-			status.put(id, COMMITTING);
 		}
 		/* buffer piece */
 		if (conflictPieces == null) {
@@ -99,27 +101,20 @@ public class StorageNode {
 		ReturnType returnType = new ReturnType();
 		returnType.setOutput(output);
 		Graph g = new Graph();
-		Map<String, String> map = new HashMap<String, String>();
-		map.putAll(dep_server);
+		Map<String, String> map = new HashMap<String, String>(dep_server);
 		g.setVertexes(map);
 		returnType.setDep(g);
 		LOG.debug(returnType);
 		return returnType;
 	}
 
-	public ReturnType commit_req(String transactionId, Graph dep) throws TException {
+	public boolean commit_req(String transactionId, Graph dep) throws TException {
 		LOG.debug("commit_req(String transactionId, Piece piece): txn " + transactionId);
-		// s.dep union dep
-		ReturnType returnType = new ReturnType();
-		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
-		returnType.setOutput(output);
-		
-		if (status.get(transactionId) == DECIDED) {
-			return returnType;
-		} else if (status.get(transactionId) == COMMITTING) {
-			status.put(transactionId, DECIDED);
-			LOG.debug("commit_req DONE: txn " + transactionId);
-			return returnType;
+				
+		if (status.get(transactionId) == STARTED) {
+			status.put(transactionId, COMMITTING);
+		} else {
+			throw new RococoException("ERROR: DECIDED");
 		}
 		
 		synchronized (this) {
@@ -127,34 +122,31 @@ public class StorageNode {
 			Stack<String> stack = new Stack<String>();
 			stack.push(transactionId);
 			while ((v = dep.vertexes.get(v)) != null) {
-				if (status.get(v) != null && status.get(v) == DECIDED) {
-					break;
-				}
+				if (status.get(v) != null && status.get(v) == DECIDED) { break; }
 				stack.push(v);
 				LOG.debug("commit_req: push txn " + v);
 			}
 			
 			while (!stack.isEmpty() && (v = stack.pop()) != null) {
-				while (status.get(v) == null) {
-					try {
-						Thread.currentThread().wait(1000);
-						LOG.debug("wait for " + v);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+				while (status.get(v) == null || status.get(v) != COMMITTING) {
+					LOG.debug("waiting: " + v);
 				} 
 				if (status.get(v) == STARTED)  {
 					status.put(v, DECIDED);
 					LOG.debug("execute " + v);
 					for (Piece p : pieces.get(v)) {
-						output.addAll(execute(p));
+						execute(p);
+						pieces.get(v).remove(p);
 					}
 				}
 			}
+			
 			status.put(transactionId, DECIDED);
-			LOG.debug("output: " + output);
+			
 			LOG.debug("commit_req DONE: txn " + transactionId);
-			return returnType;
+			
+			pieces.remove(transactionId);
+			return true;
 		}
 	}
 
@@ -172,42 +164,49 @@ public class StorageNode {
 			List<Map<String, String>> m = null;
 			switch (action) {
 			case READSELECT:
+				LOG.debug("Read - Table:" + table + " Key:" + key + " names: " + names);
 				Map<String, String> tmp = db.read(table, key, names);
 				if (tmp != null) {
 					output.add(tmp);
 				}
-				LOG.debug("Read - Table:" + table + " Key:" + key + " names: " + names);
+				break;
 			case FETCHONE:
+				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
 				m = db.read_secondaryIndex(table, key, names, false);
 				if (m != null) {
 					output.addAll(m);
 				}
-				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
 				break;
 			case FETCHALL:
+				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
 				m = db.read_secondaryIndex(table, key, names, true);
 				if (m != null) {
 					output.addAll(m);
 				}
-				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
 				break;
 			case WRITE:
+				LOG.debug("Insert - Table:" + table + " Key:" + key + " names: " + names);
 				if (!db.write(table, key, names, values)) {
 					LOG.debug("Error Write - ");
 				}
-				LOG.debug("Insert - Table:" + table + " Key:" + key + " names: " + names);
 				break;
-			case ADDVALUE:
-				if (!db.addInteger(table, key, names, values)) {
+			case ADDINTEGER:
+				LOG.debug("Addvalue - Table:" + table + " Key:" + key + " names: " + names + " values: " + names);
+				if (!db.add(table, key, names, values, false)) {
 					LOG.debug("Error Write - ");
 				}
-				LOG.debug("Addvalue - Table:" + table + " Key:" + key + " names: " + names);
+				break;
+			case ADDDECIMAL:
+				LOG.debug("Addvalue - Table:" + table + " Key:" + key + " names: " + names + " values: " + names);
+				if (!db.add(table, key, names, values, true)) {
+					LOG.debug("Error Write - ");
+				}
 				break;
 			case DELETE:
+				LOG.debug("Delete - Table:" + table + " Key:");
 				if (!db.delete(table, key)) {
 					LOG.debug("Error Delete - ");
 				}
-				LOG.debug("Delete - Table:" + table + " Key:");
 				break;
 			default:
 			}
@@ -217,7 +216,6 @@ public class StorageNode {
 
 	public synchronized boolean write(String table, String key,
 			List<String> names, List<String> values) {
-//		LOG.debug("write: " + table + " " + key);
 		return db.write(table, key, names, values);
 	}
 	

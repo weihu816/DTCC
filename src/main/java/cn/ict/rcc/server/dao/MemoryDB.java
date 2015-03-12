@@ -93,23 +93,24 @@ public class MemoryDB {
 			}
 			stringBuffer.append(r.get(indexList.get(indexList.size() - 1)));
 			String indexKey = stringBuffer.toString();
-			List<String> promaryKeyList = secondaryIndex.get(table).get(key);
+			List<String> promaryKeyList = secondaryIndex.get(table).get(indexKey);
 			if (promaryKeyList == null) {
 				promaryKeyList = new ArrayList<String>();
-				secondaryIndex.get(table).put(key, promaryKeyList);
+				secondaryIndex.get(table).put(indexKey, promaryKeyList);
 			}
-			promaryKeyList.add(indexKey);
+			promaryKeyList.add(key);
 		}
 		return true;
 	}
 	
 	public boolean createSecondaryIndex(String table, List<String> fields) {
+		LOG.debug("create secondaryIndex Table: " + table + " Fields: " + fields);
 		secondaryIndexInfo.put(table, fields);
 		secondaryIndex.put(table, new ConcurrentHashMap<String, List<String>>());
 		return true;
 	}
 	
-	public boolean addInteger(String table, String key, List<String> names, List<String> values) {
+	public boolean add(String table, String key, List<String> names, List<String> values, boolean isDecimal) {
 
 		check(table);
 		if (names == null || values == null || values.size() != names.size()) {
@@ -121,14 +122,21 @@ public class MemoryDB {
 			throw new RococoException("No such element table:" + table + " key: "+ key);
 		}
 		for (int i = 0; i < size; i++) {
-			String new_value = String.valueOf(Integer.parseInt(r.get(names.get(i))) + Integer.parseInt(values.get(i)));
+			LOG.debug("Table: " + table + " Key: " + key + " Add: " + names.get(i) + values.get(i));
+			String new_value;
+			if (isDecimal) {
+				new_value = String.valueOf(Float.parseFloat(r.get(names.get(i))) + Float.parseFloat(values.get(i)));
+			} else {
+				new_value = String.valueOf(Integer.parseInt(r.get(names.get(i))) + Integer.parseInt(values.get(i)));
+			}
 			r.put(names.get(i), new_value);
-LOG.info("Table: " + table + " Key: " + key + " Add: " + names.get(i) + values.get(i));
 		}
 		return true;
 	}
+
 	
 	public boolean delete(String table, String key) {
+		LOG.debug("Delete table: " + table + " key: " + key);
 		Record r = db.get(table).get(key);
 		if (secondaryIndexInfo.containsKey(table)) {
 			StringBuffer stringBuffer = new StringBuffer();

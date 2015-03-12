@@ -16,15 +16,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import cn.ict.rcc.Member;
+import cn.ict.rcc.benchmark.tpcc.TPCCConstants;
+import cn.ict.rcc.benchmark.tpcc.TPCCScaleParameters;
 import cn.ict.rcc.exception.RococoException;
 
 public class ServerConfiguration {
 	
-	private String benchmark = "tpcc";
-
 	private int myShardId = 0;
 	private int myProcessId = 0;
-	private Map<Integer,Member[]> members = new HashMap<Integer, Member[]>();
+	private Map<Integer, Member[]> members = new HashMap<Integer, Member[]>();
 	private String logConfigfile = "conf/log4j-server.properties";
 	private String appServerUrl = "localhost:9190";
 	
@@ -53,7 +53,7 @@ public class ServerConfiguration {
                 Member member = new Member(connection[0], Integer.parseInt(connection[1]), processId, false);
                 List<Member> temp = tempMembers.get(shardId);
                 if (temp == null) {
-                    temp = new ArrayList<Member>();
+                    temp = Collections.synchronizedList(new ArrayList<Member>());
                     tempMembers.put(shardId, temp);
                 }
                 temp.add(member);
@@ -97,11 +97,61 @@ public class ServerConfiguration {
 	}
 	
 	public Member getShardMember(String table, String key) {
-		switch (benchmark) {
-		case "tpcc":
-			return Sharding_tpcc.getShardMember(members, table, key);
-		case "micro":
-			return Sharding_micro.getShardMember(members, table, key);
+		int shardId, procId, index;
+		switch (table) {
+		// shard according to w_id and d_id
+		case TPCCConstants.TABLENAME_DISTRICT:
+			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
+			procId = Integer.parseInt(key.substring(key.lastIndexOf("_") + 1));
+			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
+			return members.get(shardId - 1)[index];
+			
+			
+		case TPCCConstants.TABLENAME_CUSTOMER: // w_d_?
+			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
+			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.lastIndexOf("_")));
+			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
+			return members.get(shardId - 1)[index];
+	
+		case TPCCConstants.TABLENAME_NEW_ORDER:
+			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
+			if (key.lastIndexOf("_") != key.indexOf("_")) {
+				procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.lastIndexOf("_")));
+			} else {
+				procId = Integer.parseInt(key.substring(key.indexOf("_") + 1));
+			}
+			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
+			return members.get(shardId - 1)[index];
+		case TPCCConstants.TABLENAME_ORDER:
+			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
+			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.lastIndexOf("_")));
+			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
+			return members.get(shardId - 1)[index];
+			
+			
+		case TPCCConstants.TABLENAME_ORDER_LINE:
+			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
+			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.indexOf("_", key.indexOf("_") + 1)));			
+			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
+			return members.get(shardId - 1)[index];
+			
+			
+		case TPCCConstants.TABLENAME_WAREHOUSE:
+			shardId = Integer.parseInt(key);
+			return members.get(shardId-1)[0];
+			
+			
+		case TPCCConstants.TABLENAME_ITEM:
+			return members.get(0)[0];
+		case TPCCConstants.TABLENAME_HISTORY:
+			return members.get(0)[0];
+			
+			
+		case TPCCConstants.TABLENAME_STOCK: // w_i
+			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
+			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1));
+			index = (procId - 1) % TPCCScaleParameters.DIST_PER_NODE;
+			return members.get(shardId - 1)[index];
 		default:
 			break;
 		}

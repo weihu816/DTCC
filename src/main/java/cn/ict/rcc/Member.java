@@ -3,7 +3,7 @@ package cn.ict.rcc;
 import cn.ict.rcc.exception.RococoException;
 /**
  * Membership
- * @author rayhu
+ * @author Wei
  *
  */
 public class Member {

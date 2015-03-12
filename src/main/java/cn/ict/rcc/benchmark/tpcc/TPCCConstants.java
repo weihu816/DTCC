@@ -54,7 +54,7 @@ public final class TPCCConstants {
 
     // ITEM constants
 	public static final int 	STARTING_ITEM 	= 0;
-    public static final int 	NUM_ITEMS 	  	= 100000;	//
+    public static final int 	NUM_ITEMS 	  	= 1000;		//100000
     public static final int 	MIN_IM 			= 1;
     public static final int 	MAX_IM 			= 10000;
     public static final double 	MIN_PRICE 		= 1.00;
@@ -89,7 +89,7 @@ public final class TPCCConstants {
     // DISTRICT constants
     public static final int DISTRICTS_PER_WAREHOUSE = 10;
     public static final double INITIAL_D_YTD 		= 30000.00;  // different from Warehouse
-    public static final int INITIAL_NEXT_O_ID 		= 3001;		 // 
+    public static final int INITIAL_NEXT_O_ID 		= 31;		 // 3001
 
     // CUSTOMER constants
     public static final int CUSTOMERS_PER_DISTRICT = 3000;

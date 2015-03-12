@@ -27,10 +27,12 @@ public class CoordinatorServiceHandler implements Iface {
 				TPCC.Neworder(Integer.valueOf(paras.get(0)), Integer.valueOf(paras.get(1)));
 				break;
 			case Procedure.TPCC_PAYMENT:
+				TPCC.Payment(Integer.valueOf(paras.get(0)), Integer.valueOf(paras.get(1)), paras.get(2));
 				break;
 			case Procedure.TPCC_ORDERSTATUS:
 				break;
 			case Procedure.TPCC_DELIVERY:
+				TPCC.Delivery(Integer.valueOf(paras.get(0)));
 				break;
 			case Procedure.TPCC_STOCKLEVEL:
 				break;

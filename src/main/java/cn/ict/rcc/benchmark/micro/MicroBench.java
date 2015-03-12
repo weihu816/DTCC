@@ -42,14 +42,14 @@ public class MicroBench {
 		
 		int num_piece1 = t1.createPiece("table1", "myKey", true);
 		t1.read("myValue");
-		t1.addvalue("myValue", 1);
+		t1.addvalueInteger("myValue", 1);
 		t1.completePiece();
 		String result1 = t1.get(num_piece1, "myValue");
 		LOG.debug("result1: " + result1);
 		
 		int num_piece2 = t2.createPiece("table1", "myKey", true);
 		t2.read("myValue");
-		t2.addvalue("myValue", 1);
+		t2.addvalueInteger("myValue", 1);
 		t2.completePiece();
 		String result2 = t2.get(num_piece2, "myValue");
 		LOG.debug("result1: " + result2);

@@ -6,9 +6,9 @@ enum Action {
     FETCHONE	 = 3,
     FETCHALL	 = 4,
     WRITE 		 = 5,
-    ADDVALUE 	 = 6,
-    REDUCEVALUE  = 7,
-    DELETE 		 = 8 
+    ADDINTEGER 	 = 6,
+    ADDDECIMAL 	 = 7,
+    DELETE 		 = 8
 }
 
 struct Vertex {
@@ -52,7 +52,7 @@ struct ReturnType {
 service RococoCommunicationService {
   bool ping(),
   ReturnType start_req(1:Piece piece),
-  ReturnType commit_req(1:string transactionId, 2:Graph dep),
+  bool commit_req(1:string transactionId, 2:Graph dep),
   bool write(1:string table, 2:string key, 3:list<string> names, 4:list<string> values)
   bool createSecondaryIndex(1:string table, 2:list<string> fields)
 }

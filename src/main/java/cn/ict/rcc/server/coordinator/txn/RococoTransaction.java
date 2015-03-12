@@ -1,11 +1,8 @@
 package cn.ict.rcc.server.coordinator.txn;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,7 +14,6 @@ import org.apache.thrift.TException;
 
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Graph;
-import cn.ict.rcc.messaging.Node;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
@@ -25,7 +21,7 @@ import cn.ict.rcc.server.coordinator.messaging.CoordinatorCommunicator;
 import cn.ict.rcc.server.coordinator.messaging.MethodCallback;
 
 public class RococoTransaction {
-	
+
 	public static AtomicInteger transactionIdGen = new AtomicInteger(0);
 	
 	private static final Log LOG = LogFactory.getLog(RococoTransaction.class);
@@ -146,18 +142,30 @@ public class RococoTransaction {
 		return maps;
 	}
 	
-	public void addvalue(String name, int value) throws TransactionException {
+	public void addvalueInteger(String name, int value) throws TransactionException {
 		assertState();
 		List<String> names = new ArrayList<String>();
 		names.add(name);
 		List<String> values = new ArrayList<String>();
 		values.add(String.valueOf(value));
-		Vertex v = new Vertex(Action.ADDVALUE);
+		Vertex v = new Vertex(Action.ADDINTEGER);
 		v.setName(names);
 		v.setValue(values);
 		piece.getVertexs().add(v);
 	}
-
+	
+	public void addvalueDecimal(String name, float value) throws TransactionException {
+		assertState();
+		List<String> names = new ArrayList<String>();
+		names.add(name);
+		List<String> values = new ArrayList<String>();
+		values.add(String.valueOf(value));
+		Vertex v = new Vertex(Action.ADDDECIMAL);
+		v.setName(names);
+		v.setValue(values);
+		piece.getVertexs().add(v);
+	}
+	
 	public void read(String name) throws TransactionException {
 		assertState();
 		List<String> names = new ArrayList<String>();
