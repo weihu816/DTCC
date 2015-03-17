@@ -2,7 +2,9 @@ package cn.ict.rcc.server.coordinator.messaging;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,6 +32,8 @@ import cn.ict.rcc.server.config.ServerConfiguration;
 
 public class CoordinatorCommunicator {
 
+	public static volatile CoordinatorCommunicator communicator = null;
+	
 	private static final Log LOG = LogFactory.getLog(CoordinatorCommunicator.class);
 	private ServerConfiguration config;
 
@@ -52,14 +56,14 @@ public class CoordinatorCommunicator {
 	}
 
 	public MethodCallback fistRound(Piece piece) throws TException {
-		LOG.info("fistRound(Piece piece) " + piece.getTable() + " " + piece.getKey());
+		LOG.debug("fistRound Txn:" + piece.getTransactionId() + " " + piece.getTable() + " " + piece.getKey());
 		MethodCallback callback = new MethodCallback();
 		Member member = null;
 //		ReturnType returnType = null;
 		TNonblockingTransport transport = null;
 		try {
 			member = config.getShardMember(piece.getTable(), piece.getKey());
-			LOG.info("fistRound(Piece piece) " + member.getHostName() + " " + member.getPort());
+			LOG.debug("fistRound(Piece piece) " + member.getHostName() + " " + member.getPort());
 			RococoCommunicationService.AsyncClient asyncClient = asyncClientPool.get(member);
 			if (asyncClient == null) {
 				transport = nonBlockingPool.borrowObject(member);
@@ -77,31 +81,40 @@ public class CoordinatorCommunicator {
 		return callback;
 	}
 	
-	public boolean secondRound(String transactionId, List<Piece> pieces, Graph dep) throws TException {
-		LOG.info("secondRound  " + dep);
-		Member member = null;
+	public boolean secondRound(String transactionId, List<Piece> pieces,
+			Graph dep) throws TException {
+		LOG.debug("secondRound Txn: " + transactionId + " " + dep);
 		TTransport transport = null;
-		try {
-			 for (Piece p : pieces) {
-				member = config.getShardMember(p.getTable(), p.getKey());
-				RococoCommunicationService.Client client = clientPool.get(member);
-				if (client == null) {
-					transport = blockingPool.borrowObject(member);
-					client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
-					client.commit_req(transactionId, dep);
-					clientPool.put(member, client);
-				}
-			 }
-		} catch (Exception e) {
-			if (member != null) {
-				handleException(member.getHostName(), e);
-			}
+		Set<Member> members = new HashSet<Member>();
+		for (Piece p : pieces) {
+			members.add(config.getShardMember(p.getTable(), p.getKey()));
 		}
+		for (Member member : members) {
+			RococoCommunicationService.Client client = clientPool.get(member);
+			if (client == null) {
+				try {
+					transport = blockingPool.borrowObject(member);
+				} catch (Exception e) {
+					handleException(member.getHostName(), e);
+				}
+				client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
+				clientPool.put(member, client);
+			}
+			client.commit_req(transactionId, dep);
+		}
+
 		return true;
 	}
 
 	private void handleException(String target, Exception e) {
 		String msg = "Error contacting the remote member: " + target;
 		LOG.warn(msg, e);
+	}
+	
+	public static CoordinatorCommunicator getCoordinatorCommunicator() {
+		if (communicator == null) {
+			communicator = new CoordinatorCommunicator();
+		}
+		return communicator;
 	}
 }

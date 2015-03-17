@@ -12,6 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
+import cn.ict.rcc.exception.RococoException;
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
@@ -21,8 +22,6 @@ import cn.ict.rcc.server.coordinator.messaging.CoordinatorCommunicator;
 import cn.ict.rcc.server.coordinator.messaging.MethodCallback;
 
 public class RococoTransaction {
-
-	public static AtomicInteger transactionIdGen = new AtomicInteger(0);
 	
 	private static final Log LOG = LogFactory.getLog(RococoTransaction.class);
 	
@@ -37,14 +36,15 @@ public class RococoTransaction {
 //	private Set<Edge> dep = new ConcurrentSkipListSet<Edge>();
 //	private RccGraph dep = new RccGraph();
 	Map<String, String> dep = new ConcurrentHashMap<String, String>();
-	
+
 	public RococoTransaction() {
-		communicator = new CoordinatorCommunicator();
+//		communicator = new CoordinatorCommunicator();
+		communicator = CoordinatorCommunicator.getCoordinatorCommunicator();
 	}
 	
 	public void begin() {
 //		transactionId = UUID.randomUUID().toString();
-		transactionId = String.valueOf(transactionIdGen.addAndGet(1));
+		transactionId = String.valueOf(TransactionFactory.transactionIdGen.addAndGet(1));
 		piece_number = 0;
 		cachedThreadPool = Executors.newCachedThreadPool();
 	}
@@ -58,7 +58,10 @@ public class RococoTransaction {
 			Graph graph = new Graph();
 			graph.setVertexes(dep);
 			if (communicator.secondRound(transactionId, pieces, graph)) {
-				// TODO: clean up
+				dep.remove(transactionId);
+				LOG.info("remote: " + transactionId);
+			} else {
+				throw new RococoException("Fail to commit");
 			}
 		} catch (TException e) {
 			e.printStackTrace();
@@ -79,36 +82,29 @@ public class RococoTransaction {
 	
 	public void completePiece() {
 		pieces.add(piece);
-//		if (piece.isImmediate()) {
-			tempPiece = piece;
-			try {
-				MethodCallback callback = communicator.fistRound(tempPiece);
-				List<Map<String, String>> map = readSet.get(piece_number);
-				if (map == null) {
-					map = new ArrayList<Map<String,String>>();
-					readSet.put(piece_number, map);
-				}
-				ReturnType returnType = callback.getResult();
-				// update the dependency information
-				map.addAll(returnType.getOutput());
-				dep.putAll(returnType.getDep().getVertexes());
-//				for(Entry<String, String> entry : returnType.getDep().getVertexes().entrySet()) {
-//					if (dep.containsKey(entry.getKey())) {
-//						dep.get(entry.getKey()).addAll(entry.getValue());
-//					} else {
-//						dep.put(entry.getKey(), entry.getValue());
-//					}
-//				}
-				LOG.info(returnType);
-				LOG.info(dep);
-			} catch (TException e) {
-				e.printStackTrace();
+		tempPiece = piece;
+		try {
+			MethodCallback callback = communicator.fistRound(tempPiece);
+			List<Map<String, String>> map = readSet.get(piece_number);
+			if (map == null) {
+				map = new ArrayList<Map<String, String>>();
+				readSet.put(piece_number, map);
 			}
-//		}
+			ReturnType returnType = callback.getResult();
+			// update the dependency information
+			map.addAll(returnType.getOutput());
+			dep.putAll(returnType.getDep().getVertexes());
+
+			LOG.debug(returnType);
+			LOG.debug(dep);
+		} catch (TException e) {
+			e.printStackTrace();
+		}
 		piece = null;
 	}
 	
 	public String get(int piece_number, String key) {
+		
 		String value;
 
 		List<Map<String, String>> maps = readSet.get(piece_number);
@@ -119,7 +115,7 @@ public class RococoTransaction {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			LOG.info("sleep...");
+			LOG.debug("sleep...");
 			maps = readSet.get(piece_number);
 			map = maps.get(0);
 		}
@@ -136,7 +132,7 @@ public class RococoTransaction {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			LOG.info("sleep...");
+			LOG.debug("sleep...");
 			maps = readSet.get(piece_number);
 		}
 		return maps;

@@ -2,9 +2,12 @@ package cn.ict.rcc.server.dao;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,7 +25,7 @@ public class MemoryDB {
 	private static final Log LOG = LogFactory.getLog(MemoryDB.class);
 
 	private Map<String, ConcurrentHashMap<String, Record>> db = new ConcurrentHashMap<String, ConcurrentHashMap<String, Record>>();
-	private Map<String, ConcurrentHashMap<String, List<String>>> secondaryIndex = new ConcurrentHashMap<String, ConcurrentHashMap<String, List<String>>>();
+	private Map<String, ConcurrentHashMap<String, Set<String>>> secondaryIndex = new ConcurrentHashMap<String, ConcurrentHashMap<String, Set<String>>>();
 	private Map<String, List<String>> secondaryIndexInfo = new ConcurrentHashMap<String, List<String>>();
 	
 	public void check(String table) {
@@ -57,7 +60,8 @@ public class MemoryDB {
 		check(table);
 		List<Map<String, String>> list = new ArrayList<Map<String,String>>();
 		if (!isAll) {
-			String primaryKey = secondaryIndex.get(table).get(key).get(0);
+			Iterator<String> i = secondaryIndex.get(table).get(key).iterator();
+			String primaryKey = i.next();
 			list.add(read(table, primaryKey, names));
 		} else {
 			for(String primaryKey : secondaryIndex.get(table).get(key)) {
@@ -93,9 +97,9 @@ public class MemoryDB {
 			}
 			stringBuffer.append(r.get(indexList.get(indexList.size() - 1)));
 			String indexKey = stringBuffer.toString();
-			List<String> promaryKeyList = secondaryIndex.get(table).get(indexKey);
+			Set<String> promaryKeyList = secondaryIndex.get(table).get(indexKey);
 			if (promaryKeyList == null) {
-				promaryKeyList = new ArrayList<String>();
+				promaryKeyList = new ConcurrentSkipListSet<String>();
 				secondaryIndex.get(table).put(indexKey, promaryKeyList);
 			}
 			promaryKeyList.add(key);
@@ -106,7 +110,7 @@ public class MemoryDB {
 	public boolean createSecondaryIndex(String table, List<String> fields) {
 		LOG.debug("create secondaryIndex Table: " + table + " Fields: " + fields);
 		secondaryIndexInfo.put(table, fields);
-		secondaryIndex.put(table, new ConcurrentHashMap<String, List<String>>());
+		secondaryIndex.put(table, new ConcurrentHashMap<String, Set<String>>());
 		return true;
 	}
 	

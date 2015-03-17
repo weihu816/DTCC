@@ -97,65 +97,7 @@ public class ServerConfiguration {
 	}
 	
 	public Member getShardMember(String table, String key) {
-		int shardId, procId, index;
-		switch (table) {
-		// shard according to w_id and d_id
-		case TPCCConstants.TABLENAME_DISTRICT:
-			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
-			procId = Integer.parseInt(key.substring(key.lastIndexOf("_") + 1));
-			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
-			return members.get(shardId - 1)[index];
-			
-			
-		case TPCCConstants.TABLENAME_CUSTOMER: // w_d_?
-			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
-			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.lastIndexOf("_")));
-			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
-			return members.get(shardId - 1)[index];
-	
-		case TPCCConstants.TABLENAME_NEW_ORDER:
-			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
-			if (key.lastIndexOf("_") != key.indexOf("_")) {
-				procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.lastIndexOf("_")));
-			} else {
-				procId = Integer.parseInt(key.substring(key.indexOf("_") + 1));
-			}
-			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
-			return members.get(shardId - 1)[index];
-		case TPCCConstants.TABLENAME_ORDER:
-			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
-			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.lastIndexOf("_")));
-			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
-			return members.get(shardId - 1)[index];
-			
-			
-		case TPCCConstants.TABLENAME_ORDER_LINE:
-			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
-			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1, key.indexOf("_", key.indexOf("_") + 1)));			
-			index = (procId - 1) / TPCCScaleParameters.DIST_PER_NODE;
-			return members.get(shardId - 1)[index];
-			
-			
-		case TPCCConstants.TABLENAME_WAREHOUSE:
-			shardId = Integer.parseInt(key);
-			return members.get(shardId-1)[0];
-			
-			
-		case TPCCConstants.TABLENAME_ITEM:
-			return members.get(0)[0];
-		case TPCCConstants.TABLENAME_HISTORY:
-			return members.get(0)[0];
-			
-			
-		case TPCCConstants.TABLENAME_STOCK: // w_i
-			shardId = Integer.parseInt(key.substring(0, key.indexOf("_")));
-			procId = Integer.parseInt(key.substring(key.indexOf("_") + 1));
-			index = (procId - 1) % TPCCScaleParameters.DIST_PER_NODE;
-			return members.get(shardId - 1)[index];
-		default:
-			break;
-		}
-		return null;
+		return Sharding_tpcc.getShardMember(members, table, key);
 	}
 	
 	public String getLogConfigFilePath(){

@@ -194,7 +194,7 @@ public class TPCCLoader {
 		/* start loading */
 		LOG.info("Loading Warehouses");
 
-		for (w_id = 1; w_id <= TPCCScaleParameters.NUM_WAREHOUSE; w_id++) {
+		for (w_id = 1; w_id <= TPCCConstants.NUM_WAREHOUSE; w_id++) {
 			/* Generate Warehouse Data */
 			w_name 		= TPCCGenerator.makeAlphaString(6, 10);
 			w_street_1 	= TPCCGenerator.makeAlphaString(10, 20); 	/* Street 1 */
@@ -261,18 +261,14 @@ public class TPCCLoader {
 			/* key */
 			String key = TPCCGenerator.buildString(s_w_id, "_", s_i_id);
 			/* column */
-			List<String> columns = TPCCGenerator.buildColumns("s_i_id", "s_w_id",
-					"s_quantity", "s_dist_01", "s_dist_02", "s_dist_03",
-					"s_dist_04", "s_dist_05", "s_dist_06", "s_dist_07",
-					"s_dist_08", "s_dist_09", "s_dist_10", "s_data", "s_ytd",
-					"s_order_cnt", "s_remote_cnt");
-			List<String> values = TPCCGenerator.buildColumns(s_i_id, s_w_id, s_quantity,
-					TPCCGenerator.makeAlphaString(24, 24), TPCCGenerator.makeAlphaString(24, 24),
-					TPCCGenerator.makeAlphaString(24, 24), TPCCGenerator.makeAlphaString(24, 24),
-					TPCCGenerator.makeAlphaString(24, 24), TPCCGenerator.makeAlphaString(24, 24),
-					TPCCGenerator.makeAlphaString(24, 24), TPCCGenerator.makeAlphaString(24, 24),
-					TPCCGenerator.makeAlphaString(24, 24), TPCCGenerator.makeAlphaString(24, 24), s_data,
-					"0", "0", "0");
+			List<String> columns = TPCCGenerator.buildColumns("s_i_id", "s_w_id", "s_quantity", 
+					"s_data", "s_ytd", "s_order_cnt", "s_remote_cnt");
+			List<String> values = TPCCGenerator.buildColumns(String.valueOf(s_i_id), String.valueOf(s_w_id),
+					String.valueOf(s_quantity), s_data, "0", "0", "0");
+			for (int i = 1; i <= TPCCConstants.DISTRICTS_PER_WAREHOUSE; i++) {
+				columns.add("s_dist_" + String.valueOf(i));
+				values.add(TPCCGenerator.makeAlphaString(24, 24));
+			}
 			write(TPCCConstants.TABLENAME_STOCK, key, columns, values);
 		}
 
@@ -298,7 +294,7 @@ public class TPCCLoader {
 		d_ytd = TPCCConstants.INITIAL_W_YTD;
 		d_next_o_id = TPCCConstants.INITIAL_NEXT_O_ID;
 
-		for (d_id = 1; d_id <= TPCCScaleParameters.DIST_PER_WARE; d_id++) {
+		for (d_id = 1; d_id <= TPCCConstants.DISTRICTS_PER_WAREHOUSE; d_id++) {
 			/* Generate District Data */
 			d_name = TPCCGenerator.makeAlphaString(6, 10);
 			d_street_1 = TPCCGenerator.makeAlphaString(10, 20); /* Street 1 */
@@ -330,8 +326,8 @@ public class TPCCLoader {
 	 */
 	public void LoadCust() {
 
-		for (int w_id = 1; w_id <= TPCCScaleParameters.NUM_WAREHOUSE; w_id++) {
-			for (int d_id = 1; d_id <= TPCCScaleParameters.DIST_PER_WARE; d_id++) {
+		for (int w_id = 1; w_id <= TPCCConstants.NUM_WAREHOUSE; w_id++) {
+			for (int d_id = 1; d_id <= TPCCConstants.DISTRICTS_PER_WAREHOUSE; d_id++) {
 				Customer(d_id, w_id);
 			}
 		}
@@ -350,7 +346,7 @@ public class TPCCLoader {
 
 		/* Already Set up database connection */
 
-		for (c_id = 1; c_id <= TPCCScaleParameters.CUST_PER_DIST; c_id++) {
+		for (c_id = 1; c_id <= TPCCConstants.CUSTOMERS_PER_DISTRICT; c_id++) {
 			/* Generate Customer Data */
 			c_d_id = d_id;
 			c_w_id = w_id;
@@ -418,8 +414,8 @@ public class TPCCLoader {
 	 * and new_order table Argument: none
 	 */
 	public void LoadOrd() {
-		for (int w_id = 1; w_id <= TPCCScaleParameters.NUM_WAREHOUSE; w_id++) {
-			for (int d_id = 1; d_id <= TPCCScaleParameters.DIST_PER_WARE; d_id++) {
+		for (int w_id = 1; w_id <= TPCCConstants.NUM_WAREHOUSE; w_id++) {
+			for (int d_id = 1; d_id <= TPCCConstants.DISTRICTS_PER_WAREHOUSE; d_id++) {
 				Orders(d_id, w_id);
 			}
 		}
@@ -441,18 +437,18 @@ public class TPCCLoader {
 		o_entry_d = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
 		ol_delivery_d = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
 		/* initialize permutation of customer numbers */
-		int permutation[] = new int[TPCCScaleParameters.CUST_PER_DIST];
-		for (int i = 0; i < TPCCScaleParameters.CUST_PER_DIST; i++) {
+		int permutation[] = new int[TPCCConstants.CUSTOMERS_PER_DISTRICT];
+		for (int i = 0; i < TPCCConstants.CUSTOMERS_PER_DISTRICT; i++) {
 			permutation[i] = i + 1;
 		}
 		for (int i = 0; i < permutation.length; i++) {
-			int index = (new Random()).nextInt(TPCCScaleParameters.CUST_PER_DIST);
+			int index = (new Random()).nextInt(TPCCConstants.CUSTOMERS_PER_DISTRICT);
 			int t = permutation[i];
 			permutation[i] = permutation[index];
 			permutation[index] = t;
 		}
 
-		for (o_id = 1; o_id <= TPCCScaleParameters.ORD_PER_DIST; o_id++) {
+		for (o_id = 1; o_id <= TPCCConstants.ORDERS_PER_DISTRICT; o_id++) {
 			/* Generate Order Data */
 			o_c_id = permutation[o_id - 1];
 			o_carrier_id = TPCCGenerator.randomInt(1, 10);
@@ -462,7 +458,7 @@ public class TPCCLoader {
 
 			List<String> columns;
 			List<String> values;
-			if (o_id > TPCCScaleParameters.ORDER_INIT_DELEVERED) {
+			if (o_id > TPCCConstants.ORDER_INIT_DELEVERED) {
 				/* orders have not been delivered to be marked as New Orders*/
 				columns = TPCCGenerator.buildColumns("o_id", "o_d_id", "o_w_id", "o_c_id", "o_entry_d", "o_ol_cnt", "o_all_local", "o_carrier_id");
 				values = TPCCGenerator.buildColumns(o_id, o_d_id, o_w_id, o_c_id, o_entry_d, o_ol_cnt, 1, "NULL");

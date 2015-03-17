@@ -27,13 +27,13 @@ public class ServerCommunicationServiceHandler implements Iface {
 	
 	@Override
 	public boolean ping() throws TException {
-		LOG.info("Server Handler: received ping");
+		LOG.debug("Server Handler: received ping");
 		return true;
 	}
 
 	@Override
 	public ReturnType start_req(Piece piece) throws TException {
-		LOG.info("Server Handler: start_req(Piece piece) TransactionID: " + piece.getTransactionId());
+		LOG.debug("Server Handler: start_req(Piece piece) TransactionID: " + piece.getTransactionId());
 		return node.start_req(piece);
 	}
 

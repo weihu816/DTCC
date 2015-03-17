@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +46,7 @@ public class TPCC {
 		transaction.begin();
 		
 		List<String> columns, values;
-		int c_id = TPCCGenerator.NURand(TPCCConstants.A_C_ID, 1, TPCCScaleParameters.CUST_PER_DIST);
+		int c_id = TPCCGenerator.NURand(TPCCConstants.A_C_ID, 1, TPCCConstants.CUSTOMERS_PER_DISTRICT);
 		
 		// PIECE 1 Ri&R District
 		// increase d_next_o_id, immediate
@@ -97,9 +102,9 @@ public class TPCC {
 		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
 			int ol_supply_w_id; 
 			/* 90% of supply are from home stock */
-			if (TPCCGenerator.randomInt(0, 99) < 10 && TPCCScaleParameters.NUM_WAREHOUSE > 1) {
-				int supply_w_id = TPCCGenerator.randomInt(1, TPCCScaleParameters.NUM_WAREHOUSE); 
-				while (supply_w_id == w_id) { supply_w_id = TPCCGenerator.randomInt(1, TPCCScaleParameters.NUM_WAREHOUSE); }
+			if (TPCCGenerator.randomInt(0, 99) < 10 && TPCCConstants.NUM_WAREHOUSE > 1) {
+				int supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); 
+				while (supply_w_id == w_id) { supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); }
 				ol_supply_w_id = supply_w_id;
 			} else { ol_supply_w_id = w_id; }
 			if (ol_supply_w_id != w_id) { o_all_local = 0; }
@@ -156,12 +161,11 @@ public class TPCC {
 			String key_stock = TPCCGenerator.buildString(ol_supply_w_id, "_", ol_i_id);
 			int pieceNum_stock = transaction.createPiece(TPCCConstants.TABLENAME_STOCK, key_stock, true);
 			/* retrieve stock information */
-			columns = TPCCGenerator.buildColumns("s_quantity", "s_dist_01", "s_dist_02", "s_dist_03",
-					"s_dist_04", "s_dist_05", "s_dist_06", "s_dist_07", "s_dist_08",
-					"s_dist_09", "s_dist_10", "s_data");
+			columns = TPCCGenerator.buildColumns("s_quantity", "s_data");
+			columns.add("s_dist_" +  d_id);
 			transaction.readSelect(columns);
 			transaction.completePiece();
-			String ol_dist_info = transaction.get(pieceNum_stock, "s_dist_" +  (d_id < 9 ? "0" + d_id : d_id));
+			String ol_dist_info = transaction.get(pieceNum_stock, "s_dist_" +  d_id);
 			String s_data = transaction.get(pieceNum_stock, "s_data");
 			int s_quantity = Integer.valueOf(transaction.get(pieceNum_stock, "s_quantity"));
 			LOG.debug("Piece 7: Ri stock | orderline#: " + ol_number);
@@ -206,21 +210,21 @@ public class TPCC {
 		}
 		transaction.commit();
 		
-		System.out.println("==============================New Order==================================");
-		System.out.println("Warehouse: " + w_id + "\tDistrict: " + d_id);
-		if (valid) {
-			System.out.println("Customer: " + c_id + "\tName: " + c_last + "\tCredit: " + c_credit + "\tDiscount: " + c_discount);
-			System.out.println("Order Number: " + o_id + " OrderId: " + o_id + " Number_Lines: " + o_ol_cnt + " W_tax: " + w_tax + " D_tax: " + d_tax + "\n");
-			System.out.println("Supp_W Item_Id           Item Name     ol_q s_q  bg Price Amount");
-			for (int i = 0; i < o_ol_cnt; i++) {
-				System.out.println( String.format("  %4d %6d %24s %2d %4d %3c %6.2f %6.2f",
-						supware[i], ol_i_ids[i], i_names[i], ol_quantities[i], s_quantities[i], bg[i], i_prices[i], ol_amounts[i]));
-			}
-		} else {
-			System.out.println("Customer: " + c_id + "\tName: " + c_last + "\tCredit: " + c_credit + "\tOrderId: " + o_id);
-			System.out.println("Exection Status: Item number is not valid");
-		}
-		System.out.println("=========================================================================");
+//		System.out.println("==============================New Order==================================");
+//		System.out.println("Warehouse: " + w_id + "\tDistrict: " + d_id);
+//		if (valid) {
+//			System.out.println("Customer: " + c_id + "\tName: " + c_last + "\tCredit: " + c_credit + "\tDiscount: " + c_discount);
+//			System.out.println("Order Number: " + o_id + " OrderId: " + o_id + " Number_Lines: " + o_ol_cnt + " W_tax: " + w_tax + " D_tax: " + d_tax + "\n");
+//			System.out.println("Supp_W Item_Id           Item Name     ol_q s_q  bg Price Amount");
+//			for (int i = 0; i < o_ol_cnt; i++) {
+//				System.out.println( String.format("  %4d %6d %24s %2d %4d %3c %6.2f %6.2f",
+//						supware[i], ol_i_ids[i], i_names[i], ol_quantities[i], s_quantities[i], bg[i], i_prices[i], ol_amounts[i]));
+//			}
+//		} else {
+//			System.out.println("Customer: " + c_id + "\tName: " + c_last + "\tCredit: " + c_credit + "\tOrderId: " + o_id);
+//			System.out.println("Exection Status: Item number is not valid");
+//		}
+//		System.out.println("=========================================================================");
 		
 	}
 	
@@ -242,10 +246,10 @@ public class TPCC {
 			c_w_id = w_id;
 			c_d_id = d_id;
 		} else {
-			c_d_id = TPCCGenerator.randomInt(1, TPCCScaleParameters.DIST_PER_WARE);
+			c_d_id = TPCCGenerator.randomInt(1, TPCCConstants.DISTRICTS_PER_WAREHOUSE);
 			do {
-				c_w_id = TPCCGenerator.randomInt(1, TPCCScaleParameters.NUM_WAREHOUSE);
-			} while (c_w_id == w_id && TPCCScaleParameters.NUM_WAREHOUSE > 1);
+				c_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE);
+			} while (c_w_id == w_id && TPCCConstants.NUM_WAREHOUSE > 1);
 		}
 		String h_date = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
 		List<String> columns, values;
@@ -408,36 +412,36 @@ public class TPCC {
 		
 		transaction.commit();
 	
-		System.out.println("==============================Payment====================================");
-		System.out.println("Date: " + h_date + " District: " + d_id);
-		System.out.println("Warehouse: " + w_id + "\t\t\t\tDistrict");
-		System.out.println(w_street_1 + "\t\t\t\t" + d_street_1);
-		System.out.println(w_street_2 + "\t\t\t\t" + d_street_2);
-		System.out.println(w_city + " " + w_state + " " + w_zip + "\t" + d_city + " " + d_state + " " + d_zip);
-		System.out.println("");
-		System.out.println("Customer: " + c_id + "\tCustomer-Warehouse: " + c_w_id + "\tCustomer-District: " + c_d_id);
-		System.out.println("Name:" + c_first + " " + c_middle + " " + c_last + "\tCust-Since:" + c_since);
-		System.out.println(c_street_1 + "\t\t\tCust-Credit:" + c_credit);
-		System.out.println(c_street_2);
-		System.out.println(c_city + " " + c_state + " " + c_zip + " \tCust-Phone:" + c_phone);
-		System.out.println("");
-		System.out.println("Amount Paid:" + h_amount  + "\t\t\tNew Cust-Balance: " + c_balance);
-		System.out.println("Credit Limit:" + c_credit_lim);
-		System.out.println("");
-		if (c_credit.equals("BC")) {
-			c_data = c_data.substring(0, 200);
-		} 
-		int length = c_data.length();
-		int n = 50;
-		int num_line = length / n;
-		if (length % n != 0) num_line += 1;
-		System.out.println( "Cust-data: \t" + c_data.substring(0, n));
-		for (int i = 1; i < num_line - 1; i++) {
-			System.out.println("\t\t" + c_data.substring(n*i, n*(i+1)));
-		}
-		System.out.println("\t\t" + c_data.substring(n*(num_line-1)));
-		System.out.println("=========================================================================");
-		
+//		System.out.println("==============================Payment====================================");
+//		System.out.println("Date: " + h_date + " District: " + d_id);
+//		System.out.println("Warehouse: " + w_id + "\t\t\t\tDistrict");
+//		System.out.println(w_street_1 + "\t\t\t\t" + d_street_1);
+//		System.out.println(w_street_2 + "\t\t\t\t" + d_street_2);
+//		System.out.println(w_city + " " + w_state + " " + w_zip + "\t" + d_city + " " + d_state + " " + d_zip);
+//		System.out.println("");
+//		System.out.println("Customer: " + c_id + "\tCustomer-Warehouse: " + c_w_id + "\tCustomer-District: " + c_d_id);
+//		System.out.println("Name:" + c_first + " " + c_middle + " " + c_last + "\tCust-Since:" + c_since);
+//		System.out.println(c_street_1 + "\t\t\tCust-Credit:" + c_credit);
+//		System.out.println(c_street_2);
+//		System.out.println(c_city + " " + c_state + " " + c_zip + " \tCust-Phone:" + c_phone);
+//		System.out.println("");
+//		System.out.println("Amount Paid:" + h_amount  + "\t\t\tNew Cust-Balance: " + c_balance);
+//		System.out.println("Credit Limit:" + c_credit_lim);
+//		System.out.println("");
+//		if (c_credit.equals("BC")) {
+//			c_data = c_data.substring(0, 200);
+//		} 
+//		int length = c_data.length();
+//		int n = 50;
+//		int num_line = length / n;
+//		if (length % n != 0) num_line += 1;
+//		System.out.println( "Cust-data: \t" + c_data.substring(0, n));
+//		for (int i = 1; i < num_line - 1; i++) {
+//			System.out.println("\t\t" + c_data.substring(n*i, n*(i+1)));
+//		}
+//		System.out.println("\t\t" + c_data.substring(n*(num_line-1)));
+//		System.out.println("=========================================================================");
+//		
 		
 	}
 	
@@ -453,7 +457,8 @@ public class TPCC {
 		RococoTransaction transaction = transactionFactory.create();
 		transaction.begin();
 		
-		int w_id = TPCCGenerator.randomInt(1, TPCCScaleParameters.NUM_WAREHOUSE), d_id = TPCCGenerator.randomInt(1, TPCCScaleParameters.DIST_PER_WARE);
+		int w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE);
+		int d_id = TPCCGenerator.randomInt(1, TPCCConstants.DISTRICTS_PER_WAREHOUSE);
 		List<String> columns, values;
 		/* ORDER BY no_o_id ASC and choose an new order */
 		int no_o_id = 0;
@@ -536,13 +541,13 @@ public class TPCC {
 		transaction.completePiece();
 		
 		transaction.commit();
-		System.out.println("==============================Delivery==================================");
-		System.out.println("INPUT	o_carrier_id: " + o_carrier_id);
-		System.out.println();
-		System.out.println("Warehouse: " + w_id);
-		System.out.println("o_carrier_id: " + o_carrier_id);
-		System.out.println("Execution Status: Delivery has been queued");
-		System.out.println("=========================================================================");
+//		System.out.println("==============================Delivery==================================");
+//		System.out.println("INPUT	o_carrier_id: " + o_carrier_id);
+//		System.out.println();
+//		System.out.println("Warehouse: " + w_id);
+//		System.out.println("o_carrier_id: " + o_carrier_id);
+//		System.out.println("Execution Status: Delivery has been queued");
+//		System.out.println("=========================================================================");
 
 	}
 	
@@ -551,27 +556,54 @@ public class TPCC {
 		PropertyConfigurator.configure(CoordinatorClientConfiguration
 				.getConfiguration().getLogConfigFilePath());
 
-		CoordinatorClient client = new CoordinatorClient();		
+		ExecutorService exec = Executors.newFixedThreadPool(4);
+		int n = 8;
+		Future<Integer>[] futures = new Future[n];
+		int result = 0;
+		for (int i = 0; i < n; i++) {
+			futures[i] = exec.submit(new myTask());
+		}
 		
+		for (int i = 0; i < n; i++) {
+			try {
+				int x = futures[i].get();
+				System.err.println(x);
+				result += x;
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println(result);
+		exec.shutdownNow();
+	}
+	
+}
+
+class myTask implements Callable<Integer> {
+
+	@Override
+	public Integer call() throws Exception {
+		
+		CoordinatorClient client = new CoordinatorClient();		
+
 		long start = System.currentTimeMillis();
 		int count_neworder = 0;
 
 		List<String> paras;
 		
 		while (System.currentTimeMillis() - start < 10000) {
-			System.out.print(".");
-			if (count_neworder % 50 == 0) System.out.println();
 			int x = TPCCGenerator.randomInt(1, 100);
 			if (x <= 44) {
 				paras = new ArrayList<String>();
-				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCScaleParameters.NUM_WAREHOUSE)));
-				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCScaleParameters.DIST_PER_WARE)));
+				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.NUM_WAREHOUSE)));
+				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.DISTRICTS_PER_WAREHOUSE)));
 				client.callProcedure(Procedure.TPCC_NEWORDER, paras);
+				count_neworder++;
 			} else if (x <= 87) {
 				paras = new ArrayList<String>();
-				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCScaleParameters.NUM_WAREHOUSE)));
-				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCScaleParameters.DIST_PER_WARE)));
-				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCScaleParameters.CUST_PER_DIST)));
+				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.NUM_WAREHOUSE)));
+				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.DISTRICTS_PER_WAREHOUSE)));
+				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.CUSTOMERS_PER_DISTRICT)));
 				client.callProcedure(Procedure.TPCC_PAYMENT, paras);
 
 			} else if (x <= 91) {
@@ -581,9 +613,9 @@ public class TPCC {
 				paras.add(String.valueOf(TPCCGenerator.randomInt(1,10)));
 				client.callProcedure(Procedure.TPCC_DELIVERY, paras);
 			} else {
+				
 			}
-			count_neworder++;
 		}
-		System.out.println(count_neworder);
+		return count_neworder;
 	}
 }

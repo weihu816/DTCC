@@ -5,9 +5,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+
+import javax.rmi.CORBA.Util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,6 +26,7 @@ import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
 import cn.ict.rcc.server.config.ServerConfiguration;
 import cn.ict.rcc.server.dao.MemoryDB;
+import cn.ict.rcc.server.util.RccUtil;
 
 public class StorageNode {
 
@@ -37,7 +42,7 @@ public class StorageNode {
 	private Map<String, String> dep_server = new ConcurrentHashMap<String, String>();
 
 	private ConcurrentHashMap<String, List<String>> pieces_conflict = new ConcurrentHashMap<String, List<String>>();
-	private ConcurrentHashMap<String, List<Piece>> pieces = new ConcurrentHashMap<String, List<Piece>>();
+	private ConcurrentHashMap<String, Set<Piece>> pieces = new ConcurrentHashMap<String, Set<Piece>>();
 
 	public StorageNode() {
 		this.configuration = ServerConfiguration.getConfiguration();
@@ -59,15 +64,10 @@ public class StorageNode {
 		LOG.debug("start_req(piece)");
 
 		String id = piece.transactionId;
-		StringBuffer stringBuffer = new StringBuffer();
-		stringBuffer.append(piece.getTable());
-		stringBuffer.append("_");
-		stringBuffer.append(piece.getKey());
-		String theKey = stringBuffer.toString();
+		String theKey = RccUtil.buildString(piece.getTable(), "_", piece.getKey());
 		
 		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 
-		/* S.dep[p.owner].status = STARTED */
 		status.put(id, STARTED);
 
 		// update - the most recent piece conflicted
@@ -89,9 +89,9 @@ public class StorageNode {
 		}
 		if (!piece.isImmediate()) {
 			LOG.debug("Put txn: " + piece.transactionId);
-			List<Piece> allPieces = pieces.get(piece.getTransactionId());
+			Set<Piece> allPieces = pieces.get(piece.getTransactionId());
 			if (allPieces == null) {
-				allPieces = new ArrayList<Piece>();
+				allPieces = new ConcurrentSkipListSet<Piece>();
 				pieces.put(piece.transactionId, allPieces);
 			}
 			allPieces.add(piece);
@@ -122,28 +122,41 @@ public class StorageNode {
 			Stack<String> stack = new Stack<String>();
 			stack.push(transactionId);
 			while ((v = dep.vertexes.get(v)) != null) {
-				if (status.get(v) != null && status.get(v) == DECIDED) { break; }
+				if (status.containsKey(v) && status.get(v) == DECIDED) { break; }
 				stack.push(v);
 				LOG.debug("commit_req: push txn " + v);
 			}
 			
 			while (!stack.isEmpty() && (v = stack.pop()) != null) {
-				while (status.get(v) == null || status.get(v) != COMMITTING) {
-					LOG.debug("waiting: " + v);
+				while (!status.containsKey(v)) {
+					LOG.debug("waiting1: " + v);
+					throw new RuntimeException("1");
+				}
+				while (status.get(v) == STARTED) {
+					LOG.debug("waiting2: " + v);
+					throw new RuntimeException("2");
 				} 
-				if (status.get(v) == STARTED)  {
-					status.put(v, DECIDED);
-					LOG.debug("execute " + v);
+				LOG.debug("execute " + v);
+				if (pieces.get(v) != null) {
 					for (Piece p : pieces.get(v)) {
 						execute(p);
+						// remote the buffed piece
 						pieces.get(v).remove(p);
+						// remove the piece from conflict information
+						String theKey = RccUtil.buildString(p.getTable(), "_", p.getKey());
+						List<String> conflictPieces = pieces_conflict.get(theKey);
+						conflictPieces.remove(p.getTransactionId());
+						if (dep_server.containsKey(p.getTransactionId())) {
+							dep_server.remove(p.getTransactionId());
+							LOG.info("remote: " + p.getTransactionId());
+						}
 					}
 				}
+				status.put(v, DECIDED);
 			}
 			
-			status.put(transactionId, DECIDED);
-			
 			LOG.debug("commit_req DONE: txn " + transactionId);
+			LOG.debug("status:  " + status.get(transactionId));
 			
 			pieces.remove(transactionId);
 			return true;
@@ -152,7 +165,7 @@ public class StorageNode {
 
 	public synchronized List<Map<String, String>> execute(Piece piece)
 			throws TException {
-		LOG.debug("execute(Piece piece)");
+		LOG.debug("execute(Piece piece) " + piece.table + " " + piece.key);
 		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 		List<Vertex> vertexs = piece.getVertexs();
 		for (Vertex v : vertexs) {
@@ -216,6 +229,10 @@ public class StorageNode {
 
 	public synchronized boolean write(String table, String key,
 			List<String> names, List<String> values) {
+//		if (table.equals("STOCK")) {
+//		LOG.info("write: " + table + " " + key);
+//		LOG.info("write: " + names + " " + values);
+//		}
 		return db.write(table, key, names, values);
 	}
 	
