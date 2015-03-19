@@ -11,14 +11,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import javax.rmi.CORBA.Util;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
 
-import cn.ict.rcc.exception.RococoException;
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
@@ -35,10 +32,11 @@ public class StorageNode {
 	public static final int COMMITTING = 1;
 	public static final int DECIDED = 2;
 
+	ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
+
 	private MemoryDB db = new MemoryDB();
 	private ServerConfiguration configuration;
 	private ServerCommunicator communicator;
-	private ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
 	private Map<String, String> dep_server = new ConcurrentHashMap<String, String>();
 
 	private ConcurrentHashMap<String, List<String>> pieces_conflict = new ConcurrentHashMap<String, List<String>>();
@@ -63,12 +61,12 @@ public class StorageNode {
 	public synchronized ReturnType start_req(Piece piece) throws TException {
 		LOG.debug("start_req(piece)");
 
-		String id = piece.transactionId;
+		if (status.get(piece.transactionId) == null) {
+			status.put(piece.transactionId, STARTED);
+		}
 		String theKey = RccUtil.buildString(piece.getTable(), "_", piece.getKey());
 		
 		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
-
-		status.put(id, STARTED);
 
 		// update - the most recent piece conflicted
 		List<String> conflictPieces = pieces_conflict.get(theKey);
@@ -108,59 +106,72 @@ public class StorageNode {
 		return returnType;
 	}
 
-	public boolean commit_req(String transactionId, Graph dep) throws TException {
+	public synchronized boolean commit_req(String transactionId, Graph dep) throws TException {
+			
 		LOG.debug("commit_req(String transactionId, Piece piece): txn " + transactionId);
-				
-		if (status.get(transactionId) == STARTED) {
-			status.put(transactionId, COMMITTING);
-		} else {
-			throw new RococoException("ERROR: DECIDED");
-		}
-		
-		synchronized (this) {
-			String v = transactionId;
-			Stack<String> stack = new Stack<String>();
-			stack.push(transactionId);
-			while ((v = dep.vertexes.get(v)) != null) {
-				if (status.containsKey(v) && status.get(v) == DECIDED) { break; }
-				stack.push(v);
-				LOG.debug("commit_req: push txn " + v);
-			}
-			
-			while (!stack.isEmpty() && (v = stack.pop()) != null) {
-				while (!status.containsKey(v)) {
-					LOG.debug("waiting1: " + v);
-					throw new RuntimeException("1");
-				}
-				while (status.get(v) == STARTED) {
-					LOG.debug("waiting2: " + v);
-					throw new RuntimeException("2");
-				} 
-				LOG.debug("execute " + v);
-				if (pieces.get(v) != null) {
-					for (Piece p : pieces.get(v)) {
-						execute(p);
-						// remote the buffed piece
-						pieces.get(v).remove(p);
-						// remove the piece from conflict information
-						String theKey = RccUtil.buildString(p.getTable(), "_", p.getKey());
-						List<String> conflictPieces = pieces_conflict.get(theKey);
-						conflictPieces.remove(p.getTransactionId());
-						if (dep_server.containsKey(p.getTransactionId())) {
-							dep_server.remove(p.getTransactionId());
-							LOG.info("remote: " + p.getTransactionId());
-						}
-					}
-				}
-				status.put(v, DECIDED);
-			}
-			
-			LOG.debug("commit_req DONE: txn " + transactionId);
-			LOG.debug("status:  " + status.get(transactionId));
-			
-			pieces.remove(transactionId);
+
+		if (status.get(transactionId) == DECIDED) {
+			LOG.debug("commit_req *DONE: txn " + transactionId);
 			return true;
 		}
+		
+		String v = transactionId;
+		Stack<String> stack = new Stack<String>();
+		stack.push(transactionId);
+		while ((v = dep.vertexes.get(v)) != null) {
+			if (status.containsKey(v) && status.get(v) == DECIDED) {
+				break;
+			}
+			stack.push(v);
+			LOG.debug("commit_req: push txn " + v);
+		}
+
+		while (!stack.isEmpty() && (v = stack.pop()) != null) {
+			//if txn v does not involve S, we should not wait for the arrival of that txn
+//			if (pieces.get(v) == null) {
+//				continue;
+//			}
+			while (!status.containsKey(v)) {
+				LOG.debug("waiting1: " + v);
+				throw new RuntimeException("1");
+			}
+			while (status.get(v) == STARTED) {
+				try {
+					Thread.sleep(10);
+					LOG.debug("waiting2: " + v);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			LOG.debug("execute " + v);
+			if (pieces.get(v) != null) {
+				for (Piece p : pieces.get(v)) {
+					execute(p);
+					// remove the buffed piece
+					pieces.get(v).remove(p);
+					// remove the piece from conflict information
+					String theKey = RccUtil.buildString(p.getTable(), "_",
+							p.getKey());
+					List<String> conflictPieces = pieces_conflict.get(theKey);
+					conflictPieces.remove(p.getTransactionId());
+					if (dep_server.containsKey(p.getTransactionId())) {
+						dep_server.remove(p.getTransactionId());
+						LOG.info("remove: " + p.getTransactionId());
+					}
+				}
+			}
+			if (dep_server.containsKey(v)) {
+				dep_server.remove(v);
+				LOG.info("remove: " + v);
+			}
+			status.put(v, DECIDED);
+		}
+
+		LOG.debug("commit_req DONE: txn " + transactionId);
+		LOG.debug("status:  " + status.get(transactionId));
+
+		pieces.remove(transactionId);
+		return true;
 	}
 
 	public synchronized List<Map<String, String>> execute(Piece piece)
@@ -229,10 +240,6 @@ public class StorageNode {
 
 	public synchronized boolean write(String table, String key,
 			List<String> names, List<String> values) {
-//		if (table.equals("STOCK")) {
-//		LOG.info("write: " + table + " " + key);
-//		LOG.info("write: " + names + " " + values);
-//		}
 		return db.write(table, key, names, values);
 	}
 	

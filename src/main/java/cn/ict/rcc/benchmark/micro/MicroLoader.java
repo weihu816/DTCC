@@ -3,6 +3,7 @@ package cn.ict.rcc.benchmark.micro;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,12 +11,17 @@ import org.apache.commons.pool.KeyedObjectPool;
 import org.apache.commons.pool.impl.StackKeyedObjectPool;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.transport.TTransport;
 
 import cn.ict.rcc.Member;
+import cn.ict.rcc.benchmark.Procedure;
+import cn.ict.rcc.benchmark.tpcc.TPCCConstants;
+import cn.ict.rcc.benchmark.tpcc.TPCCGenerator;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.ThriftConnectionPool;
 import cn.ict.rcc.server.config.ServerConfiguration;
+import cn.ict.rcc.server.coordinator.txn.CoordinatorClient;
 
 /**
  * The loader function for initial state of micro benchmark
@@ -68,6 +74,4 @@ public class MicroLoader {
 		MicroLoader loader = new MicroLoader();
 		loader.load();
 	}
-	
-
 }

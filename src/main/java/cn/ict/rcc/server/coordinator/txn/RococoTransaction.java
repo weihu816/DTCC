@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,18 +26,16 @@ public class RococoTransaction {
 	
 	protected String transactionId;
 	protected boolean finished = false;
-	private Piece piece = null, tempPiece = null;
+	private Piece piece = null;
 	private List<Piece> pieces = new ArrayList<Piece>();
 	CoordinatorCommunicator communicator;
 	int piece_number;
 	private Map<Integer, List<Map<String, String>>> readSet = new ConcurrentHashMap<Integer, List<Map<String, String>>>();
 	ExecutorService cachedThreadPool;
-//	private Set<Edge> dep = new ConcurrentSkipListSet<Edge>();
-//	private RccGraph dep = new RccGraph();
+
 	Map<String, String> dep = new ConcurrentHashMap<String, String>();
 
 	public RococoTransaction() {
-//		communicator = new CoordinatorCommunicator();
 		communicator = CoordinatorCommunicator.getCoordinatorCommunicator();
 	}
 	
@@ -49,27 +46,6 @@ public class RococoTransaction {
 		cachedThreadPool = Executors.newCachedThreadPool();
 	}
 	
-	public boolean commit() throws TransactionException {
-		if (piece != null) {
-			throw new TransactionException("Commit a txn without complete the pieces");
-		}
-		this.finished = true;
-		try {
-			Graph graph = new Graph();
-			graph.setVertexes(dep);
-			if (communicator.secondRound(transactionId, pieces, graph)) {
-				dep.remove(transactionId);
-				LOG.info("remote: " + transactionId);
-			} else {
-				throw new RococoException("Fail to commit");
-			}
-		} catch (TException e) {
-			e.printStackTrace();
-		}
-		cachedThreadPool.shutdown();
-		return true;
-	}
-
 	public int createPiece(String table, String key, boolean immediate) throws TransactionException {
 		assertState();
 		if (piece != null) {
@@ -82,7 +58,7 @@ public class RococoTransaction {
 	
 	public void completePiece() {
 		pieces.add(piece);
-		tempPiece = piece;
+		Piece tempPiece = piece;
 		try {
 			MethodCallback callback = communicator.fistRound(tempPiece);
 			List<Map<String, String>> map = readSet.get(piece_number);
@@ -101,6 +77,27 @@ public class RococoTransaction {
 			e.printStackTrace();
 		}
 		piece = null;
+	}
+	
+	public boolean commit() throws TransactionException {
+		if (piece != null) {
+			throw new TransactionException("Commit a txn without complete the pieces");
+		}
+		this.finished = true;
+		try {
+			Graph graph = new Graph();
+			graph.setVertexes(dep);
+			if (communicator.secondRound(transactionId, pieces, graph)) {
+				dep.remove(transactionId);
+				LOG.info("remove: " + transactionId);
+			} else {
+				throw new RococoException("Fail to commit");
+			}
+		} catch (TException e) {
+			e.printStackTrace();
+		}
+		cachedThreadPool.shutdown();
+		return true;
 	}
 	
 	public String get(int piece_number, String key) {
@@ -217,6 +214,7 @@ public class RococoTransaction {
 		Vertex v = new Vertex(Action.DELETE);
 		piece.getVertexs().add(v);
 	}
+	
 	//---------------------------------------------------------
 	public String getTransactionId() {
 		return transactionId;

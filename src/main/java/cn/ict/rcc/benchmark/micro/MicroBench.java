@@ -1,7 +1,7 @@
 package cn.ict.rcc.benchmark.micro;
 
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,35 +35,23 @@ public class MicroBench {
 
 	public static void Micro() throws TransactionException {
 		
-		RococoTransaction t1 = fac.create();
-		RococoTransaction t2 = fac.create();
+		final RococoTransaction t1 = fac.create();
+		
 		t1.begin();
-		t2.begin();
 		
 		int num_piece1 = t1.createPiece("table1", "myKey", true);
-		t1.read("myValue");
 		t1.addvalueInteger("myValue", 1);
+		t1.read("myValue");
 		t1.completePiece();
-		String result1 = t1.get(num_piece1, "myValue");
-		LOG.debug("result1: " + result1);
-		
-		int num_piece2 = t2.createPiece("table1", "myKey", true);
-		t2.read("myValue");
-		t2.addvalueInteger("myValue", 1);
-		t2.completePiece();
-		String result2 = t2.get(num_piece2, "myValue");
-		LOG.debug("result1: " + result2);
-		
-		t2.createPiece("table2", result1, false);
-		t2.write("myValue", "1");
-		t2.completePiece();
-		
-		t1.createPiece("table2", result1, false);
+		LOG.debug("result1: " + t1.get(num_piece1, "myValue"));
+	
+		t1.createPiece("table2", "myKey", false);
 		t1.write("myValue", "1");
+		t1.read("myValue");
 		t1.completePiece();
 		
-		t2.commit();
 		t1.commit();
+
 	}
 	
 	public static void main(String[] args) {
@@ -71,7 +59,43 @@ public class MicroBench {
 		PropertyConfigurator.configure(CoordinatorClientConfiguration
 				.getConfiguration().getLogConfigFilePath());
 
+		int n = 4;
+		ExecutorService exec = Executors.newFixedThreadPool(n);
+		Future<Integer>[] futures = new Future[n];
+		int result = 0;
+		for (int i = 0; i < n; i++) {
+			futures[i] = exec.submit(new myTask());
+		}
+		
+		for (int i = 0; i < n; i++) {
+			try {
+				int x = futures[i].get();
+				System.err.println(x);
+				result += x;
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println(result);
+		exec.shutdownNow();
+	}
+	
+}
+
+class myTask implements Callable<Integer> {
+
+	@Override
+	public Integer call() throws Exception {
+		
+		int count = 0;
+		long start = System.currentTimeMillis();
 		CoordinatorClient client = CoordinatorClient.getCoordinatorClient();
-		client.callProcedure(Procedure.MICRO_BENCHMARK, new ArrayList<String>());
+
+		while (System.currentTimeMillis() - start < 10000) {
+			client.callProcedure(Procedure.MICRO_BENCHMARK, new ArrayList<String>());
+			count++;
+		}
+		return count;
+
 	}
 }

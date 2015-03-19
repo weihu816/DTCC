@@ -21,6 +21,7 @@ import cn.ict.rcc.Member;
 import cn.ict.rcc.exception.RococoException;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
+import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.ThriftConnectionPool;
 import cn.ict.rcc.messaging.ThriftNonBlockingConnectionPool;
@@ -63,7 +64,6 @@ public class CoordinatorCommunicator {
 		TNonblockingTransport transport = null;
 		try {
 			member = config.getShardMember(piece.getTable(), piece.getKey());
-			LOG.debug("fistRound(Piece piece) " + member.getHostName() + " " + member.getPort());
 			RococoCommunicationService.AsyncClient asyncClient = asyncClientPool.get(member);
 			if (asyncClient == null) {
 				transport = nonBlockingPool.borrowObject(member);
@@ -84,25 +84,31 @@ public class CoordinatorCommunicator {
 	public boolean secondRound(String transactionId, List<Piece> pieces,
 			Graph dep) throws TException {
 		LOG.debug("secondRound Txn: " + transactionId + " " + dep);
-		TTransport transport = null;
+		TNonblockingTransport transport = null;
 		Set<Member> members = new HashSet<Member>();
 		for (Piece p : pieces) {
 			members.add(config.getShardMember(p.getTable(), p.getKey()));
 		}
+		
 		for (Member member : members) {
-			RococoCommunicationService.Client client = clientPool.get(member);
-			if (client == null) {
-				try {
-					transport = blockingPool.borrowObject(member);
-				} catch (Exception e) {
+			try {
+				RococoCommunicationService.AsyncClient asyncClient = asyncClientPool.get(member);
+				if (asyncClient == null) {
+					transport = nonBlockingPool.borrowObject(member);
+					TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+					asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
+					asyncClientPool.put(member, asyncClient);
+				}
+				MethodCallback callback = new MethodCallback();
+				asyncClient.commit_req(transactionId, dep, callback);
+				callback.getResultSecondRound();
+			}
+			catch (Exception e) {
+				if (member != null) {
 					handleException(member.getHostName(), e);
 				}
-				client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
-				clientPool.put(member, client);
 			}
-			client.commit_req(transactionId, dep);
 		}
-
 		return true;
 	}
 

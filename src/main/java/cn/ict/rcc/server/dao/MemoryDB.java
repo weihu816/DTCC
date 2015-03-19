@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import cn.ict.rcc.exception.RococoException;
+import cn.ict.rcc.server.util.RccUtil;
 
 /**
  * A implementation of Memory Database
@@ -73,7 +74,6 @@ public class MemoryDB {
 	}
 
 	public boolean write(String table, String key, List<String> names, List<String> values) {
-
 		check(table);
 		if (names == null || values == null || values.size() != names.size()) {
 			return false;
@@ -115,7 +115,7 @@ public class MemoryDB {
 	}
 	
 	public boolean add(String table, String key, List<String> names, List<String> values, boolean isDecimal) {
-
+		LOG.debug(RccUtil.buildString("ADD: ", table, " ", key));
 		check(table);
 		if (names == null || values == null || values.size() != names.size()) {
 			return false;

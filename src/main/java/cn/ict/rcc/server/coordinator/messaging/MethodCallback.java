@@ -23,8 +23,19 @@ public class MethodCallback implements AsyncMethodCallback<Object> {
 				ie.printStackTrace();
 			}
 		}
-		ReturnType returnType = ((RococoCommunicationService.AsyncClient.start_req_call) response)
-				.getResult();
+		ReturnType returnType = ((RococoCommunicationService.AsyncClient.start_req_call) response).getResult();
+		return returnType;	
+	}
+	
+	public synchronized boolean getResultSecondRound() throws TException {
+		if (!done) {
+			try {
+				wait();
+			} catch (InterruptedException ie) {
+				ie.printStackTrace();
+			}
+		}
+		boolean returnType = ((RococoCommunicationService.AsyncClient.commit_req_call) response).getResult();
 		return returnType;	
 	}
 

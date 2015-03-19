@@ -16,17 +16,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import cn.ict.rcc.Member;
-import cn.ict.rcc.benchmark.tpcc.TPCCConstants;
-import cn.ict.rcc.benchmark.tpcc.TPCCScaleParameters;
 import cn.ict.rcc.exception.RococoException;
 
 public class ServerConfiguration {
 	
+	private static final String SHARDING_TPCC = "tpcc";
+	private static final String SHARDING_MICRO = "micro";
 	private int myShardId = 0;
 	private int myProcessId = 0;
 	private Map<Integer, Member[]> members = new HashMap<Integer, Member[]>();
 	private String logConfigfile = "conf/log4j-server.properties";
 	private String appServerUrl = "localhost:9190";
+	private String sharding = SHARDING_TPCC;
 	
 	private static final Log LOG = LogFactory.getLog(ServerConfiguration.class);
 		
@@ -38,6 +39,7 @@ public class ServerConfiguration {
 		
 		String shardIdValue = System.getProperty("rococo.shardId", properties.getProperty("rococo.shardId"));
 		String processIdValue = System.getProperty("rococo.processId", properties.getProperty("rococo.processId"));
+		sharding = System.getProperty("rococo.sharding", properties.getProperty("rococo.sharding"));
 		if (shardIdValue != null && processIdValue != null) {
 			myShardId = Integer.parseInt(shardIdValue);
 			myProcessId = Integer.parseInt(processIdValue);
@@ -97,7 +99,15 @@ public class ServerConfiguration {
 	}
 	
 	public Member getShardMember(String table, String key) {
-		return Sharding_tpcc.getShardMember(members, table, key);
+		switch (sharding) {
+		case SHARDING_TPCC:
+			return Sharding_tpcc.getShardMember(members, table, key);
+		case SHARDING_MICRO:
+			return Sharding_micro.getShardMember(members, table, key);
+		default:
+			break;
+		}
+		return null;
 	}
 	
 	public String getLogConfigFilePath(){

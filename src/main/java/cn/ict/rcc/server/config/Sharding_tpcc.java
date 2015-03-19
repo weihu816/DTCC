@@ -7,7 +7,6 @@ import org.apache.commons.logging.LogFactory;
 
 import cn.ict.rcc.Member;
 import cn.ict.rcc.benchmark.tpcc.TPCCConstants;
-import cn.ict.rcc.benchmark.tpcc.TPCCScaleParameters;
 
 public class Sharding_tpcc {
 	private static final Log LOG = LogFactory.getLog(Sharding_tpcc.class);

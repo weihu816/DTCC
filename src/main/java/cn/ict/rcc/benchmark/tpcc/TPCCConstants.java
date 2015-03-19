@@ -13,7 +13,7 @@ public final class TPCCConstants {
     
     public static final int NUM_WAREHOUSE = 1;				// number of warehouses - tunable 
 	public static final int ORDER_INIT_DELEVERED = 21;		// if (o_id > #e.g.2100) then it is not delivered when initilized
-	public static final int NODES_PER_WAREHOUSE = 8; 								// number of node/warehouuse 
+	public static final int NODES_PER_WAREHOUSE = 8; 		// number of node/warehouuse 
 	
 	
     public static final String TABLENAME_WAREHOUSE 	= "WAREHOUSE";
@@ -74,7 +74,7 @@ public final class TPCCConstants {
     public static final double 	MIN_TAX 			= 0;
     public static final double 	MAX_TAX 			= 0.2000;
     public static final int 	TAX_DECIMALS 		= 4;
-    public static final double 	INITIAL_W_YTD 		= 300000.00; // 300000.00? TODO: verify
+    public static final double 	INITIAL_W_YTD 		= 3000000.00; // TODO: verify
     public static final int 	MIN_NAME 			= 6;
     public static final int 	MAX_NAME 			= 10;
     public static final int 	MIN_STREET 			= 10;
@@ -92,13 +92,13 @@ public final class TPCCConstants {
     public static final int STOCK_PER_WAREHOUSE = 100000;
 
     // DISTRICT constants
-    public static final double INITIAL_D_YTD 		= 30000.00;  // different from Warehouse
-    public static final int INITIAL_NEXT_O_ID 		= 31;		 // 3001
-    public static final int DISTRICTS_PER_NODE = 10;											// number of districts/node
-	public static final int DISTRICTS_PER_WAREHOUSE = DISTRICTS_PER_NODE * NODES_PER_WAREHOUSE;	// 10 * 8
+    public static final double INITIAL_D_YTD 		= 30000.00;
+    public static final int INITIAL_NEXT_O_ID 		= 31;		 		// 3001
+    public static final int DISTRICTS_PER_NODE		= 10;				// number of districts/node
+	public static final int DISTRICTS_PER_WAREHOUSE = DISTRICTS_PER_NODE * NODES_PER_WAREHOUSE;
 
     // CUSTOMER constants
-    public static final int CUSTOMERS_PER_DISTRICT = 30;						// 3000
+    public static final int CUSTOMERS_PER_DISTRICT = 30;				// 3000
     public static final double INITIAL_CREDIT_LIM = 50000.00;
     public static final double MIN_DISCOUNT = 0.0000;
     public static final double MAX_DISCOUNT = 0.5000;

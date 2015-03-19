@@ -20,14 +20,11 @@ public class CoordinatorClientConfiguration {
 	private String logconfigfile = "conf/log4j-tools.properties";
 	
 	private CoordinatorClientConfiguration(Properties properties) {
-		
 		logconfigfile = properties.getProperty("logconfigfile", "conf/log4j-tools.properties");
 		appServerUrl = properties.getProperty("rococo.app.server");
-
 	}
 	
 	public static CoordinatorClientConfiguration getConfiguration() {
-		
 		
 		if (config == null) {
             synchronized (CoordinatorClientConfiguration.class) {

@@ -6,10 +6,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
+import cn.ict.rcc.exception.RococoException;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService.Iface;
+import cn.ict.rcc.server.util.RccUtil;
 
 /**
  * Server Service Handler
@@ -46,6 +48,12 @@ public class ServerCommunicationServiceHandler implements Iface {
 
 	@Override
 	public boolean commit_req(String transactionId, Graph dep) throws TException {
+		if (node.status.get(transactionId) == StorageNode.STARTED) {
+			node.status.put(transactionId, StorageNode.COMMITTING);
+		} else {
+			throw new RococoException("ERROR: DECIDED");
+		}
+		LOG.debug("*** commit_req txn " + transactionId);
 		return node.commit_req(transactionId, dep);
 	}
 
