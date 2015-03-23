@@ -15,7 +15,6 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import cn.ict.rcc.Member;
 import cn.ict.rcc.exception.RococoException;
 
 public class ServerConfiguration {

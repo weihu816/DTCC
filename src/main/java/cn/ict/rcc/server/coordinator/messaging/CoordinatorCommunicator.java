@@ -17,7 +17,6 @@ import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
 import org.apache.thrift.transport.TTransport;
 
-import cn.ict.rcc.Member;
 import cn.ict.rcc.exception.RococoException;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
@@ -25,6 +24,7 @@ import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.ThriftConnectionPool;
 import cn.ict.rcc.messaging.ThriftNonBlockingConnectionPool;
+import cn.ict.rcc.server.config.Member;
 import cn.ict.rcc.server.config.ServerConfiguration;
 
 /**

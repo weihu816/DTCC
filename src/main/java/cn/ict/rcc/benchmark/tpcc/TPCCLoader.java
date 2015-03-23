@@ -16,9 +16,9 @@ import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TTransport;
 
-import cn.ict.rcc.Member;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.ThriftConnectionPool;
+import cn.ict.rcc.server.config.Member;
 import cn.ict.rcc.server.config.ServerConfiguration;
 
 /**

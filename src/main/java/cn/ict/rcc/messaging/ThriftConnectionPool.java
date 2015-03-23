@@ -5,7 +5,7 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
-import cn.ict.rcc.Member;
+import cn.ict.rcc.server.config.Member;
 
 public class ThriftConnectionPool extends BaseKeyedPoolableObjectFactory<Member,TTransport> {
 

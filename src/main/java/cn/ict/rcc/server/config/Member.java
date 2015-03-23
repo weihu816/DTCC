@@ -1,4 +1,4 @@
-package cn.ict.rcc;
+package cn.ict.rcc.server.config;
 
 import cn.ict.rcc.exception.RococoException;
 /**

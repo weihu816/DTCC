@@ -14,12 +14,12 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.transport.TTransport;
 
-import cn.ict.rcc.Member;
 import cn.ict.rcc.benchmark.Procedure;
 import cn.ict.rcc.benchmark.tpcc.TPCCConstants;
 import cn.ict.rcc.benchmark.tpcc.TPCCGenerator;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.ThriftConnectionPool;
+import cn.ict.rcc.server.config.Member;
 import cn.ict.rcc.server.config.ServerConfiguration;
 import cn.ict.rcc.server.coordinator.txn.CoordinatorClient;
 

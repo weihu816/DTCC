@@ -2,8 +2,6 @@ package cn.ict.rcc.server.config;
 
 import java.util.Map;
 
-import cn.ict.rcc.Member;
-
 public class Sharding_micro {
 	public static Member getShardMember(Map<Integer,Member[]> members, String table, String key) {
 		switch (table) {

@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.commons.pool.BaseKeyedPoolableObjectFactory;
 import org.apache.thrift.transport.TNonblockingSocket;
 
-import cn.ict.rcc.Member;
+import cn.ict.rcc.server.config.Member;
 
 public class ThriftNonBlockingConnectionPool extends BaseKeyedPoolableObjectFactory<Member,TNonblockingSocket> {
 

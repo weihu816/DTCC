@@ -5,7 +5,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import cn.ict.rcc.Member;
 import cn.ict.rcc.benchmark.tpcc.TPCCConstants;
 
 public class Sharding_tpcc {
