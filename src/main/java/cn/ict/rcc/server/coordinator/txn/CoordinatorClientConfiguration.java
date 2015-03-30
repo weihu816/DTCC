@@ -8,7 +8,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import cn.ict.rcc.exception.RococoException;
+import cn.ict.dtcc.exception.DTCCException;
 
 public class CoordinatorClientConfiguration {
 	
@@ -38,7 +38,7 @@ public class CoordinatorClientConfiguration {
                     } catch (IOException e) {
                         String msg = "Error loading CoordinatorClient configuration from: " + configFile.getPath();
                         log.error(msg, e);
-                        throw new RococoException(msg, e);
+                        throw new DTCCException(msg, e);
                     }
                 }
             }

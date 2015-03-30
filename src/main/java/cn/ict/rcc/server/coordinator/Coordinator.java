@@ -12,20 +12,21 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import cn.ict.dtcc.config.AppServerConfiguration;
+import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.rcc.messaging.RococoCoordinator;
-import cn.ict.rcc.server.config.ServerConfiguration;
 
 
 public class Coordinator {
 
 	private static final Log log = LogFactory.getLog(Coordinator.class);
 	
-	private ServerConfiguration configuration;
+	private AppServerConfiguration configuration;
     private TServer server;
     private ExecutorService exec;
     
     public Coordinator() {
-        this.configuration = ServerConfiguration.getConfiguration();
+        this.configuration = AppServerConfiguration.getConfiguration();
 	}
     
 	public void startListener() {

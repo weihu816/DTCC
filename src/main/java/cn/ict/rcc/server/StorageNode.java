@@ -16,14 +16,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
 
+import cn.ict.dtcc.config.ServerConfiguration;
+import cn.ict.dtcc.util.RccUtil;
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
-import cn.ict.rcc.server.config.ServerConfiguration;
 import cn.ict.rcc.server.dao.MemoryDB;
-import cn.ict.rcc.server.util.RccUtil;
 
 public class StorageNode {
 
@@ -59,7 +59,7 @@ public class StorageNode {
 
 	// ---------------------------------------------------------------
 	public synchronized ReturnType start_req(Piece piece) throws TException {
-		LOG.debug("start_req(piece)");
+		LOG.debug("start_req (piece) txn: " + piece.transactionId + " " + piece.table + " " + piece.key);
 
 		if (status.get(piece.transactionId) == null) {
 			status.put(piece.transactionId, STARTED);
@@ -73,7 +73,7 @@ public class StorageNode {
 		if (piece.isImmediate() && conflictPieces != null && conflictPieces.size() > 0) {
 			String p_id = conflictPieces.get(conflictPieces.size() - 1);
 			if (!p_id.equals(piece.getTransactionId()) && status.get(p_id) != DECIDED) {
-				LOG.debug(piece.getTransactionId() + "<-" + p_id);
+				LOG.info(piece.getTransactionId() + "<-" + p_id);
 				dep_server.put(piece.getTransactionId(), p_id);
 			}
 		}
@@ -86,7 +86,7 @@ public class StorageNode {
 			pieces_conflict.put(theKey, conflictPieces);
 		}
 		if (!piece.isImmediate()) {
-			LOG.debug("Put txn: " + piece.transactionId);
+			LOG.debug("Put txn: " + piece.transactionId + " " + piece.table + " " + piece.key);
 			Set<Piece> allPieces = pieces.get(piece.getTransactionId());
 			if (allPieces == null) {
 				allPieces = new ConcurrentSkipListSet<Piece>();
@@ -108,10 +108,10 @@ public class StorageNode {
 
 	public synchronized boolean commit_req(String transactionId, Graph dep) throws TException {
 			
-		LOG.debug("commit_req(String transactionId, Piece piece): txn " + transactionId);
+		LOG.debug("commit_req (piece) txn: " + transactionId + " " + dep);
 
 		if (status.get(transactionId) == DECIDED) {
-			LOG.debug("commit_req *DONE: txn " + transactionId);
+			LOG.debug("commit_req already done *DONE: txn " + transactionId);
 			return true;
 		}
 		

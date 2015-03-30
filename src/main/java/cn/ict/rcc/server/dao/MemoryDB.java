@@ -12,8 +12,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import cn.ict.rcc.exception.RococoException;
-import cn.ict.rcc.server.util.RccUtil;
+import cn.ict.dtcc.exception.DTCCException;
+import cn.ict.dtcc.util.RccUtil;
 
 /**
  * A implementation of Memory Database
@@ -70,7 +70,6 @@ public class MemoryDB {
 			}
 		}
 		return list;
-		
 	}
 
 	public boolean write(String table, String key, List<String> names, List<String> values) {
@@ -123,10 +122,10 @@ public class MemoryDB {
 		int size = names.size();
 		Record r = db.get(table).get(key);
 		if (r == null) {
-			throw new RococoException("No such element table:" + table + " key: "+ key);
+			throw new DTCCException("No such element table:" + table + " key: "+ key);
 		}
 		for (int i = 0; i < size; i++) {
-			LOG.debug("Table: " + table + " Key: " + key + " Add: " + names.get(i) + values.get(i));
+//			LOG.debug("Table: " + table + " Key: " + key + " Add: " + names.get(i) + values.get(i));
 			String new_value;
 			if (isDecimal) {
 				new_value = String.valueOf(Float.parseFloat(r.get(names.get(i))) + Float.parseFloat(values.get(i)));
