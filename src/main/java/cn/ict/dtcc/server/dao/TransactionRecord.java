@@ -1,13 +1,13 @@
-package cn.ict.occ.server.dao;
+package cn.ict.dtcc.server.dao;
 
-import cn.ict.occ.server.dao.Option;
+import cn.ict.occ.appserver.Option;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class TransactionRecord extends Cacheable {
+public class TransactionRecord {
 
     public static final int STATUS_UNDECIDED = 100;
     public static final int STATUS_COMMITTED = 101;

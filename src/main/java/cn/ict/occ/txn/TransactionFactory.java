@@ -1,7 +1,7 @@
 package cn.ict.occ.txn;
 
 import cn.ict.occ.appserver.AppServer;
-import cn.ict.occ.messaging.AppServerService;
+import cn.ict.occ.appserver.AppServerService;
 
 public class TransactionFactory {
 	

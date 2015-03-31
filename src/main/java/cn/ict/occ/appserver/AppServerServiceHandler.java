@@ -1,10 +1,12 @@
-package cn.ict.occ.messaging;
+package cn.ict.occ.appserver;
 
 import java.util.List;
 
 import org.apache.thrift.TException;
 
-import cn.ict.occ.appserver.AppServer;
+import cn.ict.occ.messaging.OCCAppServerService;
+import cn.ict.occ.messaging.Option;
+import cn.ict.occ.messaging.ReadValue;
 import cn.ict.occ.messaging.OCCAppServerService.Iface;
 
 public class AppServerServiceHandler implements Iface{

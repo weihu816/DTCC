@@ -3,7 +3,6 @@ package cn.ict.occ.benchmark.tpcc;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -22,7 +21,7 @@ import cn.ict.dtcc.config.AppServerConfiguration;
 import cn.ict.dtcc.config.Member;
 import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.dtcc.messaging.ThriftConnectionPool;
-import cn.ict.rcc.messaging.RococoCommunicationService;
+import cn.ict.occ.messaging.OCCCommunicationService;
 
 /**
  * The loader function for initial state of tpcc benchmark
@@ -33,7 +32,7 @@ public class TPCCLoader {
 	private static final Log LOG = LogFactory.getLog(TPCCLoader.class);
 	private KeyedObjectPool<Member, TTransport> blockingPool = new 
 			StackKeyedObjectPool<Member, TTransport>(new ThriftConnectionPool());
-	private HashMap<Member, RococoCommunicationService.Client> clientPool = new HashMap<Member, RococoCommunicationService.Client>();
+//	private HashMap<Member, OCCCommunicationService.Client> clientPool = new HashMap<Member, OCCCommunicationService.Client>();
 	private AppServerConfiguration config;
 	
 	
@@ -60,41 +59,68 @@ public class TPCCLoader {
 	private boolean write(String table, String key, List<String> names, List<String> values) {
 		Member member = null;
 		TTransport transport = null;
+		boolean error = false;
 		try {
 			member = config.getShardMember(table, key);
-			RococoCommunicationService.Client client = clientPool.get(member);
-			if (client == null) {
+//			OCCCommunicationService.Client client = clientPool.get(member);
+//			if (client == null) {
 				transport = blockingPool.borrowObject(member);
-				client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
-				clientPool.put(member, client);
-			}
+				OCCCommunicationService.Client client = new OCCCommunicationService.Client(new TBinaryProtocol(transport));
+//				clientPool.put(member, client);
+//			}
 			return client.write(table, key, names, values);
 		} catch (Exception e) {
+            error = true;
 			if (member != null) {
-				String msg = "Error contacting the remote member: " + member.getHostName() + member.getPort();
+				String msg = "Error contacting the remote member: " + member.getHostName() + ":" +  member.getPort();
 				LOG.warn(msg, e);
 			}
 			return false;
-		}
+		} finally {
+            if (transport != null) {
+                try {
+                    if (error) {
+                        blockingPool.invalidateObject(member, transport);
+                    } else {
+                        blockingPool.returnObject(member, transport);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
 	}
 	
 	private boolean createSecondaryIndex(String table, List<String> fields) {
 		TTransport transport = null;
-		try {
+		boolean error = false;
+		
 			for(Member member : config.getMembers()) {
-				RococoCommunicationService.Client client = clientPool.get(member);
-				if (client == null) {
-					transport = blockingPool.borrowObject(member);
-					client = new RococoCommunicationService.Client(new TBinaryProtocol(transport));
-					clientPool.put(member, client);
-				}
+//				OCCCommunicationService.Client client = clientPool.get(member);
+//				if (client == null) {
+				try {
+				transport = blockingPool.borrowObject(member);
+				OCCCommunicationService.Client client = new OCCCommunicationService.Client(new TBinaryProtocol(transport));
+//					clientPool.put(member, client);
+//				}
 				client.createSecondaryIndex(table, fields);
+				} catch (Exception e) {
+		            error = true;
+					e.printStackTrace();
+					return false;
+				}  finally {
+		            if (transport != null) {
+		                try {
+		                    if (error) {
+		                        blockingPool.invalidateObject(member, transport);
+		                    } else {
+		                        blockingPool.returnObject(member, transport);
+		                    }
+		                } catch (Exception ignored) {
+		                }
+		            }
+		        }
 			}
 			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
 	}
 	
 	/*

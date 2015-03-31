@@ -1,4 +1,4 @@
-package cn.ict.rcc.server.dao;
+package cn.ict.dtcc.server.dao;
 
 import java.util.HashMap;
 import java.util.List;

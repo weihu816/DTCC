@@ -1,5 +1,6 @@
 package cn.ict.occ.server;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.thrift.TException;
@@ -19,6 +20,7 @@ public class OCCCommunicationServiceHandler implements Iface{
 	
 	@Override
 	public boolean ping() throws TException {
+		System.out.println("received ping");
 		return true;
 	}
 
@@ -36,13 +38,17 @@ public class OCCCommunicationServiceHandler implements Iface{
 
 	@Override
 	public List<Boolean> bulkAccept(List<Accept> accepts) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<Boolean> responses = new ArrayList<Boolean>(accepts.size());
+		for (Accept accept : accepts) {
+			responses.add(storageNode.onAccept(toPaxosAccept(accept)));
+		}
+		return responses;
 	}
 
 	@Override
 	public void decide(String transaction, boolean commit) throws TException {
-		// TODO Auto-generated method stub
+		storageNode.onDecide(transaction, commit);
 		
 	}
 
@@ -65,5 +71,22 @@ public class OCCCommunicationServiceHandler implements Iface{
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public boolean write(String table, String key, List<String> names,
+			List<String> values) throws TException {
+		return storageNode.write(table, key, names, values);
+	}
+
+	@Override
+	public boolean createSecondaryIndex(String table, List<String> fields)
+			throws TException {
+		return storageNode.createSecondaryIndex(table, fields);
+	}
+	
+	private cn.ict.occ.appserver.Accept toPaxosAccept(Accept a) {
+    	return new cn.ict.occ.appserver.Accept(a.getTransactionId(),
+                a.getTable(), a.getKey(), a.getOldVersion(), a.getNames(), a.getNewValues());
+    }
 
 }

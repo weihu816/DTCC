@@ -1,4 +1,4 @@
-package cn.ict.occ.appserver;
+package cn.ict.occ.messaging;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import cn.ict.dtcc.exception.TransactionException;
-import cn.ict.occ.server.dao.Option;
+import cn.ict.occ.appserver.Option;
 
 public abstract class Transaction {
 
@@ -134,7 +134,7 @@ public abstract class Transaction {
             if (!toRead) {
             	// We have already read this object.
                 // Update the value in the read-set so future reads can see this write.
-                option = new Option(table, key, writeValues, result.getVersion());
+                option = new Option(table, key, names, values, result.getVersion());
                 result.getValues().putAll(writeValues);
             }
         } 
@@ -151,7 +151,7 @@ public abstract class Transaction {
                 // see this write.
                 result.getValues().putAll(writeValues);
             }
-            option = new Option(table, key, writeValues, result.getVersion());
+            option = new Option(table, key, names, values, result.getVersion());
             if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
             readSet.get(table).put(key, result);
         }

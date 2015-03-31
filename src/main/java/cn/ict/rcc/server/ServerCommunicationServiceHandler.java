@@ -7,7 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import cn.ict.dtcc.exception.DTCCException;
-import cn.ict.dtcc.util.RccUtil;
+import cn.ict.dtcc.util.DTCCUtil;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;

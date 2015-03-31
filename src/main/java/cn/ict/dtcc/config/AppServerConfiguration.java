@@ -34,7 +34,7 @@ public class AppServerConfiguration {
 	
 	private AppServerConfiguration(Properties properties) {
 		logConfigfile = properties.getProperty("logConfigfile", "conf/log4j-server.properties");
-		appServerUrl = properties.getProperty("dtcc.coordinator");
+		appServerUrl = properties.getProperty("dtcc.app.server", "localhost:9190");
 		
 		String shardIdValue = System.getProperty("dtcc.shardId", properties.getProperty("dtcc.shardId"));
 		String processIdValue = System.getProperty("dtcc.processId", properties.getProperty("dtcc.processId"));

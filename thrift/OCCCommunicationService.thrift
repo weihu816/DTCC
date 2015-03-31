@@ -40,6 +40,10 @@ service OCCCommunicationService {
   
   ReadValue readIndexFetchMiddle(1:string table, 2:string keyIndex, 3:string orderField, 4:bool isAssending),
   
+  bool write(1:string table, 2:string key, 3:list<string> names, 4:list<string> values),
+  
+  bool createSecondaryIndex(1:string table, 2:list<string> fields)
+  
   //list<ReadValue> read4(1:string table, 2:string key_prefix, 3:string projectionColumn, 4:string constraintColumn, 5:i32 lowerBound, 6:i32 upperBound),
   
   //i32 read5(1:string table, 2:string key_prefix, 3:string constraintColumn, 4:i32 lowerBound, 5:i32 upperBound),

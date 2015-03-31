@@ -17,13 +17,13 @@ import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
 
 import cn.ict.dtcc.config.ServerConfiguration;
-import cn.ict.dtcc.util.RccUtil;
+import cn.ict.dtcc.server.dao.MemoryDB;
+import cn.ict.dtcc.util.DTCCUtil;
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.Vertex;
-import cn.ict.rcc.server.dao.MemoryDB;
 
 public class StorageNode {
 
@@ -64,7 +64,7 @@ public class StorageNode {
 		if (status.get(piece.transactionId) == null) {
 			status.put(piece.transactionId, STARTED);
 		}
-		String theKey = RccUtil.buildString(piece.getTable(), "_", piece.getKey());
+		String theKey = DTCCUtil.buildString(piece.getTable(), "_", piece.getKey());
 		
 		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 
@@ -150,7 +150,7 @@ public class StorageNode {
 					// remove the buffed piece
 					pieces.get(v).remove(p);
 					// remove the piece from conflict information
-					String theKey = RccUtil.buildString(p.getTable(), "_",
+					String theKey = DTCCUtil.buildString(p.getTable(), "_",
 							p.getKey());
 					List<String> conflictPieces = pieces_conflict.get(theKey);
 					conflictPieces.remove(p.getTransactionId());

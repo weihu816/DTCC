@@ -1,6 +1,7 @@
-package cn.ict.occ.server;
+package cn.ict.occ.appserver;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,12 +23,14 @@ import org.apache.thrift.transport.TTransportException;
 
 import cn.ict.dtcc.config.Member;
 import cn.ict.dtcc.exception.OCCException;
+import cn.ict.dtcc.messaging.AsyncMethodCallbackDecorator;
 import cn.ict.dtcc.messaging.ThriftConnectionPool;
 import cn.ict.dtcc.messaging.ThriftNonBlockingConnectionPool;
+import cn.ict.occ.messaging.Accept;
 import cn.ict.occ.messaging.OCCCommunicationService;
 import cn.ict.occ.messaging.ReadValue;
-import cn.ict.occ.messaging.OCCCommunicationService.Client;
-import cn.ict.occ.messaging.OCCCommunicationService.Processor;
+import cn.ict.occ.server.OCCCommunicationServiceHandler;
+import cn.ict.occ.server.StorageNode;
 
 public class OCCCommunicator {
 
@@ -103,6 +106,52 @@ public class OCCCommunicator {
             }
         }
 	}
+	
+	public void sendBulkAcceptAsync(BulkVoteCounter counter, Member member, List<cn.ict.occ.appserver.Accept> accepts) {
+		AsyncMethodCallbackDecorator callback = null;
+		try {
+            TNonblockingSocket socket = nonBlockingPool.borrowObject(member);
+            callback = new AsyncMethodCallbackDecorator(counter, socket, member, nonBlockingPool);
+            TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+            OCCCommunicationService.AsyncClient client =
+                    new OCCCommunicationService.AsyncClient(protocolFactory, clientManager, socket);
+            ArrayList<Accept> tAccepts = new ArrayList<Accept>(accepts.size());
+            for (cn.ict.occ.appserver.Accept accept : accepts) {
+            	tAccepts.add(toThriftAccept(accept));
+            }
+            client.bulkAccept(tAccepts, callback);
+        } catch (Exception e) {
+            if (callback != null) {
+                callback.onError(e);
+            } else {
+            	counter.onError(e);
+            }
+            handleException(member.getHostName(), e);
+        }
+	}
+	
+	public boolean sendDecideAsync(Member member, String transaction, boolean commit) {
+        AsyncMethodCallbackDecorator callback = null;
+        try {
+            TNonblockingSocket socket = nonBlockingPool.borrowObject(member);
+            callback = new AsyncMethodCallbackDecorator(socket, member, nonBlockingPool);
+            TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+            OCCCommunicationService.AsyncClient client =
+                    new OCCCommunicationService.AsyncClient(protocolFactory, clientManager, socket);
+            client.decide(transaction, commit, callback);
+        } catch (Exception e) {
+            if (callback != null) {
+                callback.onError(e);
+            }
+            handleException(member.getHostName(), e);
+        }
+        return true;
+    }
+
+	private Accept toThriftAccept(cn.ict.occ.appserver.Accept accept) {
+		return new Accept(accept.getTransactionId(), accept.getTable(),
+				 accept.getKey(), accept.getNames(), accept.getValues(), accept.getOldVersion());
+    }
 	
 	private void handleException(String target, Exception e) {
         String msg = "Error contacting the remote member: " + target;

@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 
 import cn.ict.dtcc.exception.TransactionException;
-import cn.ict.occ.appserver.Result;
-import cn.ict.occ.appserver.Transaction;
-import cn.ict.occ.messaging.AppServerService;
-import cn.ict.occ.server.dao.Option;
+import cn.ict.occ.appserver.AppServerService;
+import cn.ict.occ.appserver.Option;
+import cn.ict.occ.messaging.Result;
+import cn.ict.occ.messaging.Transaction;
 
 
 public class OCCTransaction extends Transaction {
@@ -26,10 +26,10 @@ public class OCCTransaction extends Transaction {
     @Override
     protected void doCommit(String transactionId,
                             Collection<Option> options) throws TransactionException {
-//        boolean success = appServer.commit(transactionId, options);
-//        if (!success) {
-//            throw new TransactionException("Failed to commit txn: " + transactionId);
-//        }
+        boolean success = appServer.commit(transactionId, options);
+        if (!success) {
+            throw new TransactionException("Failed to commit txn: " + transactionId);
+        }
     }
 
 	

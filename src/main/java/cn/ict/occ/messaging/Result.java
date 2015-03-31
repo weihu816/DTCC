@@ -1,4 +1,4 @@
-package cn.ict.occ.appserver;
+package cn.ict.occ.messaging;
 
 import java.util.Map;
 
