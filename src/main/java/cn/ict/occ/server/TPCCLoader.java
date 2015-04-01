@@ -1,4 +1,4 @@
-package cn.ict.occ.benchmark.tpcc;
+package cn.ict.occ.server;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
