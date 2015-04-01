@@ -49,7 +49,7 @@ public class Record {
     }
     
     public void setValues(Map<String, String> values) {
-		this.values = values;
+		this.values.putAll(values);
 	}
 
     // getter

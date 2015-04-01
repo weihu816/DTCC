@@ -1,4 +1,4 @@
-package cn.ict.occ.messaging;
+package cn.ict.occ.appserver;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import cn.ict.dtcc.exception.TransactionException;
-import cn.ict.occ.appserver.Option;
+import cn.ict.occ.messaging.Result;
 
 public abstract class Transaction {
 
@@ -115,7 +115,7 @@ public abstract class Transaction {
     public synchronized void write(String table, String key, List<String> names, List<String> values) throws TransactionException {
         assertState();
         
-        boolean toRead = false;
+        boolean toRead = true;
         Map<String, String> writeValues = new HashMap<String, String>();
         for (int i = 0; i < names.size(); i++) {
         	writeValues.put(names.get(i), values.get(i));
@@ -123,6 +123,7 @@ public abstract class Transaction {
 
         Option option = null;
         if (readSet.containsKey(table) && readSet.get(table).containsKey(key)) {
+        	toRead = false;
             Result result = readSet.get(table).get(key);
             Map<String, String> readValues = result.getValues();
             for (String name : names) {

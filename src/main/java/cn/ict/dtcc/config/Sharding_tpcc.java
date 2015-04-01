@@ -67,9 +67,8 @@ public class Sharding_tpcc {
 			procId = (procId - 1) % TPCCConstants.NODES_PER_WAREHOUSE;
 			return members.get(shardId - 1)[procId];
 		default:
-			break;
+			return members.get(0)[0];
 		}
-		return null;
 	}
 
 //	public static MemberId getShardId(String table, String key) {

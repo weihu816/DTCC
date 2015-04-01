@@ -14,7 +14,6 @@ import cn.ict.dtcc.server.dao.MemoryDB;
 import cn.ict.dtcc.server.dao.Record;
 import cn.ict.dtcc.server.dao.TransactionRecord;
 import cn.ict.occ.appserver.Accept;
-import cn.ict.occ.appserver.OCCCommunicator;
 import cn.ict.occ.appserver.Option;
 import cn.ict.occ.messaging.ReadValue;
 
@@ -47,10 +46,14 @@ public class StorageNode {
     
     public ReadValue onRead(String table, String key, List<String> names) {
         Record record = db.get(table, key);
+        
         List<String> values = new ArrayList<String>();
-        for (String name : names) {
-        	values.add(record.getValue(name));
+        if (record.getVersion() > 0) {
+        	for (String name : names) {
+        		values.add(record.getValue(name));
+        	}
         }
+        LOG.debug("Return "+ values);
         return new ReadValue(record.getVersion(), values);
     }
     
@@ -58,16 +61,19 @@ public class StorageNode {
     	
         if (LOG.isDebugEnabled()) { LOG.debug("Received accept message: " + accept); }
 
-        String table = accept.getTable();
-        String key = accept.getKey();
-        String transaction = accept.getTransactionId();
-        long oldVersion = accept.getOldVersion();
-        List<String> names = accept.getNames();
+        String table 		= accept.getTable();
+        String key   		= accept.getKey();
+        String transaction 	= accept.getTransactionId();
+        long oldVersion 	= accept.getOldVersion();
+        List<String> names 	= accept.getNames();
         List<String> values = accept.getValues();
 
         synchronized (table.intern()) {
         	synchronized (key.intern()) {
-                Record record = db.get(table, key);
+
+        		Record record = db.get(table, key);
+                
+        		// if record has been written by another transaction
                 if (record.getOutstanding() != null && !transaction.equals(record.getOutstanding())) {
                 	LOG.warn("Outstanding option detected on " + table + " " +  key + " - Denying the new option (" + record.getOutstanding() + ")");
                     synchronized (transaction.intern()) {
@@ -98,11 +104,12 @@ public class StorageNode {
                     }
                     return false;
                 }
-        
+
+        		// succeed if the version of the record is equal to version of Accept
 				long version = record.getVersion();
 				boolean success = (version == oldVersion);
 
-				if (success) { 
+				if (success) {
 					record.setOutstanding(transaction);
 					db.weakPut(record);
 					LOG.debug("option accepted");
@@ -159,6 +166,7 @@ public class StorageNode {
 	                            record.setValues(writeValues);
 	                            record.setOutstanding(null);
 	                            db.put(record);
+	                            
 	                        }
 						}
                     }
@@ -167,6 +175,7 @@ public class StorageNode {
             } else {
             	LOG.info("Received Abort on transaction id: " + transaction);
                 for (Option option : txnRecord.getOptions()) {
+                	
 					synchronized (option.getTable().intern()) {
 						synchronized (option.getKey().intern()) {
 							Record record = db.get(option.getTable(), option.getKey());
@@ -176,6 +185,7 @@ public class StorageNode {
 							db.put(record);
 						}
 					}
+					
                     LOG.debug("[ABORT] Not saving option to DB");
                 }
             }

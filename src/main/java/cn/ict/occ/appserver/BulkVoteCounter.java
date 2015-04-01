@@ -1,9 +1,6 @@
 package cn.ict.occ.appserver;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,8 +11,7 @@ import cn.ict.occ.messaging.OCCCommunicationService.AsyncClient.bulkAccept_call;
 
 public class BulkVoteCounter implements AsyncMethodCallback {
 
-	private static final Log log = LogFactory
-			.getLog(BulkVoteCounter.class);
+	private static final Log log = LogFactory.getLog(BulkVoteCounter.class);
 
 	private VoteListener callback;
 	List<Option> options;
@@ -48,16 +44,16 @@ public class BulkVoteCounter implements AsyncMethodCallback {
 	}
 
 	private void onAccept(int i) {
-		if (log.isDebugEnabled()) {
-			log.debug("Key=" + options.get(i).getKey() + " accept " + this.hashCode());
-		}
+//		if (log.isDebugEnabled()) {
+//			log.info("Key=" + options.get(i).getKey() + " accept " + this.hashCode());
+//		}
 		callback.notifyOutcome(options.get(i), true);
 	}
 
 	private void onReject(int i) {
-		if (log.isDebugEnabled()) {
-			log.info("Key=" + options.get(i).getKey() + " reject " + this.hashCode());
-		}
+//		if (log.isDebugEnabled()) {
+//			log.info("Key=" + options.get(i).getKey() + " reject " + this.hashCode());
+//		}
 		callback.notifyOutcome(options.get(i), false);
 	}
 }

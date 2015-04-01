@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 
 import cn.ict.dtcc.config.AppServerConfiguration;
 import cn.ict.dtcc.config.Member;
+import cn.ict.occ.server.OCCCommunicator;
 
 public class VoteListener {
 

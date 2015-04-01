@@ -1,4 +1,4 @@
-package cn.ict.occ.appserver;
+package cn.ict.occ.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,11 +26,10 @@ import cn.ict.dtcc.exception.OCCException;
 import cn.ict.dtcc.messaging.AsyncMethodCallbackDecorator;
 import cn.ict.dtcc.messaging.ThriftConnectionPool;
 import cn.ict.dtcc.messaging.ThriftNonBlockingConnectionPool;
+import cn.ict.occ.appserver.BulkVoteCounter;
 import cn.ict.occ.messaging.Accept;
 import cn.ict.occ.messaging.OCCCommunicationService;
 import cn.ict.occ.messaging.ReadValue;
-import cn.ict.occ.server.OCCCommunicationServiceHandler;
-import cn.ict.occ.server.StorageNode;
 
 public class OCCCommunicator {
 

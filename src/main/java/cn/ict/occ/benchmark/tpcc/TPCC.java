@@ -1,4 +1,6 @@
 package cn.ict.occ.benchmark.tpcc;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -41,80 +43,75 @@ public class TPCC {
 		String key_district = (TPCCGenerator.buildString(w_id, "_", d_id));
 		columns = TPCCGenerator.buildColumns("d_next_o_id", "d_tax");
 		values = transaction.read(TPCCConstants.TABLENAME_DISTRICT, key_district, columns);
-
+		int o_id = Integer.parseInt(values.get(0));
 		LOG.debug("d_next_o_id = " + values.get(0));
 		LOG.debug("d_tax = " + values.get(1));
+		
+		columns = TPCCGenerator.buildColumns("d_next_o_id");
+		values = TPCCGenerator.buildColumns(o_id + 1);
+		transaction.write(TPCCConstants.TABLENAME_DISTRICT, key_district, columns, values);
+		
+		// PIECE 2 R warehouse
+		// read w_tax, immediate ! READONLY
+		String key_warehouse = String.valueOf(w_id);
+		columns = TPCCGenerator.buildColumns("w_tax");
+		values = transaction.read(TPCCConstants.TABLENAME_WAREHOUSE, key_warehouse, columns);
+		
+		float w_tax = Float.parseFloat(values.get(0));
+		LOG.debug("w_tax = " + values.get(0));
+		
+		// PIECE 3 R customer
+		String key_customer = TPCCGenerator.buildString(w_id, "_", d_id, "_", c_id);
+		columns = TPCCGenerator.buildColumns ("c_last", "c_credit", "c_discount");
+		values = transaction.read(TPCCConstants.TABLENAME_CUSTOMER, key_customer, columns);
 
-//		// PIECE 2 R warehouse
-//		// read w_tax, immediate ! READONLY
-//		String key_warehouse = String.valueOf(w_id);
-//		columns = TPCCGenerator.buildColumns("w_tax");
-//		int pieceNum_warehouse = transaction.createPiece(TPCCConstants.TABLENAME_WAREHOUSE, key_warehouse, true);
-//		transaction.readSelect(columns);
-//		transaction.completePiece();
-//
-//		float w_tax = Float.valueOf(transaction.get(pieceNum_warehouse, "w_tax"));
-//		LOG.debug("Piece 2: R warehouse");
-//		LOG.debug("w_tax: " + w_tax);
-//		
-//		// PIECE 3 R customer
-//		String key_customer = TPCCGenerator.buildString(w_id, "_", d_id, "_", c_id);
-//		columns = TPCCGenerator.buildColumns ("c_last", "c_discount", "c_credit");
-//		int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
-//		transaction.readSelect(columns);
-//		transaction.completePiece();
-//		float c_discount = Float.valueOf(transaction.get(pieceNum_customer, "c_discount"));
-//		String c_last = transaction.get(pieceNum_customer, "c_last");
-//		String c_credit = transaction.get(pieceNum_customer, "c_credit");
-//		LOG.debug("Piece 3: R customer");
-//		LOG.debug("c_discount: " + c_discount);
-//		LOG.debug("c_last: " + c_last);
-//		LOG.debug("c_credit: " + c_credit);
-//		//------------------------------------------------------------------
-//		int o_all_local = 1, o_ol_cnt = TPCCGenerator.randomInt(5, 15);
-//		int 	supware			[] 	= new int	[o_ol_cnt];
-//		int 	ol_i_ids		[] 	= new int	[o_ol_cnt];
-//		String i_names			[] 	= new String[o_ol_cnt];
-//		float i_prices			[] = new float[o_ol_cnt];
-//		float ol_amounts		[] = new float[o_ol_cnt];
-//		int ol_quantities		[] = new int[o_ol_cnt];
-//		int s_quantities		[] = new int[o_ol_cnt];
-//		char bg[] = new char[o_ol_cnt];
-//		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
-//			int ol_supply_w_id; 
-//			/* 90% of supply are from home stock */
-//			if (TPCCGenerator.randomInt(0, 99) < 10 && TPCCConstants.NUM_WAREHOUSE > 1) {
-//				int supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); 
-//				while (supply_w_id == w_id) { supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); }
-//				ol_supply_w_id = supply_w_id;
-//			} else { ol_supply_w_id = w_id; }
-//			if (ol_supply_w_id != w_id) { o_all_local = 0; }
-//			supware[ol_number - 1] 	= ol_supply_w_id;
-//			ol_i_ids[ol_number - 1] = TPCCGenerator.NURand(TPCCConstants.A_OL_I_ID,1, TPCCConstants.NUM_ITEMS);
-//		}
-//		String o_entry_d = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
-//		//------------------------------------------------------------------
-//		
-//		
-//		// PIECE 4 W order
-//		String key_order = TPCCGenerator.buildString(w_id, "_", d_id, "_", o_id);
-//		transaction.createPiece(TPCCConstants.TABLENAME_ORDER, key_order, false);
-//		columns = TPCCGenerator.buildColumns("o_id", "o_d_id", "o_w_id", "o_c_id", "o_entry_id", "o_carrier_id", "o_ol_cnt", "o_all_local");
-//		values = TPCCGenerator.buildColumns((o_id), (d_id), (w_id), (c_id), (o_entry_d), "NULL", (o_ol_cnt), (o_all_local));
-//		transaction.write(columns, values);
-//		transaction.completePiece();
-//		LOG.debug("Piece 4: W order");
-//		
-//		// PIECE 5 W new_order
-//		String key_newOrder = key_order;
-//		transaction.createPiece(TPCCConstants.TABLENAME_NEW_ORDER, key_newOrder, false);
-//		columns = TPCCGenerator.buildColumns("no_o_id", "no_d_id", "no_w_id");
-//		values = TPCCGenerator.buildColumns(o_id, d_id, w_id);
-//		transaction.write(columns, values);
-//		transaction.completePiece();
-//		// TODO :index
-//		LOG.debug("Piece 5: W new_order");
-//
+		String c_last = values.get(0);
+		String c_credit = values.get(1);
+		float c_discount = Float.valueOf(values.get(2));
+
+		LOG.debug("c_discount: " + c_discount);
+		LOG.debug("c_last: " + c_last);
+		LOG.debug("c_credit: " + c_credit);
+		
+		//------------------------------------------------------------------
+		int o_all_local = 1, o_ol_cnt = TPCCGenerator.randomInt(5, 15);
+		int 	supware			[] 	= new int	[o_ol_cnt];
+		int 	ol_i_ids		[] 	= new int	[o_ol_cnt];
+		String i_names			[] 	= new String[o_ol_cnt];
+		float i_prices			[] = new float[o_ol_cnt];
+		float ol_amounts		[] = new float[o_ol_cnt];
+		int ol_quantities		[] = new int[o_ol_cnt];
+		int s_quantities		[] = new int[o_ol_cnt];
+		char bg[] = new char[o_ol_cnt];
+		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
+			int ol_supply_w_id; 
+			/* 90% of supply are from home stock */
+			if (TPCCGenerator.randomInt(0, 99) < 10 && TPCCConstants.NUM_WAREHOUSE > 1) {
+				int supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); 
+				while (supply_w_id == w_id) { supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); }
+				ol_supply_w_id = supply_w_id;
+			} else { ol_supply_w_id = w_id; }
+			if (ol_supply_w_id != w_id) { o_all_local = 0; }
+			supware[ol_number - 1] 	= ol_supply_w_id;
+			ol_i_ids[ol_number - 1] = TPCCGenerator.NURand(TPCCConstants.A_OL_I_ID,1, TPCCConstants.NUM_ITEMS);
+		}
+		String o_entry_d = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
+		//------------------------------------------------------------------
+
+		// PIECE 4 W order
+		String key_order = TPCCGenerator.buildString(w_id, "_", d_id, "_", o_id);
+		columns = TPCCGenerator.buildColumns("o_id", "o_d_id", "o_w_id", "o_c_id", "o_entry_id", "o_carrier_id", "o_ol_cnt", "o_all_local");
+		values = TPCCGenerator.buildColumns(o_id, d_id, w_id, c_id, o_entry_d, "NULL", o_ol_cnt, o_all_local);
+		transaction.write(TPCCConstants.TABLENAME_ORDER, key_order, columns, values);
+		LOG.debug("W order");
+		
+		// PIECE 5 W new_order
+		String key_newOrder = key_order;
+		columns = TPCCGenerator.buildColumns("no_o_id", "no_d_id", "no_w_id");
+		values = TPCCGenerator.buildColumns(o_id, d_id, w_id);
+		transaction.write(TPCCConstants.TABLENAME_NEW_ORDER, key_newOrder, columns, values);
+		LOG.debug("W new_order");
+
 //		/* for each order in the order line*/
 //		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
 //			//------------------------------------------------------------------
@@ -191,7 +188,7 @@ public class TPCC {
 //			s_quantities	[ol_number - 1] = s_quantity;
 //		}
 //
-//		transaction.commit();
+		transaction.commit();
 //		
 //		boolean valid = true;
 //		LOG.debug("==============================New Order==================================");

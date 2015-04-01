@@ -23,6 +23,7 @@ import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.occ.messaging.OCCAppServerService;
 import cn.ict.occ.messaging.ReadValue;
 import cn.ict.occ.messaging.Result;
+import cn.ict.occ.server.OCCCommunicator;
 
 
 public class AppServer implements AppServerService {
@@ -48,6 +49,7 @@ public class AppServer implements AppServerService {
 	public Result read(String table, String key, List<String> names) {
 		Member member = configuration.getShardMember(table, key);
 		ReadValue r = communicator.get(member, table, key, names);
+		if (r.getValues().size() == 0) { return null; }
 		Map<String, String> readValues = new HashMap<String, String>();
 		List<String> values = r.getValues();
 		for (int i = 0; i < values.size(); i++) {
@@ -55,12 +57,14 @@ public class AppServer implements AppServerService {
 		}
 		return new Result(table, key, readValues, r.getVersion());
 	}
+	
 	@Override
 	public Result readIndexFetchTop(String table, String keyIndex,
 			String orderField, boolean isAssending) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
 	@Override
 	public Result readIndexFetchMiddle(String table, String keyIndex,
 			String orderField, boolean isAssending) {

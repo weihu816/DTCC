@@ -68,6 +68,7 @@ public class MemoryDB {
     }
 	
 	public Record get(String table, String key) {
+		check(table);
     	LOG.debug("get: " + table + " " + key);
         Record record = db.get(table).get(key);
         if (record == null) {

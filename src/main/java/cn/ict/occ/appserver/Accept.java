@@ -23,7 +23,7 @@ public class Accept {
     public Accept(String transactionId, String table, String key,
                   long oldVersion, List<String> names, List<String> values) {
         this.transactionId = transactionId;
-        this.table = key;
+        this.table = table;
         this.key = key;
         this.oldVersion = oldVersion;
         this.names = names;
@@ -59,6 +59,6 @@ public class Accept {
     }
 
     public String toString() {
-        return "table=" + table + "key=" + key + "; oldVersion=" + oldVersion + "; txn=" + transactionId;
+        return "table=" + table + " key=" + key + "; oldVersion=" + oldVersion + "; txn=" + transactionId;
     }
 }
