@@ -542,7 +542,6 @@ public class TPCC {
 		LOG.debug("o_carrier_id: " + o_carrier_id);
 		LOG.debug("Execution Status: Delivery has been queued");
 		LOG.debug("=========================================================================");
-
 	}
 	
 	public static void main(String[] args) {

@@ -1,4 +1,4 @@
-package cn.ict.occ.appserver;
+package cn.ict.occ.txn;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import cn.ict.dtcc.exception.TransactionException;
+import cn.ict.occ.appserver.Option;
 import cn.ict.occ.messaging.Result;
 
 public abstract class Transaction {
@@ -75,6 +76,61 @@ public abstract class Transaction {
         return toReturn;
     }
 
+	public synchronized List<String> readIndexFetchTop(String table, String key, 
+			List<String> names, String orderField, boolean isAssending) throws TransactionException {
+		
+        assertState();
+        boolean toRead = false;
+        List<String> toReturn = new ArrayList<String>();
+
+        if (readSet.containsKey(table) && readSet.get(table).containsKey(key)) {
+            Result result = readSet.get(table).get(key);
+            Map<String, String> values = result.getValues();
+            for (String name : names) {
+            	if (!values.containsKey(name)) {
+            		toRead = true;
+            		break;
+            	}
+            	toReturn.add(values.get(name));
+            }
+            if (!toRead){
+            	if (result.isDeleted()) {
+                	throw new TransactionException("No object exists by : " + table + " " + key);
+                }
+                if (result.getVersion() == 0) {
+                	throw new TransactionException("No object exists by : " + table + " " + key);
+                }
+                return toReturn;
+            }
+        } else { toRead = true; }
+        
+        if (toRead) {
+            Result result = doRead(table, key, names);
+            if (result != null) {
+//              result.setDeleted(isDeleted(result.getValues()));
+                if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+                Map<String, Result> x  = readSet.get(table);
+                x.put(key, result);
+
+                if (result.isDeleted()) {
+                	throw new TransactionException("No object exists by : " + table + " " + key);
+                }
+
+                if (result.getVersion() == 0) {
+                	throw new TransactionException("No object exists by : " + table + " " + key);
+                }
+                Map<String, String> values = result.getValues();
+                for (String name : names) {
+                	toReturn.add(values.get(name));
+                }
+            } else {
+                throw new TransactionException("No object exists by : " + table + " " + key);
+            }
+        }
+        return toReturn;
+    }
+
+	
 //    private boolean isDeleted(byte[] data) {
 //        return data.length == Database.DELETE_VALUE.length &&
 //                Arrays.equals(data, Database.DELETE_VALUE);

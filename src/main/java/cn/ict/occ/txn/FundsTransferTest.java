@@ -12,7 +12,6 @@ import org.apache.log4j.PropertyConfigurator;
 import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.dtcc.exception.TransactionException;
 import cn.ict.dtcc.util.DTCCUtil;
-import cn.ict.occ.appserver.Transaction;
 
 public class FundsTransferTest {
 
@@ -31,7 +30,7 @@ public class FundsTransferTest {
 //        final int startingTotal = Integer.parseInt(args[0]);
 //        final int accounts = Integer.parseInt(args[1]);
       final int startingTotal = 100;
-      final int accounts = 10;
+      final int accounts = 5;
 
         List<String> values;
 

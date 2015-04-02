@@ -70,9 +70,7 @@ public class StorageNode {
 
         synchronized (table.intern()) {
         	synchronized (key.intern()) {
-
         		Record record = db.get(table, key);
-                
         		// if record has been written by another transaction
                 if (record.getOutstanding() != null && !transaction.equals(record.getOutstanding())) {
                 	LOG.warn("Outstanding option detected on " + table + " " +  key + " - Denying the new option (" + record.getOutstanding() + ")");

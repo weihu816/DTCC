@@ -6,7 +6,6 @@ import java.util.List;
 import cn.ict.dtcc.exception.TransactionException;
 import cn.ict.occ.appserver.AppServerService;
 import cn.ict.occ.appserver.Option;
-import cn.ict.occ.appserver.Transaction;
 import cn.ict.occ.messaging.Result;
 
 

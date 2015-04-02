@@ -1,4 +1,4 @@
-package cn.ict.rcc.benchmark.procedure.tpcc;
+package cn.ict.rcc.server;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

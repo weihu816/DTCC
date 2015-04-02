@@ -3,7 +3,7 @@ package cn.ict.dtcc.benchmark.tpcc;
 import java.util.Random;
 
 /**
- * Holds TPC-C constants
+ * TPC-C constants
  * @author Wei Hu
  */
 
@@ -11,7 +11,7 @@ public final class TPCCConstants {
 
     private TPCCConstants() { assert false; }
     
-    public static final int NUM_WAREHOUSE = 1;				// number of warehouses - tunable 
+    public static final int NUM_WAREHOUSE = 2;				// number of warehouses - tunable 
 	public static final int ORDER_INIT_DELEVERED = 21;		// if (o_id > #e.g.2100) then it is not delivered when initilized
 	public static final int NODES_PER_WAREHOUSE = 2; 		// number of node/warehouuse 
 	
@@ -94,7 +94,7 @@ public final class TPCCConstants {
     // DISTRICT constants
     public static final double INITIAL_D_YTD 		= 30000.00;
     public static final int INITIAL_NEXT_O_ID 		= 31;		 		// 3001
-    public static final int DISTRICTS_PER_NODE		= 1;				// number of districts/node
+    public static final int DISTRICTS_PER_NODE		= 5;				// number of districts/node
 	public static final int DISTRICTS_PER_WAREHOUSE = DISTRICTS_PER_NODE * NODES_PER_WAREHOUSE;
 
     // CUSTOMER constants

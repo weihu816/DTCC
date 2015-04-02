@@ -6,7 +6,7 @@ service OCCAppServerService {
   
   OCCCommunicationService.ReadValue read(1:string table, 2:string key, 3:list<string> names),
   
-  OCCCommunicationService.ReadValue readIndexFetchTop(1:string table, 2:string keyIndex, 3:string orderField, 4:bool isAssending),
+  OCCCommunicationService.ReadValue readIndexFetchTop(1:string table, 2:string keyIndex, 4:list<string> names, 5:string orderField, 6:bool isAssending),
   
   OCCCommunicationService.ReadValue readIndexFetchMiddle(1:string table, 2:string keyIndex, 3:string orderField, 4:bool isAssending),
   

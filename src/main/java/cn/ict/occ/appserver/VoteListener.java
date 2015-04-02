@@ -18,7 +18,7 @@ import cn.ict.occ.server.OCCCommunicator;
 
 public class VoteListener {
 
-    private static final Log log = LogFactory.getLog(VoteListener.class);
+    private static final Log LOG = LogFactory.getLog(VoteListener.class);
 
     public static final String DEFAULT_SERVER_ID = "AppServer";
 
@@ -81,6 +81,7 @@ public class VoteListener {
 		if (accepted) {
             acceptedOptions.add(option);
 		} else {
+			LOG.debug("reject option: " + option.getTable() + " " + option.getKey());
             rejectedOptions.add(option);
         }
         synchronized(this) {
