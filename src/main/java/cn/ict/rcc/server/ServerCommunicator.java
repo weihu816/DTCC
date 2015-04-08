@@ -31,8 +31,6 @@ public class ServerCommunicator {
 //					RococoCommunicationService.Processor processor = 
 //							new RococoCommunicationService.Processor(new ServerCommunicationServiceHandler(node));
 //					server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).processor(processor));
-
-			         
 					TNonblockingServerSocket socket = new TNonblockingServerSocket(port);
 					RococoCommunicationService.Processor processor = 
 							new RococoCommunicationService.Processor(new ServerCommunicationServiceHandler(node));

@@ -23,6 +23,16 @@ public class DTCCUtil {
 		return stringBuffer.toString();
 	}
 
+	public static String buildKey(Object... args) {
+		StringBuffer stringBuffer = new StringBuffer();
+		for (int i = 0; i < args.length - 1; i++) {
+			stringBuffer.append(args[i]);
+			stringBuffer.append("_");
+		}
+		stringBuffer.append(args[args.length - 1]);
+		return stringBuffer.toString();
+	}
+	
 	public static List<String> buildColumns(Object... args) {
 		List<String> columns = new ArrayList<String>();
 		for (int i = 0; i < args.length; i++) {

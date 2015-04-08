@@ -15,8 +15,4 @@ public final class TPCCConfig {
 	TPCCConfig() {
         // Nothing
     }
-	
-    
-    
-  
 }

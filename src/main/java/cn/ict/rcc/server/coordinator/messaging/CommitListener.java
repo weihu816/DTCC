@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import cn.ict.dtcc.config.Member;
+import cn.ict.rcc.messaging.CommitResponse;
 import cn.ict.rcc.messaging.Graph;
 
 public class CommitListener {
@@ -39,8 +40,8 @@ public class CommitListener {
 		}
 	}
 	
-	public void notifyCommitOutcome(boolean returnType) {
-		if (returnType) {
+	public void notifyCommitOutcome(CommitResponse commitResponse) {
+		if (commitResponse.result) {
 			count.incrementAndGet();
 		}
 		if (getCount() == members.size()) {

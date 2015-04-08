@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 
-import cn.ict.dtcc.benchmark.funds.FundsTransferBench;
-import cn.ict.dtcc.benchmark.micro.MicroBench;
 import cn.ict.dtcc.exception.TransactionException;
+import cn.ict.rcc.benchmark.micro.MicroBench;
+import cn.ict.rcc.benchmark.procedure.FundsTransferBench;
 import cn.ict.rcc.benchmark.procedure.Procedure;
-import cn.ict.rcc.benchmark.procedure.tpcc.TPCC;
+import cn.ict.rcc.benchmark.procedure.TPCC;
 import cn.ict.rcc.messaging.RococoCoordinator.Iface;
 
 public class CoordinatorServiceHandler implements Iface {

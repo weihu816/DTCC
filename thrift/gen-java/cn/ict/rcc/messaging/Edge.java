@@ -32,25 +32,28 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.io.Serializable, Cloneable, Comparable<Node> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Node");
+public class Edge implements org.apache.thrift.TBase<Edge, Edge._Fields>, java.io.Serializable, Cloneable, Comparable<Edge> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Edge");
 
-  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField IMMEDIATE_FIELD_DESC = new org.apache.thrift.protocol.TField("immediate", org.apache.thrift.protocol.TType.BOOL, (short)2);
+  private static final org.apache.thrift.protocol.TField FROM_FIELD_DESC = new org.apache.thrift.protocol.TField("from", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField TO_FIELD_DESC = new org.apache.thrift.protocol.TField("to", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField IMMEDIATE_FIELD_DESC = new org.apache.thrift.protocol.TField("immediate", org.apache.thrift.protocol.TType.BOOL, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new NodeStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new NodeTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new EdgeStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new EdgeTupleSchemeFactory());
   }
 
-  public String id; // required
+  public String from; // required
+  public String to; // required
   public boolean immediate; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    ID((short)1, "id"),
-    IMMEDIATE((short)2, "immediate");
+    FROM((short)1, "from"),
+    TO((short)2, "to"),
+    IMMEDIATE((short)3, "immediate");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -65,9 +68,11 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // ID
-          return ID;
-        case 2: // IMMEDIATE
+        case 1: // FROM
+          return FROM;
+        case 2: // TO
+          return TO;
+        case 3: // IMMEDIATE
           return IMMEDIATE;
         default:
           return null;
@@ -114,23 +119,27 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.FROM, new org.apache.thrift.meta_data.FieldMetaData("from", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TO, new org.apache.thrift.meta_data.FieldMetaData("to", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.IMMEDIATE, new org.apache.thrift.meta_data.FieldMetaData("immediate", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Node.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Edge.class, metaDataMap);
   }
 
-  public Node() {
+  public Edge() {
   }
 
-  public Node(
-    String id,
+  public Edge(
+    String from,
+    String to,
     boolean immediate)
   {
     this();
-    this.id = id;
+    this.from = from;
+    this.to = to;
     this.immediate = immediate;
     setImmediateIsSet(true);
   }
@@ -138,46 +147,74 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Node(Node other) {
+  public Edge(Edge other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetId()) {
-      this.id = other.id;
+    if (other.isSetFrom()) {
+      this.from = other.from;
+    }
+    if (other.isSetTo()) {
+      this.to = other.to;
     }
     this.immediate = other.immediate;
   }
 
-  public Node deepCopy() {
-    return new Node(this);
+  public Edge deepCopy() {
+    return new Edge(this);
   }
 
   @Override
   public void clear() {
-    this.id = null;
+    this.from = null;
+    this.to = null;
     setImmediateIsSet(false);
     this.immediate = false;
   }
 
-  public String getId() {
-    return this.id;
+  public String getFrom() {
+    return this.from;
   }
 
-  public Node setId(String id) {
-    this.id = id;
+  public Edge setFrom(String from) {
+    this.from = from;
     return this;
   }
 
-  public void unsetId() {
-    this.id = null;
+  public void unsetFrom() {
+    this.from = null;
   }
 
-  /** Returns true if field id is set (has been assigned a value) and false otherwise */
-  public boolean isSetId() {
-    return this.id != null;
+  /** Returns true if field from is set (has been assigned a value) and false otherwise */
+  public boolean isSetFrom() {
+    return this.from != null;
   }
 
-  public void setIdIsSet(boolean value) {
+  public void setFromIsSet(boolean value) {
     if (!value) {
-      this.id = null;
+      this.from = null;
+    }
+  }
+
+  public String getTo() {
+    return this.to;
+  }
+
+  public Edge setTo(String to) {
+    this.to = to;
+    return this;
+  }
+
+  public void unsetTo() {
+    this.to = null;
+  }
+
+  /** Returns true if field to is set (has been assigned a value) and false otherwise */
+  public boolean isSetTo() {
+    return this.to != null;
+  }
+
+  public void setToIsSet(boolean value) {
+    if (!value) {
+      this.to = null;
     }
   }
 
@@ -185,7 +222,7 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
     return this.immediate;
   }
 
-  public Node setImmediate(boolean immediate) {
+  public Edge setImmediate(boolean immediate) {
     this.immediate = immediate;
     setImmediateIsSet(true);
     return this;
@@ -206,11 +243,19 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case ID:
+    case FROM:
       if (value == null) {
-        unsetId();
+        unsetFrom();
       } else {
-        setId((String)value);
+        setFrom((String)value);
+      }
+      break;
+
+    case TO:
+      if (value == null) {
+        unsetTo();
+      } else {
+        setTo((String)value);
       }
       break;
 
@@ -227,8 +272,11 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case ID:
-      return getId();
+    case FROM:
+      return getFrom();
+
+    case TO:
+      return getTo();
 
     case IMMEDIATE:
       return Boolean.valueOf(isImmediate());
@@ -244,8 +292,10 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
     }
 
     switch (field) {
-    case ID:
-      return isSetId();
+    case FROM:
+      return isSetFrom();
+    case TO:
+      return isSetTo();
     case IMMEDIATE:
       return isSetImmediate();
     }
@@ -256,21 +306,30 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof Node)
-      return this.equals((Node)that);
+    if (that instanceof Edge)
+      return this.equals((Edge)that);
     return false;
   }
 
-  public boolean equals(Node that) {
+  public boolean equals(Edge that) {
     if (that == null)
       return false;
 
-    boolean this_present_id = true && this.isSetId();
-    boolean that_present_id = true && that.isSetId();
-    if (this_present_id || that_present_id) {
-      if (!(this_present_id && that_present_id))
+    boolean this_present_from = true && this.isSetFrom();
+    boolean that_present_from = true && that.isSetFrom();
+    if (this_present_from || that_present_from) {
+      if (!(this_present_from && that_present_from))
         return false;
-      if (!this.id.equals(that.id))
+      if (!this.from.equals(that.from))
+        return false;
+    }
+
+    boolean this_present_to = true && this.isSetTo();
+    boolean that_present_to = true && that.isSetTo();
+    if (this_present_to || that_present_to) {
+      if (!(this_present_to && that_present_to))
+        return false;
+      if (!this.to.equals(that.to))
         return false;
     }
 
@@ -292,19 +351,29 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
   }
 
   @Override
-  public int compareTo(Node other) {
+  public int compareTo(Edge other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetId()).compareTo(other.isSetId());
+    lastComparison = Boolean.valueOf(isSetFrom()).compareTo(other.isSetFrom());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+    if (isSetFrom()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.from, other.from);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTo()).compareTo(other.isSetTo());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTo()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.to, other.to);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -336,14 +405,22 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Node(");
+    StringBuilder sb = new StringBuilder("Edge(");
     boolean first = true;
 
-    sb.append("id:");
-    if (this.id == null) {
+    sb.append("from:");
+    if (this.from == null) {
       sb.append("null");
     } else {
-      sb.append(this.id);
+      sb.append(this.from);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("to:");
+    if (this.to == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.to);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -356,8 +433,11 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (id == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'id' was not present! Struct: " + toString());
+    if (from == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'from' was not present! Struct: " + toString());
+    }
+    if (to == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'to' was not present! Struct: " + toString());
     }
     // alas, we cannot check 'immediate' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
@@ -381,15 +461,15 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
     }
   }
 
-  private static class NodeStandardSchemeFactory implements SchemeFactory {
-    public NodeStandardScheme getScheme() {
-      return new NodeStandardScheme();
+  private static class EdgeStandardSchemeFactory implements SchemeFactory {
+    public EdgeStandardScheme getScheme() {
+      return new EdgeStandardScheme();
     }
   }
 
-  private static class NodeStandardScheme extends StandardScheme<Node> {
+  private static class EdgeStandardScheme extends StandardScheme<Edge> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Node struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, Edge struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -399,15 +479,23 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
           break;
         }
         switch (schemeField.id) {
-          case 1: // ID
+          case 1: // FROM
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.id = iprot.readString();
-              struct.setIdIsSet(true);
+              struct.from = iprot.readString();
+              struct.setFromIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // IMMEDIATE
+          case 2: // TO
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.to = iprot.readString();
+              struct.setToIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // IMMEDIATE
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.immediate = iprot.readBool();
               struct.setImmediateIsSet(true);
@@ -429,13 +517,18 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Node struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, Edge struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.id != null) {
-        oprot.writeFieldBegin(ID_FIELD_DESC);
-        oprot.writeString(struct.id);
+      if (struct.from != null) {
+        oprot.writeFieldBegin(FROM_FIELD_DESC);
+        oprot.writeString(struct.from);
+        oprot.writeFieldEnd();
+      }
+      if (struct.to != null) {
+        oprot.writeFieldBegin(TO_FIELD_DESC);
+        oprot.writeString(struct.to);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldBegin(IMMEDIATE_FIELD_DESC);
@@ -447,26 +540,29 @@ public class Node implements org.apache.thrift.TBase<Node, Node._Fields>, java.i
 
   }
 
-  private static class NodeTupleSchemeFactory implements SchemeFactory {
-    public NodeTupleScheme getScheme() {
-      return new NodeTupleScheme();
+  private static class EdgeTupleSchemeFactory implements SchemeFactory {
+    public EdgeTupleScheme getScheme() {
+      return new EdgeTupleScheme();
     }
   }
 
-  private static class NodeTupleScheme extends TupleScheme<Node> {
+  private static class EdgeTupleScheme extends TupleScheme<Edge> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, Node struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, Edge struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeString(struct.id);
+      oprot.writeString(struct.from);
+      oprot.writeString(struct.to);
       oprot.writeBool(struct.immediate);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Node struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, Edge struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.id = iprot.readString();
-      struct.setIdIsSet(true);
+      struct.from = iprot.readString();
+      struct.setFromIsSet(true);
+      struct.to = iprot.readString();
+      struct.setToIsSet(true);
       struct.immediate = iprot.readBool();
       struct.setImmediateIsSet(true);
     }

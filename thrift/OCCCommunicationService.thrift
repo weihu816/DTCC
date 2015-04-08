@@ -1,10 +1,10 @@
 namespace java cn.ict.occ.messaging
 
+// below are for occ
 struct ReadValue {
   1:i64 version
   2:list<string> values
 }
-
 struct Accept {
   1:string transactionId
   2:string table
@@ -13,7 +13,6 @@ struct Accept {
   5:list<string> newValues
   6:i64 oldVersion
 }
-
 struct Option {
   1:string table
   2:string key
@@ -21,7 +20,6 @@ struct Option {
   4:list<string> values
   5:i64 oldVersion
 }
-
 service OCCCommunicationService {
 
   bool ping(),

@@ -32,20 +32,20 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnType._Fields>, java.io.Serializable, Cloneable, Comparable<ReturnType> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ReturnType");
+public class StartResponse implements org.apache.thrift.TBase<StartResponse, StartResponse._Fields>, java.io.Serializable, Cloneable, Comparable<StartResponse> {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("StartResponse");
 
   private static final org.apache.thrift.protocol.TField OUTPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("output", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField DEP_FIELD_DESC = new org.apache.thrift.protocol.TField("dep", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new ReturnTypeStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new ReturnTypeTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new StartResponseStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new StartResponseTupleSchemeFactory());
   }
 
   public List<Map<String,String>> output; // required
-  public Graph dep; // optional
+  public Graph dep; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -109,7 +109,6 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
   }
 
   // isset id assignments
-  private _Fields optionals[] = {_Fields.DEP};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -118,26 +117,28 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
             new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
                 new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
                 new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
-    tmpMap.put(_Fields.DEP, new org.apache.thrift.meta_data.FieldMetaData("dep", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.DEP, new org.apache.thrift.meta_data.FieldMetaData("dep", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Graph.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ReturnType.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(StartResponse.class, metaDataMap);
   }
 
-  public ReturnType() {
+  public StartResponse() {
   }
 
-  public ReturnType(
-    List<Map<String,String>> output)
+  public StartResponse(
+    List<Map<String,String>> output,
+    Graph dep)
   {
     this();
     this.output = output;
+    this.dep = dep;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public ReturnType(ReturnType other) {
+  public StartResponse(StartResponse other) {
     if (other.isSetOutput()) {
       List<Map<String,String>> __this__output = new ArrayList<Map<String,String>>(other.output.size());
       for (Map<String,String> other_element : other.output) {
@@ -151,8 +152,8 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     }
   }
 
-  public ReturnType deepCopy() {
-    return new ReturnType(this);
+  public StartResponse deepCopy() {
+    return new StartResponse(this);
   }
 
   @Override
@@ -180,7 +181,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     return this.output;
   }
 
-  public ReturnType setOutput(List<Map<String,String>> output) {
+  public StartResponse setOutput(List<Map<String,String>> output) {
     this.output = output;
     return this;
   }
@@ -204,7 +205,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     return this.dep;
   }
 
-  public ReturnType setDep(Graph dep) {
+  public StartResponse setDep(Graph dep) {
     this.dep = dep;
     return this;
   }
@@ -276,12 +277,12 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof ReturnType)
-      return this.equals((ReturnType)that);
+    if (that instanceof StartResponse)
+      return this.equals((StartResponse)that);
     return false;
   }
 
-  public boolean equals(ReturnType that) {
+  public boolean equals(StartResponse that) {
     if (that == null)
       return false;
 
@@ -312,7 +313,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
   }
 
   @Override
-  public int compareTo(ReturnType other) {
+  public int compareTo(StartResponse other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
@@ -356,7 +357,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("ReturnType(");
+    StringBuilder sb = new StringBuilder("StartResponse(");
     boolean first = true;
 
     sb.append("output:");
@@ -366,16 +367,14 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       sb.append(this.output);
     }
     first = false;
-    if (isSetDep()) {
-      if (!first) sb.append(", ");
-      sb.append("dep:");
-      if (this.dep == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.dep);
-      }
-      first = false;
+    if (!first) sb.append(", ");
+    sb.append("dep:");
+    if (this.dep == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.dep);
     }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -384,6 +383,9 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     // check for required fields
     if (output == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'output' was not present! Struct: " + toString());
+    }
+    if (dep == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'dep' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
     if (dep != null) {
@@ -407,15 +409,15 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
     }
   }
 
-  private static class ReturnTypeStandardSchemeFactory implements SchemeFactory {
-    public ReturnTypeStandardScheme getScheme() {
-      return new ReturnTypeStandardScheme();
+  private static class StartResponseStandardSchemeFactory implements SchemeFactory {
+    public StartResponseStandardScheme getScheme() {
+      return new StartResponseStandardScheme();
     }
   }
 
-  private static class ReturnTypeStandardScheme extends StandardScheme<ReturnType> {
+  private static class StartResponseStandardScheme extends StandardScheme<StartResponse> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, ReturnType struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, StartResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -428,25 +430,25 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
           case 1: // OUTPUT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list34 = iprot.readListBegin();
-                struct.output = new ArrayList<Map<String,String>>(_list34.size);
-                for (int _i35 = 0; _i35 < _list34.size; ++_i35)
+                org.apache.thrift.protocol.TList _list52 = iprot.readListBegin();
+                struct.output = new ArrayList<Map<String,String>>(_list52.size);
+                for (int _i53 = 0; _i53 < _list52.size; ++_i53)
                 {
-                  Map<String,String> _elem36;
+                  Map<String,String> _elem54;
                   {
-                    org.apache.thrift.protocol.TMap _map37 = iprot.readMapBegin();
-                    _elem36 = new HashMap<String,String>(2*_map37.size);
-                    for (int _i38 = 0; _i38 < _map37.size; ++_i38)
+                    org.apache.thrift.protocol.TMap _map55 = iprot.readMapBegin();
+                    _elem54 = new HashMap<String,String>(2*_map55.size);
+                    for (int _i56 = 0; _i56 < _map55.size; ++_i56)
                     {
-                      String _key39;
-                      String _val40;
-                      _key39 = iprot.readString();
-                      _val40 = iprot.readString();
-                      _elem36.put(_key39, _val40);
+                      String _key57;
+                      String _val58;
+                      _key57 = iprot.readString();
+                      _val58 = iprot.readString();
+                      _elem54.put(_key57, _val58);
                     }
                     iprot.readMapEnd();
                   }
-                  struct.output.add(_elem36);
+                  struct.output.add(_elem54);
                 }
                 iprot.readListEnd();
               }
@@ -475,7 +477,7 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, ReturnType struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, StartResponse struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -483,14 +485,14 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
         oprot.writeFieldBegin(OUTPUT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, struct.output.size()));
-          for (Map<String,String> _iter41 : struct.output)
+          for (Map<String,String> _iter59 : struct.output)
           {
             {
-              oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, _iter41.size()));
-              for (Map.Entry<String, String> _iter42 : _iter41.entrySet())
+              oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, _iter59.size()));
+              for (Map.Entry<String, String> _iter60 : _iter59.entrySet())
               {
-                oprot.writeString(_iter42.getKey());
-                oprot.writeString(_iter42.getValue());
+                oprot.writeString(_iter60.getKey());
+                oprot.writeString(_iter60.getValue());
               }
               oprot.writeMapEnd();
             }
@@ -500,11 +502,9 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
         oprot.writeFieldEnd();
       }
       if (struct.dep != null) {
-        if (struct.isSetDep()) {
-          oprot.writeFieldBegin(DEP_FIELD_DESC);
-          struct.dep.write(oprot);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldBegin(DEP_FIELD_DESC);
+        struct.dep.write(oprot);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -512,72 +512,62 @@ public class ReturnType implements org.apache.thrift.TBase<ReturnType, ReturnTyp
 
   }
 
-  private static class ReturnTypeTupleSchemeFactory implements SchemeFactory {
-    public ReturnTypeTupleScheme getScheme() {
-      return new ReturnTypeTupleScheme();
+  private static class StartResponseTupleSchemeFactory implements SchemeFactory {
+    public StartResponseTupleScheme getScheme() {
+      return new StartResponseTupleScheme();
     }
   }
 
-  private static class ReturnTypeTupleScheme extends TupleScheme<ReturnType> {
+  private static class StartResponseTupleScheme extends TupleScheme<StartResponse> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, ReturnType struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, StartResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.output.size());
-        for (Map<String,String> _iter43 : struct.output)
+        for (Map<String,String> _iter61 : struct.output)
         {
           {
-            oprot.writeI32(_iter43.size());
-            for (Map.Entry<String, String> _iter44 : _iter43.entrySet())
+            oprot.writeI32(_iter61.size());
+            for (Map.Entry<String, String> _iter62 : _iter61.entrySet())
             {
-              oprot.writeString(_iter44.getKey());
-              oprot.writeString(_iter44.getValue());
+              oprot.writeString(_iter62.getKey());
+              oprot.writeString(_iter62.getValue());
             }
           }
         }
       }
-      BitSet optionals = new BitSet();
-      if (struct.isSetDep()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetDep()) {
-        struct.dep.write(oprot);
-      }
+      struct.dep.write(oprot);
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, ReturnType struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, StartResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list45 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, iprot.readI32());
-        struct.output = new ArrayList<Map<String,String>>(_list45.size);
-        for (int _i46 = 0; _i46 < _list45.size; ++_i46)
+        org.apache.thrift.protocol.TList _list63 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, iprot.readI32());
+        struct.output = new ArrayList<Map<String,String>>(_list63.size);
+        for (int _i64 = 0; _i64 < _list63.size; ++_i64)
         {
-          Map<String,String> _elem47;
+          Map<String,String> _elem65;
           {
-            org.apache.thrift.protocol.TMap _map48 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            _elem47 = new HashMap<String,String>(2*_map48.size);
-            for (int _i49 = 0; _i49 < _map48.size; ++_i49)
+            org.apache.thrift.protocol.TMap _map66 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            _elem65 = new HashMap<String,String>(2*_map66.size);
+            for (int _i67 = 0; _i67 < _map66.size; ++_i67)
             {
-              String _key50;
-              String _val51;
-              _key50 = iprot.readString();
-              _val51 = iprot.readString();
-              _elem47.put(_key50, _val51);
+              String _key68;
+              String _val69;
+              _key68 = iprot.readString();
+              _val69 = iprot.readString();
+              _elem65.put(_key68, _val69);
             }
           }
-          struct.output.add(_elem47);
+          struct.output.add(_elem65);
         }
       }
       struct.setOutputIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        struct.dep = new Graph();
-        struct.dep.read(iprot);
-        struct.setDepIsSet(true);
-      }
+      struct.dep = new Graph();
+      struct.dep.read(iprot);
+      struct.setDepIsSet(true);
     }
   }
 

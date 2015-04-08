@@ -1,4 +1,4 @@
-package cn.ict.dtcc.benchmark.micro;
+package cn.ict.rcc.benchmark.micro;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -13,10 +13,10 @@ import org.apache.log4j.PropertyConfigurator;
 
 import cn.ict.dtcc.exception.TransactionException;
 import cn.ict.rcc.benchmark.procedure.Procedure;
-import cn.ict.rcc.server.coordinator.txn.CoordinatorClient;
-import cn.ict.rcc.server.coordinator.txn.CoordinatorClientConfiguration;
-import cn.ict.rcc.server.coordinator.txn.RococoTransaction;
-import cn.ict.rcc.server.coordinator.txn.TransactionFactory;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorClient;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorClientConfiguration;
+import cn.ict.rcc.server.coordinator.messaging.RococoTransaction;
+import cn.ict.rcc.server.coordinator.messaging.TransactionFactory;
 
 /**
  * MicroBenchmark for rcc
@@ -33,6 +33,15 @@ public class MicroBench {
 	public static final String ROOT = "ROOT";
 	public static final String CHILD = "CHILD";
 
+	/*
+	 * Micro Bench 1
+	 * t1 RWi server1
+	 * t2 RWi server1
+	 * 
+	 * t2 W Server3
+	 * t1 W Server2
+	 * 
+	 */
 	public static void Micro() throws TransactionException {
 		
 		final RococoTransaction t1 = fac.create();
@@ -42,23 +51,25 @@ public class MicroBench {
 		t2.begin();
 		
 		int num_piece1 = t1.createPiece("table1", "myKey", true);
-		t1.addvalueInteger("myValue", 1);
 		t1.read("myValue");
+		t1.addvalueInteger("myValue", 1);
 		t1.completePiece();
 		LOG.warn("result1: " + t1.get(num_piece1, "myValue"));
-	
+		String key1 = t1.get(num_piece1, "myValue");
+		
 		int num_piece2 = t2.createPiece("table1", "myKey", true);
-		t2.addvalueInteger("myValue", 1);
 		t2.read("myValue");
+		t2.addvalueInteger("myValue", 1);
 		t2.completePiece();
+		String key2 = t2.get(num_piece2, "myValue");
 		LOG.warn("result1: " + t2.get(num_piece2, "myValue"));
 		
-		t2.createPiece("table3", "myKey", false);
-		t2.write("myValue", "1");
+		t2.createPiece("table3", key2, false);
+		t2.write("myValue", "88");
 		t2.completePiece();
 		
-		t1.createPiece("table2", "myKey", false);
-		t1.write("myValue", "1");
+		t1.createPiece("table2", key1, false);
+		t1.write("myValue", "88");
 		t1.completePiece();
 		
 		Executors.newSingleThreadExecutor().execute(new Runnable() {

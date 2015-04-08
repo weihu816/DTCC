@@ -1,4 +1,4 @@
-package cn.ict.dtcc.benchmark.funds;
+package cn.ict.rcc.benchmark.procedure;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -12,11 +12,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
 import cn.ict.dtcc.exception.TransactionException;
-import cn.ict.rcc.benchmark.procedure.Procedure;
-import cn.ict.rcc.server.coordinator.txn.CoordinatorClient;
-import cn.ict.rcc.server.coordinator.txn.CoordinatorClientConfiguration;
-import cn.ict.rcc.server.coordinator.txn.RococoTransaction;
-import cn.ict.rcc.server.coordinator.txn.TransactionFactory;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorClient;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorClientConfiguration;
+import cn.ict.rcc.server.coordinator.messaging.RococoTransaction;
+import cn.ict.rcc.server.coordinator.messaging.TransactionFactory;
 
 public class FundsTransferBench {
 	
@@ -30,7 +29,7 @@ public class FundsTransferBench {
     public static void FundsTransfer() throws TransactionException  {
 
     	final int startingTotal = 100;
-        final int accounts = 4;
+        final int accounts = 50;
 
         int num;
         
@@ -168,11 +167,13 @@ public class FundsTransferBench {
 				}
 				RococoTransaction t3 = fac.create();
 				t3.begin();
-				int num = t3.createPiece("table1", ROOT, true);
-				t3.read("amount");
-				t3.completePiece();
-				int root = Integer.valueOf(t3.get(num, "amount"));
-				LOG.debug("ROOT = " + root);
+				
+				int num;
+//				num = t3.createPiece("table1", ROOT, true);
+//				t3.read("amount");
+//				t3.completePiece();
+//				int root = Integer.valueOf(t3.get(num, "amount"));
+//				LOG.debug("ROOT = " + root);
 				
 				num = t3.createPiece("table2", CHILD + index, true);
 				t3.read("amount");
@@ -181,7 +182,8 @@ public class FundsTransferBench {
 				LOG.debug(CHILD + index + " = " + child);
 
 				num = t3.createPiece("table1", ROOT, false);
-				t3.write("amount", String.valueOf(root + child));
+//				t3.write("amount", String.valueOf(root + child));
+				t3.addvalueInteger("amount", child);
 				t3.completePiece();
 				
 				num = t3.createPiece("table2", CHILD + index, false);

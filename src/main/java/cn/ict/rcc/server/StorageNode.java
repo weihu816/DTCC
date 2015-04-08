@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,28 +21,49 @@ import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.dtcc.server.dao.MemoryDB;
 import cn.ict.dtcc.util.DTCCUtil;
 import cn.ict.rcc.messaging.Action;
+import cn.ict.rcc.messaging.CommitResponse;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
-import cn.ict.rcc.messaging.ReturnType;
+import cn.ict.rcc.messaging.StartResponse;
 import cn.ict.rcc.messaging.Vertex;
+import cn.ict.rcc.server.coordinator.messaging.AskListener;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorCommunicator;
 
 public class StorageNode {
 
 	private static final Log LOG = LogFactory.getLog(StorageNode.class);
-	public static final int STARTED = 0;
-	public static final int COMMITTING = 1;
-	public static final int DECIDED = 2;
+	
+	public static final int STARTED 	= 0;
+	public static final int COMMITTING 	= 1;
+	public static final int DECIDED 	= 2;
 
+	private MemoryDB db = new MemoryDB();		// dao
+	private ServerConfiguration configuration; 	// configuration and membership
+												// information
+	private ServerCommunicator communicator; 	// service listener
+	// communicate with other servers
+	private CoordinatorCommunicator coorCommunicator = new CoordinatorCommunicator();
+
+	private Map<String, String> dep_server = new ConcurrentHashMap<String, String>();
+	
+	// all txn record will be kept in case asked by other servers
 	ConcurrentMap<String, Integer> status = new ConcurrentHashMap<String, Integer>();
 
-	private MemoryDB db = new MemoryDB();
-	private ServerConfiguration configuration;
-	private ServerCommunicator communicator;
-	private Map<String, String> dep_server = new ConcurrentHashMap<String, String>();
+	ConcurrentMap<String, Set<String>> serversInvolvedList = new ConcurrentHashMap<String, Set<String>>();
 
 	private ConcurrentHashMap<String, List<String>> pieces_conflict = new ConcurrentHashMap<String, List<String>>();
 	private ConcurrentHashMap<String, Set<Piece>> pieces = new ConcurrentHashMap<String, Set<Piece>>();
 
+	private Random rand = new Random(System.nanoTime());
+	private void randomBackoff() {
+		try {
+			long sleepTime = (long) (rand.nextInt(10000) % 300);
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public StorageNode() {
 		this.configuration = ServerConfiguration.getConfiguration();
 		this.communicator = new ServerCommunicator();
@@ -57,22 +79,28 @@ public class StorageNode {
 		communicator.stopListener();
 	}
 
-	// ---------------------------------------------------------------
-	public synchronized ReturnType start_req(Piece piece) throws TException {
-		LOG.debug("start_req (piece) txn: " + piece.transactionId + " " + piece.table + " " + piece.key);
+	/*
+	 * First phase of RCC Build the temporary order
+	 */
+	public synchronized StartResponse start_req(Piece piece) throws TException {
+		LOG.debug("start_req (piece) txn: " + piece.transactionId + " "
+				+ piece.table + " " + piece.key);
 
 		if (status.get(piece.transactionId) == null) {
 			status.put(piece.transactionId, STARTED);
 		}
-		String theKey = DTCCUtil.buildString(piece.getTable(), "_", piece.getKey());
-		
+		String theKey = DTCCUtil.buildString(piece.getTable(), "_",
+				piece.getKey());
+
 		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 
 		// update - the most recent piece conflicted
 		List<String> conflictPieces = pieces_conflict.get(theKey);
-		if (piece.isImmediate() && conflictPieces != null && conflictPieces.size() > 0) {
+		if (piece.isImmediate() && conflictPieces != null
+				&& conflictPieces.size() > 0) {
 			String p_id = conflictPieces.get(conflictPieces.size() - 1);
-			if (!p_id.equals(piece.getTransactionId()) && status.get(p_id) != DECIDED) {
+			if (!p_id.equals(piece.getTransactionId())
+					&& status.get(p_id) != DECIDED) {
 				LOG.info(piece.getTransactionId() + "<-" + p_id);
 				dep_server.put(piece.getTransactionId(), p_id);
 			}
@@ -82,11 +110,13 @@ public class StorageNode {
 		}
 		/* buffer piece */
 		if (conflictPieces == null) {
-			conflictPieces = Collections.synchronizedList(new ArrayList<String>());
+			conflictPieces = Collections
+					.synchronizedList(new ArrayList<String>());
 			pieces_conflict.put(theKey, conflictPieces);
 		}
 		if (!piece.isImmediate()) {
-			LOG.debug("Put txn: " + piece.transactionId + " " + piece.table + " " + piece.key);
+			LOG.debug("Put txn: " + piece.transactionId + " " + piece.table
+					+ " " + piece.key);
 			Set<Piece> allPieces = pieces.get(piece.getTransactionId());
 			if (allPieces == null) {
 				allPieces = new ConcurrentSkipListSet<Piece>();
@@ -96,25 +126,35 @@ public class StorageNode {
 		}
 		conflictPieces.add(piece.transactionId);
 
-		ReturnType returnType = new ReturnType();
-		returnType.setOutput(output);
+		StartResponse startResponse = new StartResponse();
+
+		startResponse.setOutput(output);
+
 		Graph g = new Graph();
-		Map<String, String> map = new HashMap<String, String>(dep_server);
-		g.setVertexes(map);
-		returnType.setDep(g);
-		LOG.debug(returnType);
-		return returnType;
+		g.setVertexes(new HashMap<String, String>(dep_server));
+		startResponse.setDep(g);
+
+		LOG.debug(startResponse);
+		return startResponse;
 	}
 
-	public synchronized boolean commit_req(String transactionId, Graph dep) throws TException {
-			
+	/*
+	 * Second phase of RCC Tract dependency information and execution deferrable
+	 * pieces
+	 */
+	public synchronized CommitResponse commit_req(String transactionId,
+			Graph dep) throws TException {
+
 		LOG.debug("commit_req (piece) txn: " + transactionId + " " + dep);
+
+		serversInvolvedList.putAll(dep.getServersInvolved());
 
 		if (status.get(transactionId) == DECIDED) {
 			LOG.debug("commit_req already done *DONE: txn " + transactionId);
-			return true;
+			CommitResponse commitResponse = new CommitResponse(true);
+			return commitResponse;
 		}
-		
+
 		String v = transactionId;
 		Stack<String> stack = new Stack<String>();
 		stack.push(transactionId);
@@ -127,14 +167,44 @@ public class StorageNode {
 		}
 
 		while (!stack.isEmpty() && (v = stack.pop()) != null) {
-			//if txn v does not involve S, we should not wait for the arrival of that txn
-//			if (pieces.get(v) == null) {
-//				continue;
-//			}
+			if (pieces.get(v) == null) {
+				// if txn v does not involve S, we should not wait for the
+				// arrival of that txn
+				// we need to communicate with other servers
+				LOG.debug("NULL!!! Haven't arrived or not involved??? WTF!!!");
+				while (true) {
+					for (String s : serversInvolvedList.get(v)) {
+						AskListener askListener = new AskListener(
+								configuration.getMember(s), coorCommunicator,
+								transactionId);
+						synchronized (askListener) {
+							long start = System.currentTimeMillis();
+							while (askListener.getResult() == 0) {
+								try {
+									LOG.warn("Asking  txn " + v + " for commit");
+									askListener.wait(5000);
+								} catch (InterruptedException ignored) {
+								}
+
+								if (System.currentTimeMillis() - start > 10000) {
+									LOG.warn("Asking txn " + transactionId
+											+ " timed out");
+									continue;
+								}
+							}
+							if (askListener.getResult() == 1) {
+								break;
+							}
+						}
+					}
+				}
+			}
+
 			while (!status.containsKey(v)) {
 				LOG.debug("waiting1: " + v);
 				throw new RuntimeException("1");
 			}
+			// txn involves server and wait for txn to be committing
 			while (status.get(v) == STARTED) {
 				try {
 					Thread.sleep(10);
@@ -143,6 +213,7 @@ public class StorageNode {
 					e.printStackTrace();
 				}
 			}
+
 			LOG.debug("execute " + v);
 			if (pieces.get(v) != null) {
 				for (Piece p : pieces.get(v)) {
@@ -171,9 +242,14 @@ public class StorageNode {
 		LOG.debug("status:  " + status.get(transactionId));
 
 		pieces.remove(transactionId);
-		return true;
+
+		CommitResponse commitResponse = new CommitResponse(true);
+		return commitResponse;
 	}
 
+	/*
+	 * second phase of RCC
+	 */
 	public synchronized List<Map<String, String>> execute(Piece piece)
 			throws TException {
 		LOG.debug("execute(Piece piece) " + piece.table + " " + piece.key);
@@ -188,40 +264,46 @@ public class StorageNode {
 			List<Map<String, String>> m = null;
 			switch (action) {
 			case READSELECT:
-				LOG.debug("Read - Table:" + table + " Key:" + key + " names: " + names);
+				LOG.debug("Read - Table:" + table + " Key:" + key + " names: "
+						+ names);
 				Map<String, String> tmp = db.read(table, key, names);
 				if (tmp != null) {
 					output.add(tmp);
 				}
 				break;
 			case FETCHONE:
-				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
+				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: "
+						+ names);
 				m = db.read_secondaryIndex(table, key, names, false);
 				if (m != null) {
 					output.addAll(m);
 				}
 				break;
 			case FETCHALL:
-				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: " + names);
+				LOG.debug("Fetch - Table:" + table + " Key:" + key + " names: "
+						+ names);
 				m = db.read_secondaryIndex(table, key, names, true);
 				if (m != null) {
 					output.addAll(m);
 				}
 				break;
 			case WRITE:
-				LOG.debug("Insert - Table:" + table + " Key:" + key + " names: " + names);
+				LOG.debug("Insert - Table:" + table + " Key:" + key
+						+ " names: " + names);
 				if (!db.write(table, key, names, values)) {
 					LOG.debug("Error Write - ");
 				}
 				break;
 			case ADDINTEGER:
-				LOG.debug("Addvalue - Table:" + table + " Key:" + key + " names: " + names + " values: " + names);
+				LOG.debug("Addvalue - Table:" + table + " Key:" + key
+						+ " names: " + names + " values: " + names);
 				if (!db.add(table, key, names, values, false)) {
 					LOG.debug("Error Write - ");
 				}
 				break;
 			case ADDDECIMAL:
-				LOG.debug("Addvalue - Table:" + table + " Key:" + key + " names: " + names + " values: " + names);
+				LOG.debug("Addvalue - Table:" + table + " Key:" + key
+						+ " names: " + names + " values: " + names);
 				if (!db.add(table, key, names, values, true)) {
 					LOG.debug("Error Write - ");
 				}
@@ -238,18 +320,23 @@ public class StorageNode {
 		return output;
 	}
 
+	/*
+	 * Used sed by database init only
+	 */
 	public synchronized boolean write(String table, String key,
 			List<String> names, List<String> values) {
 		return db.write(table, key, names, values);
 	}
-	
+
+	/*
+	 * Create Index fields other than key
+	 */
 	public boolean createSecondaryIndex(String table, List<String> fields) {
 		return db.createSecondaryIndex(table, fields);
 	}
 
 	public static void main(String[] args) {
-		PropertyConfigurator.configure(ServerConfiguration.getConfiguration()
-				.getLogConfigFilePath());
+		PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
 		final StorageNode storageNode = new StorageNode();
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
@@ -260,4 +347,16 @@ public class StorageNode {
 		storageNode.start();
 	}
 
+	public boolean rcc_ask_txnCommitting(String transactionId) {
+		LOG.info("Asking about txn" + transactionId);
+		if (status.get(transactionId) == null) {
+			throw new RuntimeException("Wrong transactionId when asking");
+		}
+		if (status.get(transactionId) >= COMMITTING) {
+			return true;
+		} else {
+			randomBackoff(); // random back off waiting for txn to be committing
+		}
+		return (status.get(transactionId) >= COMMITTING);
+	}
 }

@@ -1,6 +1,7 @@
 package cn.ict.rcc.server.coordinator.messaging;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,8 +20,8 @@ import cn.ict.dtcc.messaging.ThriftConnectionPool;
 import cn.ict.dtcc.messaging.ThriftNonBlockingConnectionPool;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
-import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService;
+import cn.ict.rcc.messaging.StartResponse;
 
 /**
  * @author Wei
@@ -49,7 +50,7 @@ public class CoordinatorCommunicator {
 		}
 	}
 	
-	public ReturnType fistRound(Member member, Piece piece) {
+	public StartResponse fistRound(Member member, Piece piece) {
 		LOG.debug("fistRound Txn:" + piece.getTransactionId() + " " + piece.getTable() + " " + piece.getKey());
 		TTransport transport = null;
 		RococoCommunicationService.Client client = null;
@@ -85,13 +86,14 @@ public class CoordinatorCommunicator {
 		TNonblockingSocket transport = null;
 		RococoCommunicationService.AsyncClient asyncClient = null;
 		AsyncMethodCallbackDecorator asyncMethodCallback = null;
+		boolean error = false;
 		try {
 			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
+			transport = nonBlockingPool.borrowObject(member);
+			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+			asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
 //			RococoCommunicationService.AsyncClient asyncClient = asyncClientPool.get(member);
 //			if (asyncClient == null) {
-				transport = nonBlockingPool.borrowObject(member);
-				TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
-				asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
 //				asyncClientPool.put(member, asyncClient);
 //			}
 			asyncClient.start_req(piece, asyncMethodCallback);
@@ -99,8 +101,48 @@ public class CoordinatorCommunicator {
 			if (member != null) {
 				handleException(member.getHostName(), e);
 			}
-		}
+		} finally {
+            if (transport != null) {
+                try {
+                    if (error) {
+                        blockingPool.invalidateObject(member, transport);
+                    } else {
+                        blockingPool.returnObject(member, transport);
+                    }
+                } catch (Exception ignored) { }
+            }
+        }
 	}
+	
+	public void fistRound(Member member, List<Piece> pieces, StartMethodCallback callback) throws TException {
+		LOG.debug("fistRound Txn bulk.");
+		TNonblockingSocket transport = null;
+		RococoCommunicationService.AsyncClient asyncClient = null;
+		AsyncMethodCallbackDecorator asyncMethodCallback = null;
+		boolean error = false;
+		try {
+			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
+			transport = nonBlockingPool.borrowObject(member);
+			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+			asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
+			asyncClient.start_req_bulk(pieces, asyncMethodCallback);
+		} catch (Exception e) {
+			if (member != null) {
+				handleException(member.getHostName(), e);
+			}
+		} finally {
+            if (transport != null) {
+                try {
+                    if (error) {
+                        blockingPool.invalidateObject(member, transport);
+                    } else {
+                        blockingPool.returnObject(member, transport);
+                    }
+                } catch (Exception ignored) { }
+            }
+        }
+	}
+	
 	
 	public void secondRound(Member member, String transactionId,
 			Graph dep, CommitMethodCallback callback) throws TException {
@@ -108,24 +150,55 @@ public class CoordinatorCommunicator {
 		TNonblockingSocket transport = null;
 		AsyncMethodCallbackDecorator asyncMethodCallback = null;
 		RococoCommunicationService.AsyncClient asyncClient = null;
-		
-			try {
-				asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
-//				asyncClient = asyncClientPool.get(member);
-//				if (asyncClient == null) {
-					transport = nonBlockingPool.borrowObject(member);
-					TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
-					asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
-//					asyncClientPool.put(member, asyncClient);
-//				}
-				asyncClient.commit_req(transactionId, dep, asyncMethodCallback);
+		boolean error = false;
+		try {
+			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
+			transport = nonBlockingPool.borrowObject(member);
+			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+			asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
+			asyncClient.commit_req(transactionId, dep, asyncMethodCallback);
+		}
+		catch (Exception e) {
+			error = true;
+			if (member != null) {
+				handleException(member.getHostName(), e);
 			}
-			catch (Exception e) {
-				if (member != null) {
-					handleException(member.getHostName(), e);
-				}
+		} finally {
+			if (transport != null) {
+				try {
+					if (error) { blockingPool.invalidateObject(member, transport); }
+					else { blockingPool.returnObject(member, transport); }
+				} catch (Exception ignored) { } // ignored
 			}
-		
+		}
+	}
+
+	public void rcc_ask_txnCommitting(Member member, String transactionId, AskMethodCallback callback) throws TException {
+		LOG.debug("secondRound Txn: " + transactionId);
+		TNonblockingSocket transport = null;
+		AsyncMethodCallbackDecorator asyncMethodCallback = null;
+		RococoCommunicationService.AsyncClient asyncClient = null;
+		boolean error = false;
+		try {
+			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
+			transport = nonBlockingPool.borrowObject(member);
+			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
+			asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
+			asyncClient.rcc_ask_txnCommitting(transactionId, asyncMethodCallback);
+		}
+		catch (Exception e) {
+			error = true;
+			if (member != null) {
+				handleException(member.getHostName(), e);
+			}
+		} finally {
+			if (transport != null) {
+				try {
+					if (error) { blockingPool.invalidateObject(member, transport); }
+					else { blockingPool.returnObject(member, transport); }
+				} catch (Exception ignored) { } // ignored
+			}
+		}
 	}
 
 	private void handleException(String target, Exception e) {

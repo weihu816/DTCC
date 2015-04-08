@@ -82,14 +82,24 @@ public class MemoryDB {
     	String table = record.getTable();
     	String key = record.getKey();
     	db.get(table).put(key, record);
+    	
+		// maintain secondary index
+		if (secondaryIndexInfo.containsKey(table)) {
+			List<String> indexList = secondaryIndexInfo.get(table);
+			String indexKey = DTCCUtil.buildKey(indexList);
+			Set<String> primaryKeyList = secondaryIndex.get(table).get(indexKey);
+			if (primaryKeyList == null) {
+				primaryKeyList = new ConcurrentSkipListSet<String>();
+				secondaryIndex.get(table).put(indexKey, primaryKeyList);
+			}
+			primaryKeyList.add(key);
+		}
     }
     
     public void weakPut(Record record) {
-    	LOG.debug("put: " + record.getTable() + " " + record.getKey());
-    	String table = record.getTable();
-    	String key = record.getKey();
-    	db.get(table).put(key, record);
+    	put(record);
     }
+    
     // secondary index
     public boolean createSecondaryIndex(String table, List<String> fields) {
     	LOG.debug("createSecondaryIndex: " + table);
@@ -100,7 +110,7 @@ public class MemoryDB {
 	}
     
     public synchronized boolean write(String table, String key, List<String> names, List<String> values) {
-    	LOG.debug("write: " + table + " " + key);
+//    	LOG.debug("write: " + table + " " + key);
     	if (!db.containsKey(table)) {db.put(table, new ConcurrentHashMap<String, Record>()); }
 		int size = names.size();
 		ConcurrentHashMap<String, Record> m = db.get(table);

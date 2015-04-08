@@ -1,4 +1,4 @@
-package cn.ict.dtcc.benchmark.micro;
+package cn.ict.rcc.benchmark.micro;
 
 import java.util.ArrayList;
 import java.util.HashMap;

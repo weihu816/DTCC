@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import cn.ict.dtcc.exception.DTCCException;
+import cn.ict.dtcc.util.DTCCUtil;
 
 public class AppServerConfiguration {
 	
@@ -24,6 +25,7 @@ public class AppServerConfiguration {
 	private int myShardId = 0;
 	private int myProcessId = 0;
 	private Map<Integer, Member[]> members = new HashMap<Integer, Member[]>();
+	private Map<String, Member> membersIndex = new HashMap<String, Member>();
 	private String logConfigfile = "conf/log4j-server.properties";
 	private String appServerUrl = "localhost:9190";
 	private String sharding = SHARDING_TPCC;
@@ -51,7 +53,8 @@ public class AppServerConfiguration {
                 String value = properties.getProperty(property);
                 String processId = property.substring(property.lastIndexOf('.') + 1);
                 String[] connection = value.split(":");
-                Member member = new Member(connection[0], Integer.parseInt(connection[1]), processId, false);
+                Member member = new Member(connection[0], Integer.parseInt(connection[1]), processId, false,
+                		DTCCUtil.buildKey(shardId, processId));
                 List<Member> temp = tempMembers.get(shardId);
                 if (temp == null) {
                     temp = Collections.synchronizedList(new ArrayList<Member>());
@@ -72,6 +75,9 @@ public class AppServerConfiguration {
                     }
                 }
             });
+            for (Member m : entry.getValue()) {
+            	membersIndex.put(DTCCUtil.buildKey(entry.getValue(), m.getProcessId()), m);
+            }
             members.put(entry.getKey(), entry.getValue().toArray(new Member[entry.getValue().size()]));
         }
 	}
@@ -143,12 +149,11 @@ public class AppServerConfiguration {
         return members.get(myShardId)[myProcessId];
     }
     
-	public Member getMember(int shardId, String id) {
-        for (Member member : members.get(shardId)) {
-            if (member.getProcessId().equals(id)) {
-                return member;
-            }
-        }
-        throw new DTCCException("Unable to locate a member by ID: " + id);
+	public Member getMember(int shardId, int id) {
+		return members.get(shardId)[id];
     }
+	
+	public Member getMember(String id) {
+		return membersIndex.get(id);
+	}
 }

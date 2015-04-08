@@ -1,4 +1,4 @@
-package cn.ict.rcc.benchmark.procedure.tpcc;
+package cn.ict.rcc.benchmark.procedure;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,11 +17,10 @@ import org.apache.log4j.PropertyConfigurator;
 import cn.ict.dtcc.benchmark.tpcc.TPCCConstants;
 import cn.ict.dtcc.benchmark.tpcc.TPCCGenerator;
 import cn.ict.dtcc.exception.TransactionException;
-import cn.ict.rcc.benchmark.procedure.Procedure;
-import cn.ict.rcc.server.coordinator.txn.CoordinatorClient;
-import cn.ict.rcc.server.coordinator.txn.CoordinatorClientConfiguration;
-import cn.ict.rcc.server.coordinator.txn.RococoTransaction;
-import cn.ict.rcc.server.coordinator.txn.TransactionFactory;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorClient;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorClientConfiguration;
+import cn.ict.rcc.server.coordinator.messaging.RococoTransaction;
+import cn.ict.rcc.server.coordinator.messaging.TransactionFactory;
 
 /**
  * TPCC Transaction Stored Procedures
@@ -56,12 +55,11 @@ public class TPCC {
 		transaction.readSelect(columns);
 		transaction.addvalueInteger("d_next_o_id", 1);
 		transaction.completePiece();
-
 		int o_id = Integer.valueOf(transaction.get(pieceNum_district, "d_next_o_id"));
 		float d_tax = Float.valueOf(transaction.get(pieceNum_district, "d_tax"));
 		LOG.debug("Piece1:Ri&R District");
-		LOG.debug("d_next_o_id = " + o_id);
-		LOG.debug("d_tax = " + d_tax);
+		LOG.debug("d_next_o_id = " 	+ o_id);
+		LOG.debug("d_tax = " 		+ d_tax);
 
 		// PIECE 2 R warehouse
 		// read w_tax, immediate ! READONLY
@@ -70,7 +68,6 @@ public class TPCC {
 		int pieceNum_warehouse = transaction.createPiece(TPCCConstants.TABLENAME_WAREHOUSE, key_warehouse, true);
 		transaction.readSelect(columns);
 		transaction.completePiece();
-
 		float w_tax = Float.valueOf(transaction.get(pieceNum_warehouse, "w_tax"));
 		LOG.debug("Piece 2: R warehouse");
 		LOG.debug("w_tax: " + w_tax);
@@ -81,13 +78,13 @@ public class TPCC {
 		int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
 		transaction.readSelect(columns);
 		transaction.completePiece();
-		float c_discount = Float.valueOf(transaction.get(pieceNum_customer, "c_discount"));
-		String c_last = transaction.get(pieceNum_customer, "c_last");
-		String c_credit = transaction.get(pieceNum_customer, "c_credit");
+		float c_discount 	= Float.valueOf(transaction.get(pieceNum_customer, "c_discount"));
+		String c_last 		= transaction.get(pieceNum_customer, "c_last");
+		String c_credit 	= transaction.get(pieceNum_customer, "c_credit");
 		LOG.debug("Piece 3: R customer");
-		LOG.debug("c_discount: " + c_discount);
-		LOG.debug("c_last: " + c_last);
-		LOG.debug("c_credit: " + c_credit);
+		LOG.debug("c_discount: " 	+ c_discount);
+		LOG.debug("c_last: " 		+ c_last);
+		LOG.debug("c_credit: " 		+ c_credit);
 		//------------------------------------------------------------------
 		int o_all_local = 1, o_ol_cnt = TPCCGenerator.randomInt(5, 15);
 		int 	supware			[] 	= new int	[o_ol_cnt];
@@ -136,11 +133,11 @@ public class TPCC {
 		/* for each order in the order line*/
 		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
 			//------------------------------------------------------------------
-			int ol_supply_w_id 	= supware[ol_number - 1]; 
-			int ol_i_id 		= ol_i_ids[ol_number - 1]; 
+			int ol_supply_w_id 	= supware	[ol_number - 1]; 
+			int ol_i_id 		= ol_i_ids	[ol_number - 1]; 
 			int ol_quantity 	= TPCCGenerator.randomInt(1, 10);
 			//------------------------------------------------------------------
-			// Piece 6 Ri item
+			// Piece 6 Ri item, conflict???????????? TODO
 			String key_item = String.valueOf(ol_i_id);
 			columns = TPCCGenerator.buildColumns("i_price", "i_name", "i_data");
 			int pieceNum_item = transaction.createPiece(TPCCConstants.TABLENAME_ITEM, key_item, true);
@@ -150,9 +147,9 @@ public class TPCC {
 			float i_price = Float.valueOf(transaction.get(pieceNum_item, "i_price"));
 			String i_data = transaction.get(pieceNum_item, "i_data");
 			LOG.debug("Piece 6: Ri item | orderline#: " + ol_number);
-			LOG.debug("i_name: " + i_name);
-			LOG.debug("i_price: " + i_price);
-			LOG.debug("i_data: " + i_data);
+			LOG.debug("i_name: " 	+ i_name);
+			LOG.debug("i_price: " 	+ i_price);
+			LOG.debug("i_data: " 	+ i_data);
 			
 			
 			// Piece 7 Ri stock
@@ -178,7 +175,6 @@ public class TPCC {
 			} else {
 				bg[ol_number-1] = 'G';
 			}
-			
 			// Piece 8  W stock
 			pieceNum_stock = transaction.createPiece(TPCCConstants.TABLENAME_STOCK, key_stock, false);
 			if (s_quantity > ol_quantity) {
@@ -549,7 +545,7 @@ public class TPCC {
 		PropertyConfigurator.configure(CoordinatorClientConfiguration
 				.getConfiguration().getLogConfigFilePath());
 
-		int n = 5;
+		int n = 1;
 		ExecutorService exec = Executors.newFixedThreadPool(n);
 		Future<Integer>[] futures = new Future[n];
 		int result = 0;
@@ -592,8 +588,7 @@ class myTask implements Callable<Integer> {
 //				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.NUM_WAREHOUSE)));
 //				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.DISTRICTS_PER_WAREHOUSE)));
 				paras.add("1");
-				paras.add("2");
-				client.callProcedure(Procedure.TPCC_NEWORDER, paras);
+				paras.add("1");
 				client.callProcedure(Procedure.TPCC_NEWORDER, paras);
 				count_neworder++;
 			} else if (x <= 87) {

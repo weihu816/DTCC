@@ -1,4 +1,4 @@
-package cn.ict.rcc.server.coordinator.txn;
+package cn.ict.rcc.server.coordinator.messaging;
 
 import java.io.File;
 import java.io.FileInputStream;

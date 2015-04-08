@@ -1,9 +1,11 @@
 package cn.ict.rcc.server.coordinator.messaging;
 
-import cn.ict.rcc.messaging.ReturnType;
+import cn.ict.rcc.messaging.StartResponse;
 
-public interface StartListener {
+public class StartListener {
 	
-	public void notifyOutcome(ReturnType returnType, int piece_number);
+	public void notifyOutcome(StartResponse startResponse, int piece_number) {
+		
+	}
 	
 }

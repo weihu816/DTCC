@@ -1,9 +1,11 @@
-package cn.ict.rcc.server.coordinator.txn;
+package cn.ict.rcc.server.coordinator.messaging;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,10 +18,8 @@ import cn.ict.dtcc.exception.TransactionException;
 import cn.ict.rcc.messaging.Action;
 import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
-import cn.ict.rcc.messaging.ReturnType;
+import cn.ict.rcc.messaging.StartResponse;
 import cn.ict.rcc.messaging.Vertex;
-import cn.ict.rcc.server.coordinator.messaging.CommitListener;
-import cn.ict.rcc.server.coordinator.messaging.CoordinatorCommunicator;
 
 public class RococoTransaction {
 	
@@ -35,7 +35,8 @@ public class RococoTransaction {
 	int piece_number;
 	private Map<Integer, List<Map<String, String>>> readSet = new ConcurrentHashMap<Integer, List<Map<String, String>>>();
 	private Map<Integer, Boolean> readFlag= new ConcurrentHashMap<Integer, Boolean>();
-	Map<String, String> dep = new ConcurrentHashMap<String, String>();
+	Map<String, String> dep = new HashMap<String, String>();
+	Map<String, Set<String>> serversInvolvedList = new HashMap<String, Set<String>>();
 
 	public RococoTransaction() {
 //		communicator = CoordinatorCommunicator.getCoordinatorCommunicator();
@@ -62,42 +63,59 @@ public class RococoTransaction {
 		pieces.add(piece);
 		Piece tempPiece = piece;
 		Member member = config.getShardMember(piece.getTable(), piece.getKey());
-		ReturnType returnType = communicator.fistRound(member, tempPiece);
+		StartResponse startResponse = communicator.fistRound(member, tempPiece);
 		
 		List<Map<String, String>> map = readSet.get(piece_number);
 		if (map == null) {
 			map = new ArrayList<Map<String, String>>();
 			readSet.put(piece_number, map);
 		}
+		map.addAll(startResponse.getOutput());
+		dep.putAll(startResponse.getDep().getVertexes());
 		
-		map.addAll(returnType.getOutput());
-		dep.putAll(returnType.getDep().getVertexes());
+		// ServersInvolved
+		Map<String, String> vertexes = startResponse.getDep().getVertexes();
+		for (Entry<String, String> entry : vertexes.entrySet()) {
+			String key = entry.getKey();
+			Set<String> set = serversInvolvedList.get(key);
+			if (set == null) {
+				set = new HashSet<String>();
+				serversInvolvedList.put(key, set);
+			}
+			set.add(member.getId());
+		}
+		
 		readFlag.put(piece_number, true);
-		LOG.debug(returnType);
-		LOG.debug(dep);
+		LOG.debug(startResponse);
+		LOG.debug("dep after: " + dep);
 		piece = null;
 	}
 	
 	public boolean commit() throws TransactionException {
+		LOG.info("Commit: " + transactionId);
 		if (piece != null) {
 			throw new TransactionException("Commit a txn without complete the pieces");
 		}
 		Graph graph = new Graph();
 		graph.setVertexes(dep);
-
+		graph.setServersInvolved(serversInvolvedList);
+		// Get all members involved in this transaction
 		Set<Member> members = new HashSet<Member>();
 		for (Piece p : pieces) {
 			members.add(config.getShardMember(p.getTable(), p.getKey()));
 		}
+		
+		// send out asynchronized to all nodes to commit transaction
 		CommitListener commitListener = new CommitListener(members, communicator, transactionId, graph);
 		commitListener.start();
 		
+		// wait until all responses received and transaction done
 		synchronized (commitListener) {
 			long start = System.currentTimeMillis();
 			while (commitListener.getCount() < members.size()) {
 			    try {
 			        LOG.warn("Transaction " + transactionId + " waiting for commit");
-			        commitListener.wait(20000000);
+			        commitListener.wait(5000);
 				} catch (InterruptedException ignored) { }
 
 			    if (System.currentTimeMillis() - start > 15000) {
@@ -106,7 +124,7 @@ public class RococoTransaction {
 			    }
 			}
 		}
-		
+		// now simply remove the transaction from the dep graph
 		dep.remove(transactionId);
 		LOG.debug("remove: " + transactionId);
 		return true;

@@ -1,6 +1,5 @@
 package cn.ict.dtcc.config;
 
-import cn.ict.dtcc.exception.DTCCException;
 /**
  * Membership
  * @author Wei
@@ -11,24 +10,26 @@ public class Member {
 	private int port;
 	private String procId;
 	private boolean local;
+	private String id;
 	
-	public Member(String hostName, int port, String processId, boolean local) {
+	public Member(String hostName, int port, String processId, boolean local, String id) {
 		this.hostName = hostName;
 		this.setPort(port);
 		this.setProcessId(processId);
 		this.local = local;
+		this.id = id;
 	}
 	
-	public Member(String url, String processId, boolean local) throws DTCCException {
-		int index = url.indexOf(':');
-		if (index < 0) {
-			throw new DTCCException("Invalid Member URL");
-		}
-		this.hostName = url.substring(0, index);
-		this.setPort(Integer.parseInt(url.substring(index + 1)));
-		this.setProcessId(processId);
-		this.local = local;
-	}
+//	public Member(String url, String processId, boolean local) throws DTCCException {
+//		int index = url.indexOf(':');
+//		if (index < 0) {
+//			throw new DTCCException("Invalid Member URL");
+//		}
+//		this.hostName = url.substring(0, index);
+//		this.setPort(Integer.parseInt(url.substring(index + 1)));
+//		this.setProcessId(processId);
+//		this.local = local;
+//	}
 	
 	public String getHostName() {
 		return hostName;
@@ -73,5 +74,9 @@ public class Member {
     @Override
     public int hashCode() {
         return hostName.hashCode() + procId.hashCode() + port;
+    }
+    
+    public String getId() {
+    	return id;
     }
 }

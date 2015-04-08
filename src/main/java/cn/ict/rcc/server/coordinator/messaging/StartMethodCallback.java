@@ -5,9 +5,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import cn.ict.rcc.messaging.ReturnType;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.RococoCommunicationService.AsyncClient.start_req_call;
+import cn.ict.rcc.messaging.StartResponse;
 
 public class StartMethodCallback implements AsyncMethodCallback {
 	
@@ -22,13 +22,11 @@ public class StartMethodCallback implements AsyncMethodCallback {
 
 	@Override
 	public synchronized void onComplete(Object response) {
-		ReturnType returnType = null;
+		StartResponse startResponse = null;
 		if (response instanceof start_req_call) {
 			try {
-				returnType = ((RococoCommunicationService.AsyncClient.start_req_call) response).getResult();
-				LOG.debug("===========================================================");
-				callback.notifyOutcome(returnType, piece_number);
-				LOG.debug("===========================================================");
+				startResponse = ((RococoCommunicationService.AsyncClient.start_req_call) response).getResult();
+				callback.notifyOutcome(startResponse, piece_number);
 			} catch (TException e) {
 				e.printStackTrace();
 			}
