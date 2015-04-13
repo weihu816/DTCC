@@ -4,7 +4,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
 import cn.ict.rcc.messaging.RococoCommunicationService;
-import cn.ict.rcc.messaging.RococoCommunicationService.AsyncClient.commit_req_call;
+import cn.ict.rcc.messaging.RococoCommunicationService.AsyncClient.rcc_ask_txnCommitting_call;
 
 public class AskMethodCallback implements AsyncMethodCallback {
 	
@@ -19,8 +19,7 @@ public class AskMethodCallback implements AsyncMethodCallback {
 
 	@Override
 	public void onComplete(Object response) {
-
-		if (response instanceof commit_req_call) {
+		if (response instanceof rcc_ask_txnCommitting_call) {
 			try {
 				boolean result = ((RococoCommunicationService.AsyncClient.rcc_ask_txnCommitting_call) response).getResult();
 				callback.notifyCommitOutcome(result);

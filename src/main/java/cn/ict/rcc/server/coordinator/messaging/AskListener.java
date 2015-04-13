@@ -1,5 +1,7 @@
 package cn.ict.rcc.server.coordinator.messaging;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
@@ -13,7 +15,7 @@ public class AskListener {
 	private CoordinatorCommunicator communicator;
 	private Member member;
 	private String transactionId;
-	private int result = 0;
+	private AtomicInteger result = new AtomicInteger(0);
 	
 	public AskListener (Member member, CoordinatorCommunicator communicator, String transactionId) {
 		this.communicator = communicator;
@@ -30,11 +32,12 @@ public class AskListener {
 		}
 	}
 	
-	public void notifyCommitOutcome(boolean result) {
-		if (result) {
-			this.result = 1;
+	public void notifyCommitOutcome(boolean response) {
+		LOG.debug("Notified: result = " + response);
+		if (response) {
+			result.set(1);
 		} else {
-			this.result = 2;
+			result.set(2);
 		}
 		synchronized (this) {
 			this.notifyAll();
@@ -42,6 +45,6 @@ public class AskListener {
 	}
 
 	public int getResult() {
-		return result;
+		return result.get();
 	}
 }

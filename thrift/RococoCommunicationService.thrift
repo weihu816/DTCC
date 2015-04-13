@@ -31,7 +31,7 @@ struct Edge {
 }
 struct Graph {
   1: required map<string, string> vertexes
-  2: required map<string, set<string>> serversInvolved
+  2: optional map<string, set<string>> serversInvolved
 }
 struct StartResponse {
   1: required list<map<string, string>> output

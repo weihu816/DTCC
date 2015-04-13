@@ -150,7 +150,7 @@ public class StorageNode {
 		serversInvolvedList.putAll(dep.getServersInvolved());
 
 		if (status.get(transactionId) == DECIDED) {
-			LOG.debug("commit_req already done *DONE: txn " + transactionId);
+			LOG.debug("commit already done *DONE: txn " + transactionId);
 			CommitResponse commitResponse = new CommitResponse(true);
 			return commitResponse;
 		}
@@ -167,43 +167,42 @@ public class StorageNode {
 		}
 
 		while (!stack.isEmpty() && (v = stack.pop()) != null) {
-			if (pieces.get(v) == null) {
+			if (!status.containsKey(v)) {
 				// if txn v does not involve S, we should not wait for the
 				// arrival of that txn
 				// we need to communicate with other servers
-				LOG.debug("NULL!!! Haven't arrived or not involved??? WTF!!!");
-				while (true) {
+				boolean toCon = true;
+				while (toCon) {
+					LOG.debug("NULL!!! Haven't arrived or not involved??? WTF!!!");
 					for (String s : serversInvolvedList.get(v)) {
-						AskListener askListener = new AskListener(
-								configuration.getMember(s), coorCommunicator,
-								transactionId);
+						AskListener askListener = new AskListener(configuration.getMember(s), coorCommunicator, v);
+						askListener.start();
 						synchronized (askListener) {
 							long start = System.currentTimeMillis();
+							LOG.warn("Asking  txn " + v + " for commit");
 							while (askListener.getResult() == 0) {
 								try {
-									LOG.warn("Asking  txn " + v + " for commit");
 									askListener.wait(5000);
-								} catch (InterruptedException ignored) {
+								} catch (InterruptedException ignored) { }
+								finally {
+									LOG.debug("Ask Response: " + askListener.getResult());
 								}
-
 								if (System.currentTimeMillis() - start > 10000) {
-									LOG.warn("Asking txn " + transactionId
-											+ " timed out");
-									continue;
+									LOG.warn("Asking txn " + v + " timed out");
+									break;
 								}
 							}
 							if (askListener.getResult() == 1) {
+								toCon = false;
 								break;
 							}
 						}
 					}
 				}
 			}
-
-			while (!status.containsKey(v)) {
-				LOG.debug("waiting1: " + v);
-				throw new RuntimeException("1");
-			}
+			// txn v is committing and this sever does not involve txn v
+			if (!status.containsKey(v)) { continue; }
+			
 			// txn involves server and wait for txn to be committing
 			while (status.get(v) == STARTED) {
 				try {
@@ -221,8 +220,7 @@ public class StorageNode {
 					// remove the buffed piece
 					pieces.get(v).remove(p);
 					// remove the piece from conflict information
-					String theKey = DTCCUtil.buildString(p.getTable(), "_",
-							p.getKey());
+					String theKey = DTCCUtil.buildString(p.getTable(), "_", p.getKey());
 					List<String> conflictPieces = pieces_conflict.get(theKey);
 					conflictPieces.remove(p.getTransactionId());
 					if (dep_server.containsKey(p.getTransactionId())) {
@@ -353,8 +351,10 @@ public class StorageNode {
 			throw new RuntimeException("Wrong transactionId when asking");
 		}
 		if (status.get(transactionId) >= COMMITTING) {
+			LOG.debug("Response true !");
 			return true;
 		} else {
+			LOG.info("randomBackoff()");
 			randomBackoff(); // random back off waiting for txn to be committing
 		}
 		return (status.get(transactionId) >= COMMITTING);

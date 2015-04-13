@@ -76,7 +76,7 @@ public class RococoTransaction {
 		// ServersInvolved
 		Map<String, String> vertexes = startResponse.getDep().getVertexes();
 		for (Entry<String, String> entry : vertexes.entrySet()) {
-			String key = entry.getKey();
+			String key = entry.getValue();
 			Set<String> set = serversInvolvedList.get(key);
 			if (set == null) {
 				set = new HashSet<String>();

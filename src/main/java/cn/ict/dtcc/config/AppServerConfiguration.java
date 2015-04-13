@@ -76,7 +76,7 @@ public class AppServerConfiguration {
                 }
             });
             for (Member m : entry.getValue()) {
-            	membersIndex.put(DTCCUtil.buildKey(entry.getValue(), m.getProcessId()), m);
+            	membersIndex.put(m.getId(), m);
             }
             members.put(entry.getKey(), entry.getValue().toArray(new Member[entry.getValue().size()]));
         }

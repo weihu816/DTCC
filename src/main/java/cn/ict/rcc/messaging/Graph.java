@@ -45,7 +45,7 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
   }
 
   public Map<String,String> vertexes; // required
-  public Map<String,Set<String>> serversInvolved; // required
+  public Map<String,Set<String>> serversInvolved; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -109,6 +109,7 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
   }
 
   // isset id assignments
+  private _Fields optionals[] = {_Fields.SERVERS_INVOLVED};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -116,7 +117,7 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.SERVERS_INVOLVED, new org.apache.thrift.meta_data.FieldMetaData("serversInvolved", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.SERVERS_INVOLVED, new org.apache.thrift.meta_data.FieldMetaData("serversInvolved", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
@@ -129,12 +130,10 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
   }
 
   public Graph(
-    Map<String,String> vertexes,
-    Map<String,Set<String>> serversInvolved)
+    Map<String,String> vertexes)
   {
     this();
     this.vertexes = vertexes;
-    this.serversInvolved = serversInvolved;
   }
 
   /**
@@ -384,14 +383,16 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
       sb.append(this.vertexes);
     }
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("serversInvolved:");
-    if (this.serversInvolved == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.serversInvolved);
+    if (isSetServersInvolved()) {
+      if (!first) sb.append(", ");
+      sb.append("serversInvolved:");
+      if (this.serversInvolved == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.serversInvolved);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -400,9 +401,6 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
     // check for required fields
     if (vertexes == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'vertexes' was not present! Struct: " + toString());
-    }
-    if (serversInvolved == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'serversInvolved' was not present! Struct: " + toString());
     }
     // check for sub-struct validity
   }
@@ -520,24 +518,26 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
         oprot.writeFieldEnd();
       }
       if (struct.serversInvolved != null) {
-        oprot.writeFieldBegin(SERVERS_INVOLVED_FIELD_DESC);
-        {
-          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, struct.serversInvolved.size()));
-          for (Map.Entry<String, Set<String>> _iter36 : struct.serversInvolved.entrySet())
+        if (struct.isSetServersInvolved()) {
+          oprot.writeFieldBegin(SERVERS_INVOLVED_FIELD_DESC);
           {
-            oprot.writeString(_iter36.getKey());
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, struct.serversInvolved.size()));
+            for (Map.Entry<String, Set<String>> _iter36 : struct.serversInvolved.entrySet())
             {
-              oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, _iter36.getValue().size()));
-              for (String _iter37 : _iter36.getValue())
+              oprot.writeString(_iter36.getKey());
               {
-                oprot.writeString(_iter37);
+                oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, _iter36.getValue().size()));
+                for (String _iter37 : _iter36.getValue())
+                {
+                  oprot.writeString(_iter37);
+                }
+                oprot.writeSetEnd();
               }
-              oprot.writeSetEnd();
             }
+            oprot.writeMapEnd();
           }
-          oprot.writeMapEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -564,16 +564,23 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
           oprot.writeString(_iter38.getValue());
         }
       }
-      {
-        oprot.writeI32(struct.serversInvolved.size());
-        for (Map.Entry<String, Set<String>> _iter39 : struct.serversInvolved.entrySet())
+      BitSet optionals = new BitSet();
+      if (struct.isSetServersInvolved()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetServersInvolved()) {
         {
-          oprot.writeString(_iter39.getKey());
+          oprot.writeI32(struct.serversInvolved.size());
+          for (Map.Entry<String, Set<String>> _iter39 : struct.serversInvolved.entrySet())
           {
-            oprot.writeI32(_iter39.getValue().size());
-            for (String _iter40 : _iter39.getValue())
+            oprot.writeString(_iter39.getKey());
             {
-              oprot.writeString(_iter40);
+              oprot.writeI32(_iter39.getValue().size());
+              for (String _iter40 : _iter39.getValue())
+              {
+                oprot.writeString(_iter40);
+              }
             }
           }
         }
@@ -596,28 +603,31 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
         }
       }
       struct.setVertexesIsSet(true);
-      {
-        org.apache.thrift.protocol.TMap _map45 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, iprot.readI32());
-        struct.serversInvolved = new HashMap<String,Set<String>>(2*_map45.size);
-        for (int _i46 = 0; _i46 < _map45.size; ++_i46)
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
         {
-          String _key47;
-          Set<String> _val48;
-          _key47 = iprot.readString();
+          org.apache.thrift.protocol.TMap _map45 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, iprot.readI32());
+          struct.serversInvolved = new HashMap<String,Set<String>>(2*_map45.size);
+          for (int _i46 = 0; _i46 < _map45.size; ++_i46)
           {
-            org.apache.thrift.protocol.TSet _set49 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            _val48 = new HashSet<String>(2*_set49.size);
-            for (int _i50 = 0; _i50 < _set49.size; ++_i50)
+            String _key47;
+            Set<String> _val48;
+            _key47 = iprot.readString();
             {
-              String _elem51;
-              _elem51 = iprot.readString();
-              _val48.add(_elem51);
+              org.apache.thrift.protocol.TSet _set49 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+              _val48 = new HashSet<String>(2*_set49.size);
+              for (int _i50 = 0; _i50 < _set49.size; ++_i50)
+              {
+                String _elem51;
+                _elem51 = iprot.readString();
+                _val48.add(_elem51);
+              }
             }
+            struct.serversInvolved.put(_key47, _val48);
           }
-          struct.serversInvolved.put(_key47, _val48);
         }
+        struct.setServersInvolvedIsSet(true);
       }
-      struct.setServersInvolvedIsSet(true);
     }
   }
 
