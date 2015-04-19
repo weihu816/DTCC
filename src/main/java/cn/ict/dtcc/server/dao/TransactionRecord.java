@@ -18,7 +18,11 @@ public class TransactionRecord {
     private boolean dirty;
     private Set<Option> options = new TreeSet<Option>(new Comparator<Option>() {
         public int compare(Option o1, Option o2) {
-            return o1.getKey().compareTo(o2.getKey());
+        	if (o1.getKey().compareTo(o2.getKey()) != 0) {
+        		return o1.getKey().compareTo(o2.getKey());
+        	} else {
+        		return o1.getTable().compareTo(o2.getTable());
+        	}
         }
     });
 

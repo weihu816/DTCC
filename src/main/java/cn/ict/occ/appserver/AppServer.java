@@ -1,5 +1,6 @@
 package cn.ict.occ.appserver;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.apache.thrift.transport.TTransportException;
 import cn.ict.dtcc.config.AppServerConfiguration;
 import cn.ict.dtcc.config.Member;
 import cn.ict.dtcc.config.ServerConfiguration;
+import cn.ict.dtcc.server.dao.Database;
 import cn.ict.occ.messaging.OCCAppServerService;
 import cn.ict.occ.messaging.ReadValue;
 import cn.ict.occ.messaging.Result;
@@ -59,17 +61,53 @@ public class AppServer implements AppServerService {
 	}
 	
 	@Override
-	public Result readIndexFetchTop(String table, String keyIndex,
+	public Result readIndexFetchTop(String table, String keyIndex,  List<String> names,
 			String orderField, boolean isAssending) {
-		// TODO Auto-generated method stub
-		return null;
+		Member member = configuration.getShardMember(table, keyIndex); // customer find!
+		ReadValue r = communicator.getIndexFetch(member, table, keyIndex, names, orderField, true, "top");
+		if (r.getValues().size() == 0) { return null; }
+		String key = r.getValues().get(0);
+		Map<String, String> readValues = new HashMap<String, String>();
+		List<String> values = r.getValues();
+		for (int i = 1; i < values.size(); i++) {
+			readValues.put(names.get(i-1), values.get(i));
+		}
+		return new Result(table, key, readValues, r.getVersion());
 	}
 	
 	@Override
-	public Result readIndexFetchMiddle(String table, String keyIndex,
+	public Result readIndexFetchMiddle(String table, String keyIndex, List<String> names,
 			String orderField, boolean isAssending) {
-		// TODO Auto-generated method stub
-		return null;
+		Member member = configuration.getShardMember(table, keyIndex); // customer find!
+		ReadValue r = communicator.getIndexFetch(member, table, keyIndex, names, orderField, true, "middle");
+		if (r.getValues().size() == 0) { return null; }
+		String key = r.getValues().get(0);
+		Map<String, String> readValues = new HashMap<String, String>();
+		List<String> values = r.getValues();
+		for (int i = 1; i < values.size(); i++) {
+			readValues.put(names.get(i-1), values.get(i));
+		}
+		return new Result(table, key, readValues, r.getVersion());
+	}
+	
+	
+	@Override
+	public List<Result> readIndexFetchAll(String table, String keyIndex,
+			List<String> names) {
+		Member member = configuration.getShardMember(table, keyIndex); // customer find!
+		List<ReadValue> rs = communicator.getIndexFetch(member, table, keyIndex, names);
+		List<Result> lists = new ArrayList<Result>();
+		for (ReadValue r : rs) {
+			if (r.getValues().size() == 0) { return null; }
+			String key = r.getValues().get(0);
+			Map<String, String> readValues = new HashMap<String, String>();
+			List<String> values = r.getValues();
+			for (int i = 1; i < values.size(); i++) {
+				readValues.put(names.get(i-1), values.get(i));
+			}
+			lists.add(new Result(table, key, readValues, r.getVersion()));
+		}
+		return lists;
 	}
 	
 	
@@ -159,4 +197,5 @@ public class AppServer implements AppServerService {
         }
         return success;
 	}
+
 }

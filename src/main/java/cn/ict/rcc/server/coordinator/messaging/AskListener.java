@@ -2,15 +2,11 @@ package cn.ict.rcc.server.coordinator.messaging;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import cn.ict.dtcc.config.Member;
 
 public class AskListener {
-
-	public static final Log LOG = LogFactory.getLog(AskListener.class);
 	
 	private CoordinatorCommunicator communicator;
 	private Member member;
@@ -33,7 +29,6 @@ public class AskListener {
 	}
 	
 	public void notifyCommitOutcome(boolean response) {
-		LOG.debug("Notified: result = " + response);
 		if (response) {
 			result.set(1);
 		} else {

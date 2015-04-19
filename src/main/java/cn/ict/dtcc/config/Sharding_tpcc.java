@@ -8,7 +8,6 @@ import org.apache.commons.logging.LogFactory;
 import cn.ict.dtcc.benchmark.tpcc.TPCCConstants;
 
 public class Sharding_tpcc {
-	private static final Log LOG = LogFactory.getLog(Sharding_tpcc.class);
 
 	public static Member getShardMember(Map<Integer, Member[]> members,
 			String table, String key) {

@@ -31,5 +31,22 @@ public class OCCTransaction extends Transaction {
         }
     }
 
-	
+	@Override
+	protected Result doreadIndexFetchMiddle(String table, String keyIndex,
+			List<String> names, String orderField, boolean isAssending) {
+		 return appServer.readIndexFetchMiddle(table, keyIndex, names, orderField, isAssending);
+	}
+
+	@Override
+	protected Result doreadIndexFetchTop(String table, String keyIndex,
+			List<String> names, String orderField, boolean isAssending) {
+		 return appServer.readIndexFetchTop(table, keyIndex, names, orderField, isAssending);
+
+	}
+
+	@Override
+	protected List<Result> doreadIndexFetchAll(String table, String keyIndex, List<String> names) {
+		return appServer.readIndexFetchAll(table, keyIndex, names);
+	}
+
 }

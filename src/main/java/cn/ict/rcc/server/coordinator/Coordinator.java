@@ -66,7 +66,7 @@ public class Coordinator {
 	//-----------------------------
 	public static void main(String[] args) {
 		
-		PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
+		PropertyConfigurator.configure(AppServerConfiguration.getConfiguration().getLogConfigFilePath());
 		
 		final Coordinator server = new Coordinator();
 		Runtime.getRuntime().addShutdownHook(new Thread() {

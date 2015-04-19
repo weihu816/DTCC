@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.PropertyConfigurator;
 
-import cn.ict.dtcc.config.ServerConfiguration;
+import cn.ict.dtcc.config.AppServerConfiguration;
 import cn.ict.dtcc.exception.TransactionException;
 import cn.ict.dtcc.util.DTCCUtil;
 
@@ -22,15 +22,15 @@ public class FundsTransferTest {
 
     public static void main(String[] args) throws TransactionException {
     	
-    	PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
+    	PropertyConfigurator.configure(AppServerConfiguration.getConfiguration().getLogConfigFilePath());
 
     	
         final TransactionFactory fac = new TransactionFactory();
 
 //        final int startingTotal = Integer.parseInt(args[0]);
 //        final int accounts = Integer.parseInt(args[1]);
-      final int startingTotal = 100;
-      final int accounts = 5;
+      final int startingTotal = 30;
+      final int accounts = 30;
 
         List<String> values;
 
@@ -143,18 +143,18 @@ public class FundsTransferTest {
                     Thread.sleep(new Random().nextInt(10) * 500);
                 } catch (InterruptedException ignored) {
                 }
-                Transaction t3 = fac.create();
-                t3.begin();
-                int root = Integer.parseInt(t3.read(TABLE, ROOT, NAMES).get(0));
+                Transaction t = fac.create();
+                t.begin();
+                int root = Integer.parseInt(t.read(TABLE, ROOT, NAMES).get(0));
                 System.out.println("ROOT = " + root);
-                int child = Integer.parseInt(t3.read(TABLE, CHILD + index, NAMES).get(0));
+                int child = Integer.parseInt(t.read(TABLE, CHILD + index, NAMES).get(0));
                 System.out.println(CHILD + index + " = " + child);
                 
             	List<String> values = DTCCUtil.buildColumns(root + child);
-                t3.write(TABLE, ROOT, NAMES, values);
+                t.write(TABLE, ROOT, NAMES, values);
                 values = DTCCUtil.buildColumns(0);
-                t3.write(TABLE, CHILD + index, NAMES, values);
-                t3.commit();
+                t.write(TABLE, CHILD + index, NAMES, values);
+                t.commit();
                 System.out.println("Transaction 3 completed by Thread-" + index);
             } catch (TransactionException e) {
                 System.out.println("Transaction 3 failed by Thread-" + index);

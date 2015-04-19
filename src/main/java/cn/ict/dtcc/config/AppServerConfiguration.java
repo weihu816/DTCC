@@ -88,7 +88,7 @@ public class AppServerConfiguration {
 				if (config == null) {
 					String configPath = System.getProperty("server.config.dir", "conf");
 					Properties props = new Properties();
-					File configFile = new File(configPath, "server.properties");
+					File configFile = new File(configPath, "app-server.properties");
 					try {
 						props.load(new FileInputStream(configFile));
 						config = new AppServerConfiguration(props);

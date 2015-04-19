@@ -14,22 +14,25 @@ public class Record {
     private String outstanding = null;
 
     public Record(String table, String key) {
-    	this.setTable(table);
-        this.setKey(key);
         values = new ConcurrentHashMap<String, String>();
+//        values.put(Database.DELETE_FIELD, Database.EXIST_STRING);
+        this.setTable(table);
+        this.setKey(key);
     }
     
     public Record(String table, String key, int v) {
-    	this.setTable(table);
+        values = new ConcurrentHashMap<String, String>();
+//        values.put(Database.DELETE_FIELD, Database.EXIST_STRING);
+        this.setTable(table);
         this.setKey(key);
         this.setVersion(v);
-        values = new ConcurrentHashMap<String, String>();
     }
     
     public Record(String table, String key, Map<String, String> values) {
+        this.values = values;
+//        values.put(Database.DELETE_FIELD, Database.EXIST_STRING);
     	this.setTable(table);
         this.setKey(key);
-        this.values = values;
     }
 
     public long getVersion() {
@@ -80,6 +83,7 @@ public class Record {
 	
 	public void setKey(String key) {
 		this.key = key;
+		values.put("key", key);
 	}
 	
 	public void put(String name, String value) {
@@ -93,5 +97,9 @@ public class Record {
 	public String getOutstanding() {
 		return outstanding;
 	}
+	
+//	public boolean isDeleted() {
+//		return (values.get("__DELETE__") != null) && values.get("__DELETE__").equals("__DELETE__");
+//	}
 	
 }

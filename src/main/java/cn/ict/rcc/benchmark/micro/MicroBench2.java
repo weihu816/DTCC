@@ -24,9 +24,9 @@ import cn.ict.rcc.server.coordinator.messaging.TransactionFactory;
  * @author Wei
  *
  */
-public class MicroBench {
+public class MicroBench2 {
 	
-	private static final Log LOG = LogFactory.getLog(MicroBench.class);
+	private static final Log LOG = LogFactory.getLog(MicroBench2.class);
 	
 	private static final TransactionFactory fac = new TransactionFactory();
 
@@ -122,14 +122,14 @@ public class MicroBench {
 			long start = System.currentTimeMillis();
 			CoordinatorClient client = CoordinatorClient.getCoordinatorClient();
 
-			while (System.currentTimeMillis() - start < 1000) {
+//			while (System.currentTimeMillis() - start < 10000) {
 				client.callProcedure(Procedure.MICRO_BENCHMARK, new ArrayList<String>());
 				count++;
-			}
+//			}
 			return count;
 
 		}
 	}
-
 }
+
 

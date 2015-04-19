@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.thrift.TException;
 
 import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.dtcc.server.dao.MemoryDB;
@@ -72,13 +73,14 @@ public class StorageNode {
         	synchronized (key.intern()) {
         		Record record = db.get(table, key);
         		// if record has been written by another transaction
-                if (record.getOutstanding() != null && !transaction.equals(record.getOutstanding())) {
+                if (record.getOutstanding() != null && !transaction.equals(record.getOutstanding())) { // TODO !record.isDeleted()
                 	LOG.warn("Outstanding option detected on " + table + " " +  key + " - Denying the new option (" + record.getOutstanding() + ")");
                     synchronized (transaction.intern()) {
                         TransactionRecord txnRecord = db.getTransactionRecord(transaction);
                         Option option = new Option(table, key, names, values, record.getVersion()); // dirty:false
                         switch (txnRecord.getStatus()) {
                             case TransactionRecord.STATUS_COMMITTED:
+    	                    	LOG.debug("?????????????????????????????????????????????????");
                                 txnRecord.addOption(option);
                                 if (record.getVersion() <= option.getOldVersion()) {
                                     record.setVersion(option.getOldVersion() + 1);
@@ -94,6 +96,7 @@ public class StorageNode {
                                 LOG.info("Applied delayed option");
                                 break;
                             case TransactionRecord.STATUS_ABORTED:
+    	                    	LOG.debug("?????????????????????????????????????????????????");
                                 break;
                             default:
                                 txnRecord.addOption(option);
@@ -120,6 +123,7 @@ public class StorageNode {
 	                Option option = new Option(table, key, names, values, record.getVersion()); // dirty:false
 	                switch (txnRecord.getStatus()) {
 	                    case TransactionRecord.STATUS_COMMITTED:
+	                    	LOG.debug("?????????????????????????????????????????????????");
 	                        txnRecord.addOption(option);
 	                        if (record.getVersion() <= option.getOldVersion()) {
 	                            record.setVersion(option.getOldVersion() + 1);
@@ -135,6 +139,7 @@ public class StorageNode {
 	                        LOG.info("Applied delayed option");
 	                        break;
 	                    case TransactionRecord.STATUS_ABORTED:
+	                    	LOG.debug("?????????????????????????????????????????????????");
 	                        break;
 	                    default:
 	                        txnRecord.addOption(option);
@@ -152,22 +157,29 @@ public class StorageNode {
             if (commit) {
                 LOG.debug("Received Commit decision on transaction id: " + transaction);
                 for (Option option : txnRecord.getOptions()) {
-                    synchronized (option.getTable().intern()) {
-						synchronized (option.getKey().intern()) {
-							Record record = db.get(option.getTable(), option.getKey());
-	                        if (record.getVersion() <= option.getOldVersion()) {
-	                            record.setVersion(option.getOldVersion() + 1);
-	                            Map<String, String> writeValues = new HashMap<String, String>();
-	                            for (int i = 0; i < option.getNames().size(); i++) {
-	                            	writeValues.put(option.getNames().get(i), option.getValues().get(i));
-	                            }
-	                            record.setValues(writeValues);
-	                            record.setOutstanding(null);
-	                            db.put(record);
-	                            
-	                        }
-						}
-                    }
+                    synchronized (option.getTable().intern()) { synchronized (option.getKey().intern()) {
+                    	boolean isDelete = false;
+                    	Record record = db.get(option.getTable(), option.getKey());
+                    	LOG.debug(option.getNames() + " " + option.getValues());
+                    	if (record.getVersion() <= option.getOldVersion()) {
+                    		record.setVersion(option.getOldVersion() + 1);
+                    		Map<String, String> writeValues = new HashMap<String, String>();
+                    		for (int i = 0; i < option.getNames().size(); i++) {
+                    			writeValues.put(option.getNames().get(i), option.getValues().get(i));
+                    			if (option.getNames().get(i).equals("__DELETE__") && option.getValues().get(i).equals("__DELETE__")) {
+                    				isDelete = true;
+                    			}
+                    		}
+                    		record.setValues(writeValues);
+                    		record.setOutstanding(null);
+                    		db.put(record);
+                    		if (isDelete) {
+                    			LOG.info("__DELETE__table:" + option.getTable() + " __DELETE__key:"+ option.getKey());
+                    			db.delete(option.getTable(), option.getKey());
+            					// maintain index
+                    		}
+                    	}
+                    }}
                     LOG.debug("[COMMIT] Saved option to DB");
                 }
             } else {
@@ -196,11 +208,17 @@ public class StorageNode {
     }
     
     
+    /*
+     * plain write
+     */
     public synchronized boolean write(String table, String key,
 			List<String> names, List<String> values) {
 		return db.write(table, key, names, values);
 	}
 	
+    /*
+     * create index on specified fields
+     */
 	public boolean createSecondaryIndex(String table, List<String> fields) {
 		return db.createSecondaryIndex(table, fields);
 	}
@@ -216,4 +234,14 @@ public class StorageNode {
         });
         storageNode.start();
 	}
+    
+    public ReadValue readIndexFetch(String table, String keyIndex, List<String> names,
+			String orderField, boolean isAssending, String type) {
+		return db.read_secondaryIndexFetch(table, keyIndex, names, orderField, isAssending, type);
+    }
+    
+    public List<ReadValue> readIndexFetchAll(String table, String keyIndex, List<String> names) {
+		return db.read_secondaryIndexFetchAll(table, keyIndex, names);
+    }
+
 }

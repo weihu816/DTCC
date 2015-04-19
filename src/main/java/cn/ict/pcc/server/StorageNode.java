@@ -57,18 +57,13 @@ public class StorageNode {
     
 	public ReadValue onRead(String tid, String table, String key, List<String> names) {
 		this.db.locksAppend(tid, table, new String[] { key });
-		boolean retry = true;
 		while (true) {
 			if (this.db.isNonConflictingHead(table, tid)) {
 				LOG.info("Lock Success! ====" + tid + " table: " + table);
 				break;
 			} else {
-				if (!retry) {
-					
-				}
-				LOG.info("Sleeping~ " + tid + " table: " + table );
+				LOG.info("Sleeping~ txn:" + tid + " table:" + table + " key:" + key);
 				randomBackoff();
-				retry = false;
 			}
 		}
 		Record record = db.get(table, key);

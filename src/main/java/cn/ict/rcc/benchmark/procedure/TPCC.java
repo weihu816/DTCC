@@ -526,6 +526,7 @@ public class TPCC {
 		/* update c_balance, c_delivery_cnt of customers */
 		columns = TPCCGenerator.buildColumns("c_balance", "c_delivery_cnt");
 		values = TPCCGenerator.buildColumns(c_balance + ol_total, c_delivery_cnt + 1);
+		LOG.debug("write customer");
 		
 		transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
 		transaction.write(columns, values);
@@ -580,7 +581,7 @@ class myTask implements Callable<Integer> {
 
 		List<String> paras;
 		
-		while (System.currentTimeMillis() - start < 30000) {
+//		while (System.currentTimeMillis() - start < 30000) {
 //			int x = TPCCGenerator.randomInt(1, 100);
 		int x = 1;
 			if (x <= 44) {
@@ -607,7 +608,7 @@ class myTask implements Callable<Integer> {
 			} else {
 				
 			}
-		}
+//		}
 		return count_neworder;
 	}
 }

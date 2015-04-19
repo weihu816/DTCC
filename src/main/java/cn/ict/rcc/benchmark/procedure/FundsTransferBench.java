@@ -19,7 +19,7 @@ import cn.ict.rcc.server.coordinator.messaging.TransactionFactory;
 
 public class FundsTransferBench {
 	
-	private static final Log LOG = LogFactory.getLog(FundsTransferBench.class);
+//	private static final Log LOG = LogFactory.getLog(FundsTransferBench.class);
 
 	private static final TransactionFactory fac = new TransactionFactory();
 	
@@ -28,12 +28,12 @@ public class FundsTransferBench {
 
     public static void FundsTransfer() throws TransactionException  {
 
-    	final int startingTotal = 100;
-        final int accounts = 50;
+    	final int startingTotal = 128;
+        final int accounts = 128;
 
         int num;
         
-        LOG.debug("Step 1: Initializing accounts");
+        System.out.println("Step 1: Initializing accounts");
         RococoTransaction t1 = fac.create();
         t1.begin();
         t1.createPiece("table1", "ROOT", false);
@@ -47,23 +47,23 @@ public class FundsTransferBench {
         	t1.completePiece();
         }
         t1.commit();
-        LOG.debug("Transaction 1 completed...");
-        LOG.debug("==========================================\n");
+        System.out.println("Transaction 1 completed...");
+        System.out.println("==========================================\n");
 
         try {
-            LOG.debug("Starting step 2 in 2 seconds...");
+            System.out.println("Starting step 2 in 2 seconds...");
             Thread.sleep(2000);
         } catch (InterruptedException ignored) {
         }
 
-        LOG.debug("Step 2: Distributing funds");
+        System.out.println("Step 2: Distributing funds");
         RococoTransaction t2 = fac.create();
         t2.begin();
         num = t2.createPiece("table1", ROOT, true);
         t2.read("amount");
         t2.completePiece();
         int root = Integer.valueOf(t2.get(num, "amount"));
-        LOG.debug("ROOT = " + root);
+        System.out.println("ROOT = " + root);
         
         int[] children = new int[accounts];
         for (int i = 0; i < accounts; i++) {
@@ -72,7 +72,7 @@ public class FundsTransferBench {
             t2.completePiece();
             int child = Integer.valueOf(t2.get(num, "amount"));
             children[i] = child;
-            LOG.debug("CHILD" + i + " = " + child);
+            System.out.println("CHILD" + i + " = " + child);
         }
 
         int fundsPerChild = root/accounts;
@@ -87,18 +87,18 @@ public class FundsTransferBench {
         t2.completePiece();
         
         t2.commit();
-        LOG.debug("Transaction 2 completed...");
-        LOG.debug("==========================================\n");
+        System.out.println("Transaction 2 completed...");
+        System.out.println("==========================================\n");
         
         
       try {
-          LOG.debug("Starting step 3 in 2 seconds...");
+          System.out.println("Starting step 3 in 2 seconds...");
           Thread.sleep(2000);
       } catch (InterruptedException ignored) {
       }
 
       
-      LOG.debug("Step 3: Gathering funds");
+      System.out.println("Step 3: Gathering funds");
       ExecutorService exec = Executors.newFixedThreadPool(accounts);
       Future[] futures = new Future[accounts];
       for (int i = 0; i < accounts; i++) {
@@ -113,15 +113,15 @@ public class FundsTransferBench {
           }
       }
       exec.shutdownNow();
-      LOG.debug("==========================================\n");
+      System.out.println("==========================================\n");
 
       try {
-          LOG.debug("Starting step 4 in 2 seconds...");
+          System.out.println("Starting step 4 in 2 seconds...");
           Thread.sleep(2000);
       } catch (InterruptedException ignored) {
       }
 
-      LOG.debug("Step 4: Validating funds");
+      System.out.println("Step 4: Validating funds");
       RococoTransaction t4 = fac.create();
       t4.begin();
       int total = 0;
@@ -129,7 +129,7 @@ public class FundsTransferBench {
       t4.read("amount");
       t4.completePiece();
       root = Integer.valueOf(t4.get(num, "amount"));
-      LOG.debug("ROOT = " + root);
+      System.out.println("ROOT = " + root);
       children = new int[accounts];
       total += root;
       for (int i = 0; i < accounts; i++) {
@@ -139,13 +139,13 @@ public class FundsTransferBench {
           int child = Integer.valueOf(t4.get(num, "amount"));
           children[i] = child;
           total += child;
-          LOG.debug(CHILD + i + " = " + child);
+          System.out.println(CHILD + i + " = " + child);
       }
 
       t4.commit();
-      LOG.debug("Transaction 4 completed...");
-      LOG.debug("==========================================\n");
-      LOG.debug("FINAL TOTAL = " + total);
+      System.out.println("Transaction 4 completed...");
+      System.out.println("==========================================\n");
+      System.out.println("FINAL TOTAL = " + total);
     }
 
 
@@ -173,26 +173,24 @@ public class FundsTransferBench {
 //				t3.read("amount");
 //				t3.completePiece();
 //				int root = Integer.valueOf(t3.get(num, "amount"));
-//				LOG.debug("ROOT = " + root);
+//				System.out.println("ROOT = " + root);
 				
 				num = t3.createPiece("table2", CHILD + index, true);
 				t3.read("amount");
+				t3.write("amount", String.valueOf(0));
 				t3.completePiece();
 				int child = Integer.valueOf(t3.get(num, "amount"));
-				LOG.debug(CHILD + index + " = " + child);
+				System.out.println(CHILD + index + " = " + child);
 
 				num = t3.createPiece("table1", ROOT, false);
 //				t3.write("amount", String.valueOf(root + child));
 				t3.addvalueInteger("amount", child);
 				t3.completePiece();
-				
-				num = t3.createPiece("table2", CHILD + index, false);
-				t3.write("amount", String.valueOf(0));
-				t3.completePiece();
+
 				t3.commit();
-				LOG.debug("Transaction 3 completed by Thread-" + index);
+//				System.out.println("Transaction 3 completed by Thread-" + index);
 			} catch (TransactionException e) {
-				LOG.debug("Transaction 3 failed by Thread-" + index);
+				System.out.println("Transaction 3 failed by Thread-" + index);
 			}
 		}
 	}

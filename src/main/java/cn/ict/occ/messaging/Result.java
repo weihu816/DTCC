@@ -9,7 +9,7 @@ public class Result {
     private String key;
     private Map<String, String> values;
     private long version;
-    private boolean deleted;
+    private boolean deleted = false;
 
     public Result(String table, String key, Map<String, String> values, long version) {
     	this.table = table;

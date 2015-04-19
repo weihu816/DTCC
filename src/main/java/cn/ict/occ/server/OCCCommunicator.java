@@ -106,6 +106,65 @@ public class OCCCommunicator {
         }
 	}
 	
+	public ReadValue getIndexFetch(Member member, String table, String keyIndex,
+			List<String> names, String orderField, Boolean isAssending, String type) {
+        TTransport transport = null;
+        boolean error = false;
+        try {
+            transport = blockingPool.borrowObject(member);
+            TProtocol protocol = new TBinaryProtocol(transport);
+            OCCCommunicationService.Client client = new OCCCommunicationService.Client(protocol);
+            if (type.equals("middle")) {
+                return client.readIndexFetchMiddle(table, keyIndex, names, orderField, isAssending);
+            } else {
+            	// top
+                return client.readIndexFetchTop(table, keyIndex, names, orderField, isAssending);
+            }
+        } catch (Exception e) {
+            error = true;
+            handleException(member.getHostName(), e);
+            return null;
+        } finally {
+            if (transport != null) {
+                try {
+                    if (error) {
+                        blockingPool.invalidateObject(member, transport);
+                    } else {
+                        blockingPool.returnObject(member, transport);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+	}
+	
+	public List<ReadValue> getIndexFetch(Member member, String table, String keyIndex,
+			List<String> names) {
+        TTransport transport = null;
+        boolean error = false;
+        try {
+            transport = blockingPool.borrowObject(member);
+            TProtocol protocol = new TBinaryProtocol(transport);
+            OCCCommunicationService.Client client = new OCCCommunicationService.Client(protocol);
+            return client.readIndexFetchAll(table, keyIndex, names);
+        } catch (Exception e) {
+            error = true;
+            handleException(member.getHostName(), e);
+            return null;
+        } finally {
+            if (transport != null) {
+                try {
+                    if (error) {
+                        blockingPool.invalidateObject(member, transport);
+                    } else {
+                        blockingPool.returnObject(member, transport);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+	}
+	
 	public void sendBulkAcceptAsync(BulkVoteCounter counter, Member member, List<cn.ict.occ.appserver.Accept> accepts) {
 		AsyncMethodCallbackDecorator callback = null;
 		try {

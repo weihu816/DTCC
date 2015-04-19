@@ -7,12 +7,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import cn.ict.dtcc.benchmark.tpcc.TPCCGenerator;
 import cn.ict.dtcc.exception.TransactionException;
+import cn.ict.dtcc.server.dao.Database;
 import cn.ict.occ.appserver.Option;
 import cn.ict.occ.messaging.Result;
 
 public abstract class Transaction {
 
+	private static final Log LOG = LogFactory.getLog(Transaction.class);
+	
     protected String transactionId;
     protected boolean complete;
 
@@ -52,7 +59,7 @@ public abstract class Transaction {
         if (toRead) {
             Result result = doRead(table, key, names);
             if (result != null) {
-//                result.setDeleted(isDeleted(result.getValues()));
+//                result.setDeleted(isDeleted(result.getValues().get(Database.DELETE_FIELD)));
                 
                 if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
                 Map<String, Result> x  = readSet.get(table);
@@ -76,97 +83,131 @@ public abstract class Transaction {
         return toReturn;
     }
 
+	public synchronized List<String> readIndexFetchMiddle(String table,
+			String key, List<String> names, String orderField,
+			Boolean isAssending) throws TransactionException {
+        assertState();
+        List<String> toReturn = new ArrayList<String>();
+
+        Result result = doreadIndexFetchMiddle(table, key, names, orderField, isAssending);
+        if (result != null) {
+//        	result.setDeleted(isDeleted(result.getValues().get(Database.DELETE_FIELD)));
+        	if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+        	Map<String, Result> x = readSet.get(table);
+        	x.put(result.getKey(), result); // TODO
+
+        	if (result.isDeleted()) { throw new TransactionException("No object exists by : " + table + " " + key); }
+
+        	if (result.getVersion() == 0) {
+        		throw new TransactionException("No object exists by : " + table + " " + key);
+        	}
+        	Map<String, String> values = result.getValues();
+        	for (String name : names) {
+        		toReturn.add(values.get(name));
+        	}
+        	if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+            readSet.get(table).put(result.getKey(), result);
+        } else {
+        	throw new TransactionException("No object exists by : " + table + " " + key);
+        }
+        
+        return toReturn;
+    }
+	
+	public synchronized List<List<String>> readIndexFetchAll(String table,
+			String key, List<String> names) throws TransactionException {
+        assertState();
+        List<List<String>> toReturn = new ArrayList<List<String>>();
+
+        List<Result> results = doreadIndexFetchAll(table, key, names);
+        for (Result result : results) {
+        	if (result != null) {
+//        		result.setDeleted(isDeleted(result.getValues().get(Database.DELETE_FIELD)));
+        		if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+        		Map<String, Result> x = readSet.get(table);
+        		x.put(result.getKey(), result); // TODO
+
+        		if (result.isDeleted()) { throw new TransactionException("No object exists by : " + table + " " + key); }
+
+        		if (result.getVersion() == 0) {
+        			throw new TransactionException("No object exists by : " + table + " " + key);
+        		}
+        		Map<String, String> values = result.getValues();
+            	List<String> list = new ArrayList<String>();
+        		for (String name : names) {
+        			list.add(values.get(name));
+        		}
+        		toReturn.add(list);
+        		if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+                readSet.get(table).put(result.getKey(), result);
+        	} else {
+        		throw new TransactionException("No object exists by : " + table + " " + key);
+        	}
+        }
+        return toReturn;
+    }
+    
 	public synchronized List<String> readIndexFetchTop(String table, String key, 
 			List<String> names, String orderField, boolean isAssending) throws TransactionException {
 		
         assertState();
-        boolean toRead = false;
         List<String> toReturn = new ArrayList<String>();
-
-        if (readSet.containsKey(table) && readSet.get(table).containsKey(key)) {
-            Result result = readSet.get(table).get(key);
-            Map<String, String> values = result.getValues();
-            for (String name : names) {
-            	if (!values.containsKey(name)) {
-            		toRead = true;
-            		break;
-            	}
-            	toReturn.add(values.get(name));
-            }
-            if (!toRead){
-            	if (result.isDeleted()) {
-                	throw new TransactionException("No object exists by : " + table + " " + key);
-                }
-                if (result.getVersion() == 0) {
-                	throw new TransactionException("No object exists by : " + table + " " + key);
-                }
-                return toReturn;
-            }
-        } else { toRead = true; }
         
-        if (toRead) {
-            Result result = doRead(table, key, names);
-            if (result != null) {
-//              result.setDeleted(isDeleted(result.getValues()));
-                if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
-                Map<String, Result> x  = readSet.get(table);
-                x.put(key, result);
+        Result result = doreadIndexFetchTop(table, key, names, orderField, isAssending);
+        if (result != null) {
+//        	result.setDeleted(isDeleted(result.getValues().get(Database.DELETE_FIELD)));
+        	if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+        	Map<String, Result> x  = readSet.get(table);
+        	x.put(key, result);
 
-                if (result.isDeleted()) {
-                	throw new TransactionException("No object exists by : " + table + " " + key);
-                }
+        	if (result.isDeleted()) {
+        		throw new TransactionException("No object exists by readIndexFetchTop : " + table + " " + key);
+        	}
 
-                if (result.getVersion() == 0) {
-                	throw new TransactionException("No object exists by : " + table + " " + key);
-                }
-                Map<String, String> values = result.getValues();
-                for (String name : names) {
-                	toReturn.add(values.get(name));
-                }
-            } else {
-                throw new TransactionException("No object exists by : " + table + " " + key);
-            }
+        	if (result.getVersion() == 0) {
+        		throw new TransactionException("No object exists by readIndexFetchTop: " + table + " " + key);
+        	}
+        	Map<String, String> values = result.getValues();
+        	for (String name : names) {
+        		toReturn.add(values.get(name));
+        	}
+        	if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+            readSet.get(table).put(result.getKey(), result);
+        } else {
+        	throw new TransactionException("No object exists by readIndexFetchTop: " + table + " " + key);
         }
         return toReturn;
     }
 
-	
-//    private boolean isDeleted(byte[] data) {
-//        return data.length == Database.DELETE_VALUE.length &&
-//                Arrays.equals(data, Database.DELETE_VALUE);
-//    }
+    public synchronized void delete(String table, String key) throws TransactionException {
+        assertState();
 
-//    public synchronized void delete(String key) throws TransactionException {
-//        assertState();
-//
-//        Option option;
-//        Result result = readSet.get(key);
-//        if (result != null) {
-//            // We have already read this object.
-//            // Update the value in the read-set so future reads can see this write.
-//            if (result.isDeleted()) {
-//                throw new TransactionException("Object already deleted: " + key);
-//            }
-//            result.setDeleted(true);
-//            option = new Option(key, Database.DELETE_VALUE,
-//                    result.getVersion(), result.isClassic());
-//        } else {
-//            result = doRead(key);
-//            if (result == null) {
-//                // Object doesn't exist in the DB - Error!
-//                throw new TransactionException("Unable to delete non existing object: " + key);
-//            } else {
-//                // Object exists in the DB.
-//                // Update the value and add to the read-set so future reads can
-//                // see this write.
-//                result.setDeleted(true);
-//                option = new Option(key, Database.DELETE_VALUE,
-//                        result.getVersion(), result.isClassic());
-//                readSet.put(result.getKey(), result);
-//            }
-//        }
-//        writeSet.put(key, option);
-//    }
+        Option option;
+        Result result = readSet.get(table).get(key);
+        if (result != null) {
+            // We have already read this object.
+            // Update the value in the read-set so future reads can see this write.
+            if (result.isDeleted()) {
+                throw new TransactionException("Object already deleted: " + key);
+            }
+            option = new Option(table, key, Database.DELETE_NAME, Database.DELETE_VALUE, result.getVersion());
+        } else {
+            result = doRead(table, key, new ArrayList<String>());
+            if (result == null) {
+                // Object doesn't exist in the DB - Error!
+                throw new TransactionException("Unable to delete non existing object: " + key);
+            } else {
+                // Object exists in the DB.
+                // Update the value and add to the read-set so future reads can see this write.
+                result.setDeleted(true);
+                option = new Option(table, key, Database.DELETE_NAME, Database.DELETE_VALUE, result.getVersion());
+                if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
+                readSet.get(table).put(result.getKey(), result);
+            }
+        }
+        if (!writeSet.containsKey(table)) { writeSet.put(table, new HashMap<String, Option>()); }
+        writeSet.get(table).put(key, option);
+    }
 
     public synchronized void write(String table, String key, List<String> names, List<String> values) throws TransactionException {
         assertState();
@@ -240,6 +281,12 @@ public abstract class Transaction {
     }
 
     protected abstract Result doRead(String table, String key, List<String> names);
+    
+    protected abstract Result doreadIndexFetchMiddle(String table, String keyIndex, List<String> names, String orderField, boolean isAssending);
+
+    protected abstract Result doreadIndexFetchTop(String table, String keyIndex, List<String> names, String orderField, boolean isAssending);
+
+    protected abstract List<Result> doreadIndexFetchAll(String table, String keyIndex, List<String> names);
 
     protected abstract void doCommit(String transactionId, Collection<Option> options) throws TransactionException;
 

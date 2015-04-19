@@ -50,6 +50,11 @@ public class TPCCLoader {
 		fields_orderline.add("ol_d_id");
 		fields_orderline.add("ol_o_id");
 		createSecondaryIndex(TPCCConstants.TABLENAME_ORDER_LINE, fields_orderline);
+		List<String> fields_customer = new ArrayList<String>();
+		fields_customer.add("c_w_id");
+		fields_customer.add("c_d_id");
+		fields_customer.add("c_last");
+		createSecondaryIndex(TPCCConstants.TABLENAME_CUSTOMER, fields_customer);
 		LoadItems();
 		LoadWare();
 		LoadCust();
@@ -381,10 +386,10 @@ public class TPCCLoader {
 			c_w_id = w_id;
 			c_first = TPCCGenerator.makeAlphaString(8, 16);
 			c_middle = "OE";
-			if (c_id <= 1000) {
+			if (c_id <= TPCCConstants.CUSTOMER_LASTNAME_BOUND) {
 				c_last = TPCCGenerator.Lastname(c_id - 1);
 			} else {
-				c_last = TPCCGenerator.Lastname(TPCCGenerator.NURand(TPCCConstants.A_C_LAST, 0, 999));
+				c_last = TPCCGenerator.Lastname(TPCCGenerator.NURand(TPCCConstants.A_C_LAST, 0, TPCCConstants.CUSTOMER_LASTNAME_BOUND - 1));
 			}
 			c_street_1 = TPCCGenerator.makeAlphaString(10, 20); /* Street 1 */
 			c_street_2 = TPCCGenerator.makeAlphaString(10, 20); /* Street 2 */

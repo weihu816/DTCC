@@ -3,6 +3,8 @@ package cn.ict.dtcc.server.dao;
 import java.util.HashMap;
 import java.util.List;
 
+import cn.ict.dtcc.benchmark.tpcc.TPCCGenerator;
+
 /**
  * The interface of a Database that includes all the operations need for tpcc
  * benchmark
@@ -11,6 +13,10 @@ import java.util.List;
 
 public interface Database {
 
+	public static final List<String> DELETE_NAME = TPCCGenerator.buildColumns("__DELETE__");
+	public static final List<String> DELETE_VALUE = TPCCGenerator.buildColumns("__DELETE__");
+	public static final String DELETE_FIELD = "__DELETE__";
+	public static final String EXIST_STRING = "__EXIST__";
 	public final static int WRITE = 1;
 	public final static int DELETE = 2;
 

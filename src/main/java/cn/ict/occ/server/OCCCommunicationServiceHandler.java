@@ -38,7 +38,6 @@ public class OCCCommunicationServiceHandler implements Iface{
 
 	@Override
 	public List<Boolean> bulkAccept(List<Accept> accepts) throws TException {
-		
 		List<Boolean> responses = new ArrayList<Boolean>(accepts.size());
 		for (Accept accept : accepts) {
 			responses.add(storageNode.onAccept(toPaxosAccept(accept)));
@@ -49,7 +48,6 @@ public class OCCCommunicationServiceHandler implements Iface{
 	@Override
 	public void decide(String transaction, boolean commit) throws TException {
 		storageNode.onDecide(transaction, commit);
-		
 	}
 
 	@Override
@@ -59,17 +57,21 @@ public class OCCCommunicationServiceHandler implements Iface{
 	}
 
 	@Override
-	public ReadValue readIndexFetchTop(String table, String keyIndex,
+	public ReadValue readIndexFetchTop(String table, String keyIndex, List<String> names,
 			String orderField, boolean isAssending) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		return storageNode.readIndexFetch(table, keyIndex, names, orderField, isAssending, "top");
 	}
 
 	@Override
-	public ReadValue readIndexFetchMiddle(String table, String keyIndex,
+	public ReadValue readIndexFetchMiddle(String table, String keyIndex, List<String> names,
 			String orderField, boolean isAssending) throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		return storageNode.readIndexFetch(table, keyIndex, names, orderField, isAssending, "middle");
+	}
+	
+	@Override
+	public List<ReadValue> readIndexFetchAll(String table, String keyIndex,
+			List<String> names) throws TException {
+		return storageNode.readIndexFetchAll(table, keyIndex, names);
 	}
 
 	@Override

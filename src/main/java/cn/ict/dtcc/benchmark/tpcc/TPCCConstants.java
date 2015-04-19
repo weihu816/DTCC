@@ -14,8 +14,7 @@ public final class TPCCConstants {
     public static final int NUM_WAREHOUSE = 2;				// number of warehouses - tunable 
 	public static final int ORDER_INIT_DELEVERED = 21;		// if (o_id > #e.g.2100) then it is not delivered when initilized
 	public static final int NODES_PER_WAREHOUSE = 2; 		// number of node/warehouuse 
-	
-	
+		
     public static final String TABLENAME_WAREHOUSE 	= "WAREHOUSE";
     public static final String TABLENAME_DISTRICT 	= "DISTRICT";
     public static final String TABLENAME_ITEM 		= "ITEM";
@@ -99,6 +98,8 @@ public final class TPCCConstants {
 
     // CUSTOMER constants
     public static final int CUSTOMERS_PER_DISTRICT = 30;				// 3000
+	public static final int CUSTOMER_LASTNAME_BOUND = 10;	// 1000, in case no such customer
+
     public static final double INITIAL_CREDIT_LIM = 50000.00;
     public static final double MIN_DISCOUNT = 0.0000;
     public static final double MAX_DISCOUNT = 0.5000;

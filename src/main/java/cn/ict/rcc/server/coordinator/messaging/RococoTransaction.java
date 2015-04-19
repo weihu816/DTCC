@@ -104,7 +104,6 @@ public class RococoTransaction {
 		for (Piece p : pieces) {
 			members.add(config.getShardMember(p.getTable(), p.getKey()));
 		}
-		
 		// send out asynchronized to all nodes to commit transaction
 		CommitListener commitListener = new CommitListener(members, communicator, transactionId, graph);
 		commitListener.start();

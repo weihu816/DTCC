@@ -34,9 +34,11 @@ service OCCCommunicationService {
     
   ReadValue read(1:string table, 2:string key, 3:list<string> names),
   
-  ReadValue readIndexFetchTop(1:string table, 2:string keyIndex, 3:string orderField, 4:bool isAssending),
+  ReadValue readIndexFetchTop(1:string table, 2:string keyIndex, 3:list<string> names, 4:string orderField, 5:bool isAssending),
   
-  ReadValue readIndexFetchMiddle(1:string table, 2:string keyIndex, 3:string orderField, 4:bool isAssending),
+  ReadValue readIndexFetchMiddle(1:string table, 2:string keyIndex, 3:list<string> names, 4:string orderField, 5:bool isAssending),
+  
+  list<ReadValue> readIndexFetchAll(1:string table, 2:string keyIndex, 3:list<string> names),
   
   bool write(1:string table, 2:string key, 3:list<string> names, 4:list<string> values),
   

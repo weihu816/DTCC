@@ -89,18 +89,15 @@ public class StorageNode {
 		if (status.get(piece.transactionId) == null) {
 			status.put(piece.transactionId, STARTED);
 		}
-		String theKey = DTCCUtil.buildString(piece.getTable(), "_",
-				piece.getKey());
+		String theKey = DTCCUtil.buildString(piece.getTable(), "_", piece.getKey());
 
 		List<Map<String, String>> output = new ArrayList<Map<String, String>>();
 
 		// update - the most recent piece conflicted
 		List<String> conflictPieces = pieces_conflict.get(theKey);
-		if (piece.isImmediate() && conflictPieces != null
-				&& conflictPieces.size() > 0) {
+		if (piece.isImmediate() && conflictPieces != null && conflictPieces.size() > 0) {
 			String p_id = conflictPieces.get(conflictPieces.size() - 1);
-			if (!p_id.equals(piece.getTransactionId())
-					&& status.get(p_id) != DECIDED) {
+			if (!p_id.equals(piece.getTransactionId()) && status.get(p_id) != DECIDED) {
 				LOG.info(piece.getTransactionId() + "<-" + p_id);
 				dep_server.put(piece.getTransactionId(), p_id);
 			}
@@ -110,8 +107,7 @@ public class StorageNode {
 		}
 		/* buffer piece */
 		if (conflictPieces == null) {
-			conflictPieces = Collections
-					.synchronizedList(new ArrayList<String>());
+			conflictPieces = Collections.synchronizedList(new ArrayList<String>());
 			pieces_conflict.put(theKey, conflictPieces);
 		}
 		if (!piece.isImmediate()) {
@@ -206,7 +202,7 @@ public class StorageNode {
 			// txn involves server and wait for txn to be committing
 			while (status.get(v) == STARTED) {
 				try {
-					Thread.sleep(10);
+					Thread.sleep(1000);
 					LOG.debug("waiting2: " + v);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
