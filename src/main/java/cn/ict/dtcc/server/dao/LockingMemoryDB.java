@@ -77,15 +77,6 @@ public class LockingMemoryDB extends MemoryDB {
 					}
 				}
 			}
-			/*TreeSet heads;
-			for(int i=0;i<pos;i++){
-				heads = (TreeSet)rowLockList.get(pos).keyList.clone();//can be dangerous, and error prone; need check
-				heads.addAll(rowLockList.get(i).keyList);
-				//with intersection
-				if(heads.size() < rowLockList.get(i).keyList.size()+rowLockList.get(pos).keyList.size())
-					return false;
-				heads=null;
-			}*/
 			// System.err.println(System.nanoTime()-countTime);
 			return true; //no intersection
 		}

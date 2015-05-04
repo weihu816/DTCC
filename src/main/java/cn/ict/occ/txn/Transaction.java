@@ -174,7 +174,8 @@ public abstract class Transaction {
         	if (!readSet.containsKey(table)) { readSet.put(table, new HashMap<String, Result>()); }
             readSet.get(table).put(result.getKey(), result);
         } else {
-        	throw new TransactionException("No object exists by readIndexFetchTop: " + table + " " + key);
+        	return null;
+//        	throw new TransactionException("No object exists by readIndexFetchTop: " + table + " " + key);
         }
         return toReturn;
     }

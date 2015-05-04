@@ -95,7 +95,8 @@ public final class TPCCConstants {
     public static final int INITIAL_NEXT_O_ID 		= 31;		 		// 3001
     public static final int DISTRICTS_PER_NODE		= 5;				// number of districts/node
 	public static final int DISTRICTS_PER_WAREHOUSE = DISTRICTS_PER_NODE * NODES_PER_WAREHOUSE;
-
+	public static final int DISTRICTS_TOTALNUM = DISTRICTS_PER_NODE * NODES_PER_WAREHOUSE * NUM_WAREHOUSE;
+	
     // CUSTOMER constants
     public static final int CUSTOMERS_PER_DISTRICT = 30;				// 3000
 	public static final int CUSTOMER_LASTNAME_BOUND = 10;	// 1000, in case no such customer

@@ -40,6 +40,7 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
   private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField IMMEDIATE_FIELD_DESC = new org.apache.thrift.protocol.TField("immediate", org.apache.thrift.protocol.TType.BOOL, (short)5);
+  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I32, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -52,6 +53,7 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
   public String table; // required
   public String key; // required
   public boolean immediate; // required
+  public int id; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -59,7 +61,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
     TRANSACTION_ID((short)2, "transactionId"),
     TABLE((short)3, "table"),
     KEY((short)4, "key"),
-    IMMEDIATE((short)5, "immediate");
+    IMMEDIATE((short)5, "immediate"),
+    ID((short)6, "id");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -84,6 +87,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
           return KEY;
         case 5: // IMMEDIATE
           return IMMEDIATE;
+        case 6: // ID
+          return ID;
         default:
           return null;
       }
@@ -125,6 +130,7 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
 
   // isset id assignments
   private static final int __IMMEDIATE_ISSET_ID = 0;
+  private static final int __ID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -140,6 +146,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.IMMEDIATE, new org.apache.thrift.meta_data.FieldMetaData("immediate", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Piece.class, metaDataMap);
   }
@@ -152,7 +160,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
     String transactionId,
     String table,
     String key,
-    boolean immediate)
+    boolean immediate,
+    int id)
   {
     this();
     this.vertexs = vertexs;
@@ -161,6 +170,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
     this.key = key;
     this.immediate = immediate;
     setImmediateIsSet(true);
+    this.id = id;
+    setIdIsSet(true);
   }
 
   /**
@@ -185,6 +196,7 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       this.key = other.key;
     }
     this.immediate = other.immediate;
+    this.id = other.id;
   }
 
   public Piece deepCopy() {
@@ -199,6 +211,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
     this.key = null;
     setImmediateIsSet(false);
     this.immediate = false;
+    setIdIsSet(false);
+    this.id = 0;
   }
 
   public int getVertexsSize() {
@@ -335,6 +349,29 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __IMMEDIATE_ISSET_ID, value);
   }
 
+  public int getId() {
+    return this.id;
+  }
+
+  public Piece setId(int id) {
+    this.id = id;
+    setIdIsSet(true);
+    return this;
+  }
+
+  public void unsetId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
+  }
+
+  /** Returns true if field id is set (has been assigned a value) and false otherwise */
+  public boolean isSetId() {
+    return EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
+  }
+
+  public void setIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case VERTEXS:
@@ -377,6 +414,14 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       }
       break;
 
+    case ID:
+      if (value == null) {
+        unsetId();
+      } else {
+        setId((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -396,6 +441,9 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
 
     case IMMEDIATE:
       return Boolean.valueOf(isImmediate());
+
+    case ID:
+      return Integer.valueOf(getId());
 
     }
     throw new IllegalStateException();
@@ -418,6 +466,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       return isSetKey();
     case IMMEDIATE:
       return isSetImmediate();
+    case ID:
+      return isSetId();
     }
     throw new IllegalStateException();
   }
@@ -477,6 +527,15 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       if (!(this_present_immediate && that_present_immediate))
         return false;
       if (this.immediate != that.immediate)
+        return false;
+    }
+
+    boolean this_present_id = true;
+    boolean that_present_id = true;
+    if (this_present_id || that_present_id) {
+      if (!(this_present_id && that_present_id))
+        return false;
+      if (this.id != that.id)
         return false;
     }
 
@@ -546,6 +605,16 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetId()).compareTo(other.isSetId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -601,6 +670,10 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
     sb.append("immediate:");
     sb.append(this.immediate);
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("id:");
+    sb.append(this.id);
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -620,6 +693,7 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'key' was not present! Struct: " + toString());
     }
     // alas, we cannot check 'immediate' because it's a primitive and you chose the non-beans generator.
+    // alas, we cannot check 'id' because it's a primitive and you chose the non-beans generator.
     // check for sub-struct validity
   }
 
@@ -710,6 +784,14 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.id = iprot.readI32();
+              struct.setIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -720,6 +802,9 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       // check for required fields of primitive type, which can't be checked in the validate method
       if (!struct.isSetImmediate()) {
         throw new org.apache.thrift.protocol.TProtocolException("Required field 'immediate' was not found in serialized data! Struct: " + toString());
+      }
+      if (!struct.isSetId()) {
+        throw new org.apache.thrift.protocol.TProtocolException("Required field 'id' was not found in serialized data! Struct: " + toString());
       }
       struct.validate();
     }
@@ -758,6 +843,9 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       oprot.writeFieldBegin(IMMEDIATE_FIELD_DESC);
       oprot.writeBool(struct.immediate);
       oprot.writeFieldEnd();
+      oprot.writeFieldBegin(ID_FIELD_DESC);
+      oprot.writeI32(struct.id);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -786,6 +874,7 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       oprot.writeString(struct.table);
       oprot.writeString(struct.key);
       oprot.writeBool(struct.immediate);
+      oprot.writeI32(struct.id);
     }
 
     @Override
@@ -811,6 +900,8 @@ public class Piece implements org.apache.thrift.TBase<Piece, Piece._Fields>, jav
       struct.setKeyIsSet(true);
       struct.immediate = iprot.readBool();
       struct.setImmediateIsSet(true);
+      struct.id = iprot.readI32();
+      struct.setIdIsSet(true);
     }
   }
 

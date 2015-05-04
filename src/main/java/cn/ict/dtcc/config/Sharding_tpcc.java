@@ -2,9 +2,6 @@ package cn.ict.dtcc.config;
 
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import cn.ict.dtcc.benchmark.tpcc.TPCCConstants;
 
 public class Sharding_tpcc {
@@ -56,7 +53,11 @@ public class Sharding_tpcc {
 			return members.get(shardId - 1)[0];
 
 		case TPCCConstants.TABLENAME_ITEM:
-			return members.get(0)[0];
+			int d_id_minusone = Integer.parseInt(key) % (TPCCConstants.DISTRICTS_TOTALNUM);
+			shardId = d_id_minusone / TPCCConstants.DISTRICTS_PER_WAREHOUSE;
+			procId = (d_id_minusone - TPCCConstants.DISTRICTS_PER_WAREHOUSE * shardId)  % TPCCConstants.NODES_PER_WAREHOUSE;
+			return members.get(shardId)[procId];
+
 		case TPCCConstants.TABLENAME_HISTORY:
 			return members.get(0)[0];
 

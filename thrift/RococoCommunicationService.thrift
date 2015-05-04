@@ -6,9 +6,10 @@ enum Action {
     FETCHONE	 = 3,
     FETCHALL	 = 4,
     WRITE 		 = 5,
-    ADDINTEGER 	 = 6,
-    ADDDECIMAL 	 = 7,
-    DELETE 		 = 8
+    ADDI 	 	 = 6,
+    ADDF 	 	 = 7,
+    REDUCEI		 = 8,
+    DELETE 		 = 9
 }
 
 // below are for rococo
@@ -23,6 +24,7 @@ struct Piece {
   3: required string table
   4: required string key
   5: required bool immediate
+  6: required i32 id
 }
 struct Edge {
   1: required string from
@@ -34,13 +36,16 @@ struct Graph {
   2: optional map<string, set<string>> serversInvolved
 }
 struct StartResponse {
-  1: required list<map<string, string>> output
+  1: required list<string> output
   2: required Graph dep
 }
-
+struct StartResponseBulk {
+  1: required list<list<string>> output
+  2: required Graph dep
+}
 struct CommitResponse {
   1: bool result
-  2: optional list<map<string, string>> output
+  2: optional map<i32, list<string>> output
 }
 
 service RococoCommunicationService {
@@ -49,7 +54,7 @@ service RococoCommunicationService {
   
   // for rcc
   StartResponse start_req(1:Piece piece),
-  StartResponse start_req_bulk(1:list<Piece> pieces),
+  StartResponseBulk start_req_bulk(1:list<Piece> pieces),
   CommitResponse commit_req(1:string transactionId, 2:Graph dep),
   
   // for communication between servers

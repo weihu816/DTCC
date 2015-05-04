@@ -40,7 +40,7 @@ public class RococoCommunicationService {
 
     public StartResponse start_req(Piece piece) throws org.apache.thrift.TException;
 
-    public StartResponse start_req_bulk(List<Piece> pieces) throws org.apache.thrift.TException;
+    public StartResponseBulk start_req_bulk(List<Piece> pieces) throws org.apache.thrift.TException;
 
     public CommitResponse commit_req(String transactionId, Graph dep) throws org.apache.thrift.TException;
 
@@ -135,7 +135,7 @@ public class RococoCommunicationService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "start_req failed: unknown result");
     }
 
-    public StartResponse start_req_bulk(List<Piece> pieces) throws org.apache.thrift.TException
+    public StartResponseBulk start_req_bulk(List<Piece> pieces) throws org.apache.thrift.TException
     {
       send_start_req_bulk(pieces);
       return recv_start_req_bulk();
@@ -148,7 +148,7 @@ public class RococoCommunicationService {
       sendBase("start_req_bulk", args);
     }
 
-    public StartResponse recv_start_req_bulk() throws org.apache.thrift.TException
+    public StartResponseBulk recv_start_req_bulk() throws org.apache.thrift.TException
     {
       start_req_bulk_result result = new start_req_bulk_result();
       receiveBase(result, "start_req_bulk");
@@ -356,7 +356,7 @@ public class RococoCommunicationService {
         prot.writeMessageEnd();
       }
 
-      public StartResponse getResult() throws org.apache.thrift.TException {
+      public StartResponseBulk getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -802,7 +802,7 @@ public class RococoCommunicationService {
       }
     }
 
-    public static class start_req_bulk<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, start_req_bulk_args, StartResponse> {
+    public static class start_req_bulk<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, start_req_bulk_args, StartResponseBulk> {
       public start_req_bulk() {
         super("start_req_bulk");
       }
@@ -811,10 +811,10 @@ public class RococoCommunicationService {
         return new start_req_bulk_args();
       }
 
-      public AsyncMethodCallback<StartResponse> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+      public AsyncMethodCallback<StartResponseBulk> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
         final org.apache.thrift.AsyncProcessFunction fcall = this;
-        return new AsyncMethodCallback<StartResponse>() { 
-          public void onComplete(StartResponse o) {
+        return new AsyncMethodCallback<StartResponseBulk>() { 
+          public void onComplete(StartResponseBulk o) {
             start_req_bulk_result result = new start_req_bulk_result();
             result.success = o;
             try {
@@ -848,7 +848,7 @@ public class RococoCommunicationService {
         return false;
       }
 
-      public void start(I iface, start_req_bulk_args args, org.apache.thrift.async.AsyncMethodCallback<StartResponse> resultHandler) throws TException {
+      public void start(I iface, start_req_bulk_args args, org.apache.thrift.async.AsyncMethodCallback<StartResponseBulk> resultHandler) throws TException {
         iface.start_req_bulk(args.pieces,resultHandler);
       }
     }
@@ -2689,14 +2689,14 @@ public class RococoCommunicationService {
             case 1: // PIECES
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list88 = iprot.readListBegin();
-                  struct.pieces = new ArrayList<Piece>(_list88.size);
-                  for (int _i89 = 0; _i89 < _list88.size; ++_i89)
+                  org.apache.thrift.protocol.TList _list94 = iprot.readListBegin();
+                  struct.pieces = new ArrayList<Piece>(_list94.size);
+                  for (int _i95 = 0; _i95 < _list94.size; ++_i95)
                   {
-                    Piece _elem90;
-                    _elem90 = new Piece();
-                    _elem90.read(iprot);
-                    struct.pieces.add(_elem90);
+                    Piece _elem96;
+                    _elem96 = new Piece();
+                    _elem96.read(iprot);
+                    struct.pieces.add(_elem96);
                   }
                   iprot.readListEnd();
                 }
@@ -2724,9 +2724,9 @@ public class RococoCommunicationService {
           oprot.writeFieldBegin(PIECES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.pieces.size()));
-            for (Piece _iter91 : struct.pieces)
+            for (Piece _iter97 : struct.pieces)
             {
-              _iter91.write(oprot);
+              _iter97.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -2757,9 +2757,9 @@ public class RococoCommunicationService {
         if (struct.isSetPieces()) {
           {
             oprot.writeI32(struct.pieces.size());
-            for (Piece _iter92 : struct.pieces)
+            for (Piece _iter98 : struct.pieces)
             {
-              _iter92.write(oprot);
+              _iter98.write(oprot);
             }
           }
         }
@@ -2771,14 +2771,14 @@ public class RococoCommunicationService {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.thrift.protocol.TList _list93 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-            struct.pieces = new ArrayList<Piece>(_list93.size);
-            for (int _i94 = 0; _i94 < _list93.size; ++_i94)
+            org.apache.thrift.protocol.TList _list99 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+            struct.pieces = new ArrayList<Piece>(_list99.size);
+            for (int _i100 = 0; _i100 < _list99.size; ++_i100)
             {
-              Piece _elem95;
-              _elem95 = new Piece();
-              _elem95.read(iprot);
-              struct.pieces.add(_elem95);
+              Piece _elem101;
+              _elem101 = new Piece();
+              _elem101.read(iprot);
+              struct.pieces.add(_elem101);
             }
           }
           struct.setPiecesIsSet(true);
@@ -2799,7 +2799,7 @@ public class RococoCommunicationService {
       schemes.put(TupleScheme.class, new start_req_bulk_resultTupleSchemeFactory());
     }
 
-    public StartResponse success; // required
+    public StartResponseBulk success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -2864,7 +2864,7 @@ public class RococoCommunicationService {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StartResponse.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StartResponseBulk.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(start_req_bulk_result.class, metaDataMap);
     }
@@ -2873,7 +2873,7 @@ public class RococoCommunicationService {
     }
 
     public start_req_bulk_result(
-      StartResponse success)
+      StartResponseBulk success)
     {
       this();
       this.success = success;
@@ -2884,7 +2884,7 @@ public class RococoCommunicationService {
      */
     public start_req_bulk_result(start_req_bulk_result other) {
       if (other.isSetSuccess()) {
-        this.success = new StartResponse(other.success);
+        this.success = new StartResponseBulk(other.success);
       }
     }
 
@@ -2897,11 +2897,11 @@ public class RococoCommunicationService {
       this.success = null;
     }
 
-    public StartResponse getSuccess() {
+    public StartResponseBulk getSuccess() {
       return this.success;
     }
 
-    public start_req_bulk_result setSuccess(StartResponse success) {
+    public start_req_bulk_result setSuccess(StartResponseBulk success) {
       this.success = success;
       return this;
     }
@@ -2927,7 +2927,7 @@ public class RococoCommunicationService {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((StartResponse)value);
+          setSuccess((StartResponseBulk)value);
         }
         break;
 
@@ -3079,7 +3079,7 @@ public class RococoCommunicationService {
           switch (schemeField.id) {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.success = new StartResponse();
+                struct.success = new StartResponseBulk();
                 struct.success.read(iprot);
                 struct.setSuccessIsSet(true);
               } else { 
@@ -3138,7 +3138,7 @@ public class RococoCommunicationService {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.success = new StartResponse();
+          struct.success = new StartResponseBulk();
           struct.success.read(iprot);
           struct.setSuccessIsSet(true);
         }
@@ -5243,13 +5243,13 @@ public class RococoCommunicationService {
             case 3: // NAMES
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
-                  struct.names = new ArrayList<String>(_list96.size);
-                  for (int _i97 = 0; _i97 < _list96.size; ++_i97)
+                  org.apache.thrift.protocol.TList _list102 = iprot.readListBegin();
+                  struct.names = new ArrayList<String>(_list102.size);
+                  for (int _i103 = 0; _i103 < _list102.size; ++_i103)
                   {
-                    String _elem98;
-                    _elem98 = iprot.readString();
-                    struct.names.add(_elem98);
+                    String _elem104;
+                    _elem104 = iprot.readString();
+                    struct.names.add(_elem104);
                   }
                   iprot.readListEnd();
                 }
@@ -5261,13 +5261,13 @@ public class RococoCommunicationService {
             case 4: // VALUES
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list99 = iprot.readListBegin();
-                  struct.values = new ArrayList<String>(_list99.size);
-                  for (int _i100 = 0; _i100 < _list99.size; ++_i100)
+                  org.apache.thrift.protocol.TList _list105 = iprot.readListBegin();
+                  struct.values = new ArrayList<String>(_list105.size);
+                  for (int _i106 = 0; _i106 < _list105.size; ++_i106)
                   {
-                    String _elem101;
-                    _elem101 = iprot.readString();
-                    struct.values.add(_elem101);
+                    String _elem107;
+                    _elem107 = iprot.readString();
+                    struct.values.add(_elem107);
                   }
                   iprot.readListEnd();
                 }
@@ -5305,9 +5305,9 @@ public class RococoCommunicationService {
           oprot.writeFieldBegin(NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.names.size()));
-            for (String _iter102 : struct.names)
+            for (String _iter108 : struct.names)
             {
-              oprot.writeString(_iter102);
+              oprot.writeString(_iter108);
             }
             oprot.writeListEnd();
           }
@@ -5317,9 +5317,9 @@ public class RococoCommunicationService {
           oprot.writeFieldBegin(VALUES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.values.size()));
-            for (String _iter103 : struct.values)
+            for (String _iter109 : struct.values)
             {
-              oprot.writeString(_iter103);
+              oprot.writeString(_iter109);
             }
             oprot.writeListEnd();
           }
@@ -5365,18 +5365,18 @@ public class RococoCommunicationService {
         if (struct.isSetNames()) {
           {
             oprot.writeI32(struct.names.size());
-            for (String _iter104 : struct.names)
+            for (String _iter110 : struct.names)
             {
-              oprot.writeString(_iter104);
+              oprot.writeString(_iter110);
             }
           }
         }
         if (struct.isSetValues()) {
           {
             oprot.writeI32(struct.values.size());
-            for (String _iter105 : struct.values)
+            for (String _iter111 : struct.values)
             {
-              oprot.writeString(_iter105);
+              oprot.writeString(_iter111);
             }
           }
         }
@@ -5396,26 +5396,26 @@ public class RococoCommunicationService {
         }
         if (incoming.get(2)) {
           {
-            org.apache.thrift.protocol.TList _list106 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.names = new ArrayList<String>(_list106.size);
-            for (int _i107 = 0; _i107 < _list106.size; ++_i107)
+            org.apache.thrift.protocol.TList _list112 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.names = new ArrayList<String>(_list112.size);
+            for (int _i113 = 0; _i113 < _list112.size; ++_i113)
             {
-              String _elem108;
-              _elem108 = iprot.readString();
-              struct.names.add(_elem108);
+              String _elem114;
+              _elem114 = iprot.readString();
+              struct.names.add(_elem114);
             }
           }
           struct.setNamesIsSet(true);
         }
         if (incoming.get(3)) {
           {
-            org.apache.thrift.protocol.TList _list109 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.values = new ArrayList<String>(_list109.size);
-            for (int _i110 = 0; _i110 < _list109.size; ++_i110)
+            org.apache.thrift.protocol.TList _list115 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.values = new ArrayList<String>(_list115.size);
+            for (int _i116 = 0; _i116 < _list115.size; ++_i116)
             {
-              String _elem111;
-              _elem111 = iprot.readString();
-              struct.values.add(_elem111);
+              String _elem117;
+              _elem117 = iprot.readString();
+              struct.values.add(_elem117);
             }
           }
           struct.setValuesIsSet(true);
@@ -6170,13 +6170,13 @@ public class RococoCommunicationService {
             case 2: // FIELDS
               if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
                 {
-                  org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
-                  struct.fields = new ArrayList<String>(_list112.size);
-                  for (int _i113 = 0; _i113 < _list112.size; ++_i113)
+                  org.apache.thrift.protocol.TList _list118 = iprot.readListBegin();
+                  struct.fields = new ArrayList<String>(_list118.size);
+                  for (int _i119 = 0; _i119 < _list118.size; ++_i119)
                   {
-                    String _elem114;
-                    _elem114 = iprot.readString();
-                    struct.fields.add(_elem114);
+                    String _elem120;
+                    _elem120 = iprot.readString();
+                    struct.fields.add(_elem120);
                   }
                   iprot.readListEnd();
                 }
@@ -6209,9 +6209,9 @@ public class RococoCommunicationService {
           oprot.writeFieldBegin(FIELDS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.fields.size()));
-            for (String _iter115 : struct.fields)
+            for (String _iter121 : struct.fields)
             {
-              oprot.writeString(_iter115);
+              oprot.writeString(_iter121);
             }
             oprot.writeListEnd();
           }
@@ -6248,9 +6248,9 @@ public class RococoCommunicationService {
         if (struct.isSetFields()) {
           {
             oprot.writeI32(struct.fields.size());
-            for (String _iter116 : struct.fields)
+            for (String _iter122 : struct.fields)
             {
-              oprot.writeString(_iter116);
+              oprot.writeString(_iter122);
             }
           }
         }
@@ -6266,13 +6266,13 @@ public class RococoCommunicationService {
         }
         if (incoming.get(1)) {
           {
-            org.apache.thrift.protocol.TList _list117 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            struct.fields = new ArrayList<String>(_list117.size);
-            for (int _i118 = 0; _i118 < _list117.size; ++_i118)
+            org.apache.thrift.protocol.TList _list123 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+            struct.fields = new ArrayList<String>(_list123.size);
+            for (int _i124 = 0; _i124 < _list123.size; ++_i124)
             {
-              String _elem119;
-              _elem119 = iprot.readString();
-              struct.fields.add(_elem119);
+              String _elem125;
+              _elem125 = iprot.readString();
+              struct.fields.add(_elem125);
             }
           }
           struct.setFieldsIsSet(true);

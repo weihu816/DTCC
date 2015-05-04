@@ -6,9 +6,8 @@ import java.util.List;
 import org.apache.thrift.TException;
 
 import cn.ict.occ.messaging.Accept;
-import cn.ict.occ.messaging.OCCCommunicationService;
-import cn.ict.occ.messaging.ReadValue;
 import cn.ict.occ.messaging.OCCCommunicationService.Iface;
+import cn.ict.occ.messaging.ReadValue;
 
 public class OCCCommunicationServiceHandler implements Iface{
 

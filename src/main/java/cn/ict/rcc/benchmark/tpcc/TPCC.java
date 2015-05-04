@@ -1,4 +1,4 @@
-package cn.ict.rcc.benchmark.procedure;
+package cn.ict.rcc.benchmark.tpcc;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +17,7 @@ import org.apache.log4j.PropertyConfigurator;
 import cn.ict.dtcc.benchmark.tpcc.TPCCConstants;
 import cn.ict.dtcc.benchmark.tpcc.TPCCGenerator;
 import cn.ict.dtcc.exception.TransactionException;
+import cn.ict.rcc.benchmark.procedure.Procedure;
 import cn.ict.rcc.server.coordinator.messaging.CoordinatorClient;
 import cn.ict.rcc.server.coordinator.messaging.CoordinatorClientConfiguration;
 import cn.ict.rcc.server.coordinator.messaging.RococoTransaction;
@@ -40,12 +41,39 @@ public class TPCC {
 
 	public static void Neworder(int w_id, int d_id) throws TransactionException {
 				
+		//------------------------------------------------------------------
+		int o_all_local = 1, o_ol_cnt = TPCCGenerator.randomInt(5, 15);
+		int 	supware			[] 	= new int	[o_ol_cnt];
+		int 	ol_i_ids		[] 	= new int	[o_ol_cnt];
+		String i_names			[] 	= new String[o_ol_cnt];
+		String i_datas			[] 	= new String[o_ol_cnt];
+		float i_prices			[] = new float[o_ol_cnt];
+		float ol_amounts		[] = new float[o_ol_cnt];
+		int ol_quantities		[] = new int[o_ol_cnt];
+		int s_quantities		[] = new int[o_ol_cnt];
+		String ol_dist_infos		[] = new String[o_ol_cnt];
+		char bg[] = new char[o_ol_cnt];
+		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
+			int ol_supply_w_id; 
+			/* 90% of supply are from home stock */
+			if (TPCCGenerator.randomInt(0, 99) < 100 && TPCCConstants.NUM_WAREHOUSE > 1) {
+				int supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); 
+				while (supply_w_id == w_id) { supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); }
+				ol_supply_w_id = supply_w_id;
+			} else { ol_supply_w_id = w_id; }
+			if (ol_supply_w_id != w_id) { o_all_local = 0; }
+			supware[ol_number - 1] 	= ol_supply_w_id;
+			ol_i_ids[ol_number - 1] = TPCCGenerator.NURand(TPCCConstants.A_OL_I_ID,1, TPCCConstants.NUM_ITEMS);
+		}
+		String o_entry_d = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
+		int c_id = TPCCGenerator.NURand(TPCCConstants.A_C_ID, 1, TPCCConstants.CUSTOMERS_PER_DISTRICT);
+		//------------------------------------------------------------------
+				
 		// begin
 		RococoTransaction transaction = transactionFactory.create();
 		transaction.begin();
 		
 		List<String> columns, values;
-		int c_id = TPCCGenerator.NURand(TPCCConstants.A_C_ID, 1, TPCCConstants.CUSTOMERS_PER_DISTRICT);
 		
 		// PIECE 1 Ri&R District
 		// increase d_next_o_id, immediate
@@ -85,31 +113,6 @@ public class TPCC {
 		LOG.debug("c_discount: " 	+ c_discount);
 		LOG.debug("c_last: " 		+ c_last);
 		LOG.debug("c_credit: " 		+ c_credit);
-		//------------------------------------------------------------------
-		int o_all_local = 1, o_ol_cnt = TPCCGenerator.randomInt(5, 15);
-		int 	supware			[] 	= new int	[o_ol_cnt];
-		int 	ol_i_ids		[] 	= new int	[o_ol_cnt];
-		String i_names			[] 	= new String[o_ol_cnt];
-		float i_prices			[] = new float[o_ol_cnt];
-		float ol_amounts		[] = new float[o_ol_cnt];
-		int ol_quantities		[] = new int[o_ol_cnt];
-		int s_quantities		[] = new int[o_ol_cnt];
-		char bg[] = new char[o_ol_cnt];
-		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
-			int ol_supply_w_id; 
-			/* 90% of supply are from home stock */
-			if (TPCCGenerator.randomInt(0, 99) < 10 && TPCCConstants.NUM_WAREHOUSE > 1) {
-				int supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); 
-				while (supply_w_id == w_id) { supply_w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE); }
-				ol_supply_w_id = supply_w_id;
-			} else { ol_supply_w_id = w_id; }
-			if (ol_supply_w_id != w_id) { o_all_local = 0; }
-			supware[ol_number - 1] 	= ol_supply_w_id;
-			ol_i_ids[ol_number - 1] = TPCCGenerator.NURand(TPCCConstants.A_OL_I_ID,1, TPCCConstants.NUM_ITEMS);
-		}
-		String o_entry_d = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date(System.currentTimeMillis()));
-		//------------------------------------------------------------------
-		
 		
 		// PIECE 4 W order
 		String key_order = TPCCGenerator.buildString(w_id, "_", d_id, "_", o_id);
@@ -130,15 +133,9 @@ public class TPCC {
 		// TODO :index
 		LOG.debug("Piece 5: W new_order");
 
-		/* for each order in the order line*/
 		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
-			//------------------------------------------------------------------
-			int ol_supply_w_id 	= supware	[ol_number - 1]; 
-			int ol_i_id 		= ol_i_ids	[ol_number - 1]; 
-			int ol_quantity 	= TPCCGenerator.randomInt(1, 10);
-			//------------------------------------------------------------------
-			// Piece 6 Ri item, conflict???????????? TODO
-			String key_item = String.valueOf(ol_i_id);
+			// Piece 6 Ri item, conflict TODO
+			String key_item = String.valueOf(ol_i_ids[ol_number - 1]);
 			columns = TPCCGenerator.buildColumns("i_price", "i_name", "i_data");
 			int pieceNum_item = transaction.createPiece(TPCCConstants.TABLENAME_ITEM, key_item, true);
 			transaction.readSelect(columns);
@@ -146,16 +143,24 @@ public class TPCC {
 			String i_name = transaction.get(pieceNum_item, "i_name");
 			float i_price = Float.valueOf(transaction.get(pieceNum_item, "i_price"));
 			String i_data = transaction.get(pieceNum_item, "i_data");
-			LOG.debug("Piece 6: Ri item | orderline#: " + ol_number);
+			LOG.debug("Piece 6: Ri item for orderline#: " + ol_number);
 			LOG.debug("i_name: " 	+ i_name);
 			LOG.debug("i_price: " 	+ i_price);
 			LOG.debug("i_data: " 	+ i_data);
-			
-			
+			i_names			[ol_number - 1] = i_name;
+			i_prices		[ol_number - 1] = i_price;
+			i_datas			[ol_number - 1] = i_data;
+		}
+
+		/* for each order in the order line*/
+		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
+			//------------------------------------------------------------------
+			int ol_supply_w_id 	= supware	[ol_number - 1];
+			int ol_quantity 	= TPCCGenerator.randomInt(1, 10); 
 			// Piece 7 Ri stock
 			// 可能会有很小概率的冲突
 			/* update stock quantity */
-			String key_stock = TPCCGenerator.buildString(ol_supply_w_id, "_", ol_i_id);
+			String key_stock = TPCCGenerator.buildString(ol_supply_w_id, "_", ol_i_ids[ol_number - 1]);
 			int pieceNum_stock = transaction.createPiece(TPCCConstants.TABLENAME_STOCK, key_stock, true);
 			/* retrieve stock information */
 			columns = TPCCGenerator.buildColumns("s_quantity", "s_data");
@@ -170,14 +175,14 @@ public class TPCC {
 			LOG.debug("s_data: " + s_data);
 			LOG.debug("s_quantity: " + s_quantity);
 			
-			if ( i_data != null && s_data != null && (i_data.indexOf("original") != -1) && (s_data.indexOf("original") != -1) ) {
+			if ( i_datas[ol_number-1] != null && s_data != null && (i_datas[ol_number-1].indexOf("original") != -1) && (s_data.indexOf("original") != -1) ) {
 				bg[ol_number-1] = 'B'; 
 			} else {
 				bg[ol_number-1] = 'G';
 			}
 			// Piece 8  W stock
 			pieceNum_stock = transaction.createPiece(TPCCConstants.TABLENAME_STOCK, key_stock, false);
-			if (s_quantity > ol_quantity) {
+			if (s_quantity > ol_quantity - 10) {
 				s_quantity = s_quantity - ol_quantity;
 			} else {
 				s_quantity = s_quantity - ol_quantity + 91;
@@ -186,23 +191,27 @@ public class TPCC {
 			transaction.completePiece();
 			LOG.debug("Piece 8: W stock | orderline#: " + ol_number);
 
+			s_quantities	[ol_number - 1] = s_quantity;
+		}
+
+		for (int ol_number = 1; ol_number <= o_ol_cnt; ol_number++) {
+			int ol_supply_w_id 	= supware	[ol_number - 1];
+			int ol_quantity 	= TPCCGenerator.randomInt(1, 10); 
+			float i_price 	= i_prices [ol_number - 1];
 			// Piece 9  W order_line			
 			float ol_amount = ol_quantity * i_price *(1+w_tax+d_tax) *(1-c_discount); 
 			String key_orderline = TPCCGenerator.buildString(w_id, "_", d_id , "_" , o_id , "_", ol_number);
 			transaction.createPiece(TPCCConstants.TABLENAME_ORDER_LINE, key_orderline, false);
-			columns = TPCCGenerator.buildColumns("ol_o_id", "ol_d_id", "ol_w_id", "ol_number", "ol_i_id", "ol_supply_w_id", "ol_delivery_id",
+			columns = TPCCGenerator.buildColumns("ol_o_id", "ol_d_id", "ol_w_id", "ol_number", "ol_i_id", "ol_supply_w_id", "ol_delivery_d",
 					"ol_quantity", "ol_amount", "ol_dist_info");
-			values = TPCCGenerator.buildColumns(o_id, d_id, w_id, ol_number, ol_i_id,
-					ol_supply_w_id, "NULL", ol_quantity, ol_amount, ol_dist_info);
+			values = TPCCGenerator.buildColumns(o_id, d_id, w_id, ol_number, ol_i_ids[ol_number - 1],
+					ol_supply_w_id, "NULL", ol_quantity, ol_amount, ol_dist_infos[ol_number-1]);
 			transaction.write(columns, values);
 			transaction.completePiece();
 			LOG.debug("Piece 9: W order_line | orderline#: " + ol_number);
 
-			i_names			[ol_number - 1] = i_name;
-			i_prices		[ol_number - 1] = i_price;
 			ol_amounts		[ol_number - 1] = ol_amount;
 			ol_quantities	[ol_number - 1] = ol_quantity;
-			s_quantities	[ol_number - 1] = s_quantity;
 		}
 
 		transaction.commit();
@@ -227,7 +236,7 @@ public class TPCC {
 	}
 	
 	
-	public static void Payment(int w_id, int d_id, String c_id_or_c_last) throws TransactionException {
+	public static void PaymentById(int w_id, int d_id, int c_id) throws TransactionException {
 		
 		// begin
 		RococoTransaction transaction = transactionFactory.create();
@@ -309,68 +318,43 @@ public class TPCC {
 		String c_data = null, h_data = null, c_first = null, c_middle = null, c_last = null;
 		String c_street_1 = null, c_street_2 = null, c_city = null, c_state = null, c_zip = null;
 		String c_phone = null, c_credit = null, c_credit_lim = null, c_since = null;
-		int c_id = 0;
 		String key_customer = null, key_prefix_customer = null;
-		if (byname) {
-			key_prefix_customer = (TPCCGenerator.buildString(c_w_id + "_" + c_d_id));
-			columns = TPCCGenerator.buildColumns("c_id", "c_balance", "c_credit", "c_data",
-					"c_first", "c_middle", "c_last", "c_street_1",
-					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
-					"c_credit", "c_credit_lim", "c_since");
-			int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
-			transaction.readSelect(columns);
-			transaction.completePiece();
-//			String constraintColumn = "c_last";
-//			String ConstraintValue = ((String)c_id_or_c_last);
-//			String orderColumn =  ("c_first");
-//			results = db.read(CUSTOMER, key_prefix_customer, columns, constraintColumn, ConstraintValue, orderColumn, false);
-//			int index = results.size() / 2;
-//			result = results.get(index);
-//			/* ORDER BY c_first and get midpoint */
-//			c_id = Integer.valueOf((result.get(columns[0])));
-//			c_balance = Float.valueOf((result.get(columns[1])));
-//			c_credit = (result.get(columns[2]));
-//			c_data = (result.get(columns[3]));
-//			c_first = (result.get(columns[4]));
-//			c_middle = (result.get(columns[5]));
-//			c_last = (result.get(columns[6]));
-//			c_street_1 = (result.get(columns[7]));
-//			c_street_2 = (result.get(columns[8]));
-//			c_city = (result.get(columns[9]));
-//			c_state = (result.get(columns[10]));
-//			c_zip = (result.get(columns[11]));
-//			c_phone = (result.get(columns[12]));
-//			c_credit = (result.get(columns[13]));
-//			c_credit_lim = (result.get(columns[14]));
-//			c_since = (result.get(columns[15]));
-//			key_customer = buildString(c_w_id, "_", c_d_id, "_", c_id);
-		} else {
-			key_customer = TPCCGenerator.buildString(c_w_id, "_", c_d_id, "_", c_id_or_c_last);
-			columns = TPCCGenerator.buildColumns("c_balance", "c_credit", "c_data",
-					"c_first", "c_middle", "c_last", "c_street_1",
-					"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
-					"c_credit", "c_credit_lim", "c_since");
-			int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
-			transaction.readSelect(columns);
-			transaction.completePiece();
-			c_id 		 = Integer.valueOf(c_id_or_c_last);
-			c_balance 	 = Float.valueOf(transaction.get(pieceNum_customer, "c_balance"));
-			c_data 		 = transaction.get(pieceNum_customer, "c_data");
-			c_first 	 = transaction.get(pieceNum_customer, "c_first");
-			c_middle 	 = transaction.get(pieceNum_customer, "c_middle");
-			c_last 		 = transaction.get(pieceNum_customer, "c_last");
-			c_street_1 	 = transaction.get(pieceNum_customer, "c_street_1");
-			c_street_2 	 = transaction.get(pieceNum_customer, "c_street_2");
-			c_city 		 = transaction.get(pieceNum_customer, "c_city");
-			c_state	 	 = transaction.get(pieceNum_customer, "c_state");
-			c_zip 		 = transaction.get(pieceNum_customer, "c_zip");
-			c_phone 	 = transaction.get(pieceNum_customer, "c_phone");
-			c_credit 	 = transaction.get(pieceNum_customer, "c_credit");
-			c_credit_lim = transaction.get(pieceNum_customer, "c_credit_lim");
-			c_since 	 = transaction.get(pieceNum_customer, "c_since");
-		}
 		
-		c_balance -= h_amount;
+		key_prefix_customer = (TPCCGenerator.buildString(c_w_id + "_" + c_d_id));
+		columns = TPCCGenerator.buildColumns("c_id", "c_balance", "c_credit", "c_data",
+				"c_first", "c_middle", "c_last", "c_street_1",
+				"c_street_2", "c_city", "c_state", "c_zip", "c_phone",
+				"c_credit", "c_credit_lim", "c_since");
+		int pieceNum_customer = transaction.createPiece(TPCCConstants.TABLENAME_CUSTOMER, key_customer, true);
+		transaction.readSelect(columns);
+		transaction.completePiece();
+//		String constraintColumn = "c_last";
+//		String ConstraintValue = ((String)c_id_or_c_last);
+//		String orderColumn =  ("c_first");
+//		results = db.read(CUSTOMER, key_prefix_customer, columns, constraintColumn, ConstraintValue, orderColumn, false);
+//		int index = results.size() / 2;
+//		result = results.get(index);
+//		/* ORDER BY c_first and get midpoint */
+//		c_id = Integer.valueOf((result.get(columns[0])));
+//		c_balance = Float.valueOf((result.get(columns[1])));
+//		c_credit = (result.get(columns[2]));
+//		c_data = (result.get(columns[3]));
+//		c_first = (result.get(columns[4]));
+//		c_middle = (result.get(columns[5]));
+//		c_last = (result.get(columns[6]));
+//		c_street_1 = (result.get(columns[7]));
+//		c_street_2 = (result.get(columns[8]));
+//		c_city = (result.get(columns[9]));
+//		c_state = (result.get(columns[10]));
+//		c_zip = (result.get(columns[11]));
+//		c_phone = (result.get(columns[12]));
+//		c_credit = (result.get(columns[13]));
+//		c_credit_lim = (result.get(columns[14]));
+//		c_since = (result.get(columns[15]));
+//		key_customer = buildString(c_w_id, "_", c_d_id, "_", c_id);
+
+		
+		c_balance += h_amount;
 		h_data = TPCCGenerator.buildString(w_name, "    ", d_name);
 		if (c_credit.equals("BC")) {
 			String c_new_data = String.format("| %4d %2d %4d %2d %4d $%7.2f %12s %24s", 
@@ -581,10 +565,10 @@ class myTask implements Callable<Integer> {
 
 		List<String> paras;
 		
-//		while (System.currentTimeMillis() - start < 30000) {
-//			int x = TPCCGenerator.randomInt(1, 100);
-		int x = 1;
-			if (x <= 44) {
+		while (System.currentTimeMillis() - start < 1) {
+		int x = TPCCGenerator.randomInt(0, 99);
+		x = 1;
+			if (x <= 47) {
 				paras = new ArrayList<String>();
 //				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.NUM_WAREHOUSE)));
 //				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.DISTRICTS_PER_WAREHOUSE)));
@@ -592,23 +576,23 @@ class myTask implements Callable<Integer> {
 				paras.add("1");
 				client.callProcedure(Procedure.TPCC_NEWORDER, paras);
 				count_neworder++;
-			} else if (x <= 87) {
+			} else if (x <= 93) {
 				paras = new ArrayList<String>();
 				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.NUM_WAREHOUSE)));
 				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.DISTRICTS_PER_WAREHOUSE)));
 				paras.add(String.valueOf(TPCCGenerator.randomInt(1,TPCCConstants.CUSTOMERS_PER_DISTRICT)));
 				client.callProcedure(Procedure.TPCC_PAYMENT, paras);
-
-			} else if (x <= 91) {
-
-			} else if (x <= 95) {
+			} else {
 				paras = new ArrayList<String>();
 				paras.add(String.valueOf(TPCCGenerator.randomInt(1,10)));
 				client.callProcedure(Procedure.TPCC_DELIVERY, paras);
-			} else {
-				
 			}
-//		}
+//			try {
+//            System.out.println("Starting another txn in 1 seconds...");
+//            Thread.sleep(10);
+//        } catch (InterruptedException ignored) {
+//        }
+		}
 		return count_neworder;
 	}
 }

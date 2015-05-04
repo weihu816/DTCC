@@ -122,7 +122,7 @@ public class MicroBench {
 			long start = System.currentTimeMillis();
 			CoordinatorClient client = CoordinatorClient.getCoordinatorClient();
 
-			while (System.currentTimeMillis() - start < 1000) {
+			while (System.currentTimeMillis() - start < 1) {
 				client.callProcedure(Procedure.MICRO_BENCHMARK, new ArrayList<String>());
 				count++;
 			}

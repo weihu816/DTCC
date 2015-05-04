@@ -31,6 +31,7 @@ public class ServerCommunicator {
 //					RococoCommunicationService.Processor processor = 
 //							new RococoCommunicationService.Processor(new ServerCommunicationServiceHandler(node));
 //					server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).processor(processor));
+					
 					TNonblockingServerSocket socket = new TNonblockingServerSocket(port);
 					RococoCommunicationService.Processor processor = 
 							new RococoCommunicationService.Processor(new ServerCommunicationServiceHandler(node));
@@ -39,7 +40,7 @@ public class ServerCommunicator {
 					thhsArgs.transportFactory(new TFramedTransport.Factory());
 					thhsArgs.protocolFactory(new TBinaryProtocol.Factory());
 					TServer server = new TThreadedSelectorServer(thhsArgs);
-			        
+
 //					TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(port);
 //					RococoCommunicationService.Processor processor = 
 //							new RococoCommunicationService.Processor(new ServerCommunicationServiceHandler(node));

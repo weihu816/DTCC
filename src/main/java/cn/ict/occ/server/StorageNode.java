@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.thrift.TException;
 
 import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.dtcc.server.dao.MemoryDB;
@@ -20,7 +19,7 @@ import cn.ict.occ.messaging.ReadValue;
 
 
 public class StorageNode {
-
+	
 	private static final Log LOG = LogFactory.getLog(StorageNode.class);
 	
 	private MemoryDB db = new MemoryDB();

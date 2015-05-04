@@ -1,6 +1,7 @@
 package cn.ict.rcc.server.coordinator.messaging;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -22,6 +23,7 @@ import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.RococoCommunicationService;
 import cn.ict.rcc.messaging.StartResponse;
+import cn.ict.rcc.messaging.StartResponseBulk;
 
 /**
  * @author Wei
@@ -37,8 +39,6 @@ public class CoordinatorCommunicator {
 			new ThriftConnectionPool());
 	private KeyedObjectPool<Member, TNonblockingSocket> nonBlockingPool = new StackKeyedObjectPool<Member, TNonblockingSocket>(
 			new ThriftNonBlockingConnectionPool());
-//	private HashMap<Member, RococoCommunicationService.AsyncClient> asyncClientPool = new HashMap<Member, RococoCommunicationService.AsyncClient>();
-//	private HashMap<Member, RococoCommunicationService.Client> clientPool = new HashMap<Member, RococoCommunicationService.Client>();
 
 	private TAsyncClientManager clientManager;
 
@@ -50,7 +50,7 @@ public class CoordinatorCommunicator {
 		}
 	}
 	
-	public StartResponse fistRound(Member member, Piece piece) {
+	public StartResponseBulk firstRound(Member member, Piece piece) {
 		LOG.debug("fistRound Txn:" + piece.getTransactionId() + " " + piece.getTable() + " " + piece.getKey());
 		TTransport transport = null;
 		RococoCommunicationService.Client client = null;
@@ -60,7 +60,9 @@ public class CoordinatorCommunicator {
 			transport = blockingPool.borrowObject(member);
             TProtocol protocol = new TBinaryProtocol(transport);
 			client = new RococoCommunicationService.Client(protocol);
-			return client.start_req(piece);
+			List<Piece> pieces = new ArrayList<Piece>();
+			pieces.add(piece);
+			return client.start_req_bulk(pieces);
 		} catch (Exception e) {
 			error = true;
 			if (member != null) {
@@ -80,97 +82,74 @@ public class CoordinatorCommunicator {
 		return null;
 	}
 	
-	
-	public void fistRound(Member member, Piece piece, StartMethodCallback callback) throws TException {
-		LOG.debug("fistRound Txn:" + piece.getTransactionId() + " " + piece.getTable() + " " + piece.getKey());
+	public void firstRound(Member member, List<Piece> pieces, StartMethodCallback callback) throws TException {
 		TNonblockingSocket transport = null;
 		RococoCommunicationService.AsyncClient asyncClient = null;
 		AsyncMethodCallbackDecorator asyncMethodCallback = null;
-		boolean error = false;
+//		boolean error = false;
 		try {
-			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
 			transport = nonBlockingPool.borrowObject(member);
-			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
-			asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
-//			RococoCommunicationService.AsyncClient asyncClient = asyncClientPool.get(member);
-//			if (asyncClient == null) {
-//				asyncClientPool.put(member, asyncClient);
-//			}
-			asyncClient.start_req(piece, asyncMethodCallback);
-		} catch (Exception e) {
-			if (member != null) {
-				handleException(member.getHostName(), e);
-			}
-		} finally {
-            if (transport != null) {
-                try {
-                    if (error) {
-                        blockingPool.invalidateObject(member, transport);
-                    } else {
-                        blockingPool.returnObject(member, transport);
-                    }
-                } catch (Exception ignored) { }
-            }
-        }
-	}
-	
-	public void fistRound(Member member, List<Piece> pieces, StartMethodCallback callback) throws TException {
-		LOG.debug("fistRound Txn bulk.");
-		TNonblockingSocket transport = null;
-		RococoCommunicationService.AsyncClient asyncClient = null;
-		AsyncMethodCallbackDecorator asyncMethodCallback = null;
-		boolean error = false;
-		try {
 			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
-			transport = nonBlockingPool.borrowObject(member);
 			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
 			asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
 			asyncClient.start_req_bulk(pieces, asyncMethodCallback);
-		} catch (Exception e) {
-			if (member != null) {
-				handleException(member.getHostName(), e);
+		}
+		catch (Exception e) {
+			if (asyncMethodCallback != null) {
+				asyncMethodCallback.onError(e);
 			}
-		} finally {
-            if (transport != null) {
-                try {
-                    if (error) {
-                        blockingPool.invalidateObject(member, transport);
-                    } else {
-                        blockingPool.returnObject(member, transport);
-                    }
-                } catch (Exception ignored) { }
-            }
-        }
+			handleException(member.getHostName(), e);
+		}
+//		catch (Exception e) {
+//			error = true;
+//			if (member != null) {
+//				handleException(member.getHostName(), e);
+//			}
+//		} finally {
+//            if (transport != null) {
+//                try {
+//                    if (error) {
+//                        blockingPool.invalidateObject(member, transport);
+//                    } else {
+//                        blockingPool.returnObject(member, transport);
+//                    }
+//                } catch (Exception ignored) { }
+//            }
+//        }
 	}
 	
 	
-	public void secondRound(Member member, String transactionId,
-			Graph dep, CommitMethodCallback callback) throws TException {
-		LOG.debug("secondRound Txn: " + transactionId + " " + dep);
+	public void secondRound(Member member, String transactionId, Graph dep, CommitMethodCallback callback) throws TException {
+		LOG.debug("secondRound Txn: " + member + " " + transactionId + " " + dep);
 		TNonblockingSocket transport = null;
 		AsyncMethodCallbackDecorator asyncMethodCallback = null;
 		RococoCommunicationService.AsyncClient asyncClient = null;
-		boolean error = false;
+//		boolean error = false;
 		try {
-			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
 			transport = nonBlockingPool.borrowObject(member);
+			asyncMethodCallback = new AsyncMethodCallbackDecorator(callback, transport, member, nonBlockingPool);
 			TBinaryProtocol.Factory protocolFactory = new TBinaryProtocol.Factory();
 			asyncClient = new RococoCommunicationService.AsyncClient(protocolFactory, clientManager, transport);
 			asyncClient.commit_req(transactionId, dep, asyncMethodCallback);
-		}
-		catch (Exception e) {
-			error = true;
-			if (member != null) {
-				handleException(member.getHostName(), e);
+		} catch (Exception e) {
+			if (asyncMethodCallback != null) {
+				asyncMethodCallback.onError(e);
 			}
-		} finally {
-			if (transport != null) {
-				try {
-					if (error) { blockingPool.invalidateObject(member, transport); }
-					else { blockingPool.returnObject(member, transport); }
-				} catch (Exception ignored) { } // ignored
-			}
+			handleException(member.getHostName(), e);
 		}
+//		catch (Exception e) {
+//			error = true;
+//			if (member != null) {
+//				handleException(member.getHostName(), e);
+//			}
+//		} finally {
+//			if (transport != null) {
+//				try {
+//					if (error) { blockingPool.invalidateObject(member, transport); }
+//					else { blockingPool.returnObject(member, transport); }
+//				} catch (Exception ignored) { } // ignored
+//			}
+//		}
 	}
 
 	public void rcc_ask_txnCommitting(Member member, String transactionId, AskMethodCallback callback) throws TException {

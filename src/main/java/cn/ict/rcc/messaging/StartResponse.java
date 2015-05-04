@@ -44,7 +44,7 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
     schemes.put(TupleScheme.class, new StartResponseTupleSchemeFactory());
   }
 
-  public List<Map<String,String>> output; // required
+  public List<String> output; // required
   public Graph dep; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -114,9 +114,7 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.OUTPUT, new org.apache.thrift.meta_data.FieldMetaData("output", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.DEP, new org.apache.thrift.meta_data.FieldMetaData("dep", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Graph.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -127,7 +125,7 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
   }
 
   public StartResponse(
-    List<Map<String,String>> output,
+    List<String> output,
     Graph dep)
   {
     this();
@@ -140,11 +138,7 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
    */
   public StartResponse(StartResponse other) {
     if (other.isSetOutput()) {
-      List<Map<String,String>> __this__output = new ArrayList<Map<String,String>>(other.output.size());
-      for (Map<String,String> other_element : other.output) {
-        Map<String,String> __this__output_copy = new HashMap<String,String>(other_element);
-        __this__output.add(__this__output_copy);
-      }
+      List<String> __this__output = new ArrayList<String>(other.output);
       this.output = __this__output;
     }
     if (other.isSetDep()) {
@@ -166,22 +160,22 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
     return (this.output == null) ? 0 : this.output.size();
   }
 
-  public java.util.Iterator<Map<String,String>> getOutputIterator() {
+  public java.util.Iterator<String> getOutputIterator() {
     return (this.output == null) ? null : this.output.iterator();
   }
 
-  public void addToOutput(Map<String,String> elem) {
+  public void addToOutput(String elem) {
     if (this.output == null) {
-      this.output = new ArrayList<Map<String,String>>();
+      this.output = new ArrayList<String>();
     }
     this.output.add(elem);
   }
 
-  public List<Map<String,String>> getOutput() {
+  public List<String> getOutput() {
     return this.output;
   }
 
-  public StartResponse setOutput(List<Map<String,String>> output) {
+  public StartResponse setOutput(List<String> output) {
     this.output = output;
     return this;
   }
@@ -231,7 +225,7 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
       if (value == null) {
         unsetOutput();
       } else {
-        setOutput((List<Map<String,String>>)value);
+        setOutput((List<String>)value);
       }
       break;
 
@@ -431,23 +425,11 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list52 = iprot.readListBegin();
-                struct.output = new ArrayList<Map<String,String>>(_list52.size);
+                struct.output = new ArrayList<String>(_list52.size);
                 for (int _i53 = 0; _i53 < _list52.size; ++_i53)
                 {
-                  Map<String,String> _elem54;
-                  {
-                    org.apache.thrift.protocol.TMap _map55 = iprot.readMapBegin();
-                    _elem54 = new HashMap<String,String>(2*_map55.size);
-                    for (int _i56 = 0; _i56 < _map55.size; ++_i56)
-                    {
-                      String _key57;
-                      String _val58;
-                      _key57 = iprot.readString();
-                      _val58 = iprot.readString();
-                      _elem54.put(_key57, _val58);
-                    }
-                    iprot.readMapEnd();
-                  }
+                  String _elem54;
+                  _elem54 = iprot.readString();
                   struct.output.add(_elem54);
                 }
                 iprot.readListEnd();
@@ -484,18 +466,10 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
       if (struct.output != null) {
         oprot.writeFieldBegin(OUTPUT_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, struct.output.size()));
-          for (Map<String,String> _iter59 : struct.output)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.output.size()));
+          for (String _iter55 : struct.output)
           {
-            {
-              oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, _iter59.size()));
-              for (Map.Entry<String, String> _iter60 : _iter59.entrySet())
-              {
-                oprot.writeString(_iter60.getKey());
-                oprot.writeString(_iter60.getValue());
-              }
-              oprot.writeMapEnd();
-            }
+            oprot.writeString(_iter55);
           }
           oprot.writeListEnd();
         }
@@ -525,16 +499,9 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.output.size());
-        for (Map<String,String> _iter61 : struct.output)
+        for (String _iter56 : struct.output)
         {
-          {
-            oprot.writeI32(_iter61.size());
-            for (Map.Entry<String, String> _iter62 : _iter61.entrySet())
-            {
-              oprot.writeString(_iter62.getKey());
-              oprot.writeString(_iter62.getValue());
-            }
-          }
+          oprot.writeString(_iter56);
         }
       }
       struct.dep.write(oprot);
@@ -544,24 +511,13 @@ public class StartResponse implements org.apache.thrift.TBase<StartResponse, Sta
     public void read(org.apache.thrift.protocol.TProtocol prot, StartResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list63 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, iprot.readI32());
-        struct.output = new ArrayList<Map<String,String>>(_list63.size);
-        for (int _i64 = 0; _i64 < _list63.size; ++_i64)
+        org.apache.thrift.protocol.TList _list57 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.output = new ArrayList<String>(_list57.size);
+        for (int _i58 = 0; _i58 < _list57.size; ++_i58)
         {
-          Map<String,String> _elem65;
-          {
-            org.apache.thrift.protocol.TMap _map66 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-            _elem65 = new HashMap<String,String>(2*_map66.size);
-            for (int _i67 = 0; _i67 < _map66.size; ++_i67)
-            {
-              String _key68;
-              String _val69;
-              _key68 = iprot.readString();
-              _val69 = iprot.readString();
-              _elem65.put(_key68, _val69);
-            }
-          }
-          struct.output.add(_elem65);
+          String _elem59;
+          _elem59 = iprot.readString();
+          struct.output.add(_elem59);
         }
       }
       struct.setOutputIsSet(true);

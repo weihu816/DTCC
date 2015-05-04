@@ -5,10 +5,8 @@ import java.util.List;
 import org.apache.thrift.TException;
 
 import cn.ict.dtcc.exception.TransactionException;
-import cn.ict.rcc.benchmark.micro.MicroBench;
-import cn.ict.rcc.benchmark.procedure.FundsTransferBench;
 import cn.ict.rcc.benchmark.procedure.Procedure;
-import cn.ict.rcc.benchmark.procedure.TPCC;
+import cn.ict.rcc.benchmark.tpcc.TPCC;
 import cn.ict.rcc.messaging.RococoCoordinator.Iface;
 
 public class CoordinatorServiceHandler implements Iface {
@@ -17,17 +15,17 @@ public class CoordinatorServiceHandler implements Iface {
 	public void callProcedure(String procedure, List<String> paras) throws TException {
 		try {
 			switch (procedure) {
-			case Procedure.MICRO_BENCHMARK:
-				MicroBench.Micro();
-				break;
-			case Procedure.FUNDS_BENCHMARK:
-				FundsTransferBench.FundsTransfer();
-				break;
+//			case Procedure.MICRO_BENCHMARK:
+//				MicroBench.Micro();
+//				break;
+//			case Procedure.FUNDS_BENCHMARK:
+//				FundsTransferBench.FundsTransfer();
+//				break;
 			case Procedure.TPCC_NEWORDER:
 				TPCC.Neworder(Integer.valueOf(paras.get(0)), Integer.valueOf(paras.get(1)));
 				break;
 			case Procedure.TPCC_PAYMENT:
-				TPCC.Payment(Integer.valueOf(paras.get(0)), Integer.valueOf(paras.get(1)), paras.get(2));
+				TPCC.PaymentById(Integer.valueOf(paras.get(0)), Integer.valueOf(paras.get(1)), Integer.parseInt(paras.get(2)));
 				break;
 			case Procedure.TPCC_ORDERSTATUS:
 				break;

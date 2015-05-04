@@ -36,7 +36,7 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CommitResponse");
 
   private static final org.apache.thrift.protocol.TField RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("result", org.apache.thrift.protocol.TType.BOOL, (short)1);
-  private static final org.apache.thrift.protocol.TField OUTPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("output", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField OUTPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("output", org.apache.thrift.protocol.TType.MAP, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -45,7 +45,7 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
   }
 
   public boolean result; // required
-  public List<Map<String,String>> output; // optional
+  public Map<Integer,List<String>> output; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -118,9 +118,9 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
     tmpMap.put(_Fields.RESULT, new org.apache.thrift.meta_data.FieldMetaData("result", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.OUTPUT, new org.apache.thrift.meta_data.FieldMetaData("output", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-                new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32), 
+            new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
                 new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitResponse.class, metaDataMap);
@@ -144,10 +144,17 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
     __isset_bitfield = other.__isset_bitfield;
     this.result = other.result;
     if (other.isSetOutput()) {
-      List<Map<String,String>> __this__output = new ArrayList<Map<String,String>>(other.output.size());
-      for (Map<String,String> other_element : other.output) {
-        Map<String,String> __this__output_copy = new HashMap<String,String>(other_element);
-        __this__output.add(__this__output_copy);
+      Map<Integer,List<String>> __this__output = new HashMap<Integer,List<String>>(other.output.size());
+      for (Map.Entry<Integer, List<String>> other_element : other.output.entrySet()) {
+
+        Integer other_element_key = other_element.getKey();
+        List<String> other_element_value = other_element.getValue();
+
+        Integer __this__output_copy_key = other_element_key;
+
+        List<String> __this__output_copy_value = new ArrayList<String>(other_element_value);
+
+        __this__output.put(__this__output_copy_key, __this__output_copy_value);
       }
       this.output = __this__output;
     }
@@ -191,22 +198,18 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
     return (this.output == null) ? 0 : this.output.size();
   }
 
-  public java.util.Iterator<Map<String,String>> getOutputIterator() {
-    return (this.output == null) ? null : this.output.iterator();
-  }
-
-  public void addToOutput(Map<String,String> elem) {
+  public void putToOutput(int key, List<String> val) {
     if (this.output == null) {
-      this.output = new ArrayList<Map<String,String>>();
+      this.output = new HashMap<Integer,List<String>>();
     }
-    this.output.add(elem);
+    this.output.put(key, val);
   }
 
-  public List<Map<String,String>> getOutput() {
+  public Map<Integer,List<String>> getOutput() {
     return this.output;
   }
 
-  public CommitResponse setOutput(List<Map<String,String>> output) {
+  public CommitResponse setOutput(Map<Integer,List<String>> output) {
     this.output = output;
     return this;
   }
@@ -240,7 +243,7 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
       if (value == null) {
         unsetOutput();
       } else {
-        setOutput((List<Map<String,String>>)value);
+        setOutput((Map<Integer,List<String>>)value);
       }
       break;
 
@@ -428,29 +431,29 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
             }
             break;
           case 2: // OUTPUT
-            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TList _list70 = iprot.readListBegin();
-                struct.output = new ArrayList<Map<String,String>>(_list70.size);
-                for (int _i71 = 0; _i71 < _list70.size; ++_i71)
+                org.apache.thrift.protocol.TMap _map76 = iprot.readMapBegin();
+                struct.output = new HashMap<Integer,List<String>>(2*_map76.size);
+                for (int _i77 = 0; _i77 < _map76.size; ++_i77)
                 {
-                  Map<String,String> _elem72;
+                  int _key78;
+                  List<String> _val79;
+                  _key78 = iprot.readI32();
                   {
-                    org.apache.thrift.protocol.TMap _map73 = iprot.readMapBegin();
-                    _elem72 = new HashMap<String,String>(2*_map73.size);
-                    for (int _i74 = 0; _i74 < _map73.size; ++_i74)
+                    org.apache.thrift.protocol.TList _list80 = iprot.readListBegin();
+                    _val79 = new ArrayList<String>(_list80.size);
+                    for (int _i81 = 0; _i81 < _list80.size; ++_i81)
                     {
-                      String _key75;
-                      String _val76;
-                      _key75 = iprot.readString();
-                      _val76 = iprot.readString();
-                      _elem72.put(_key75, _val76);
+                      String _elem82;
+                      _elem82 = iprot.readString();
+                      _val79.add(_elem82);
                     }
-                    iprot.readMapEnd();
+                    iprot.readListEnd();
                   }
-                  struct.output.add(_elem72);
+                  struct.output.put(_key78, _val79);
                 }
-                iprot.readListEnd();
+                iprot.readMapEnd();
               }
               struct.setOutputIsSet(true);
             } else { 
@@ -479,20 +482,20 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
         if (struct.isSetOutput()) {
           oprot.writeFieldBegin(OUTPUT_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, struct.output.size()));
-            for (Map<String,String> _iter77 : struct.output)
+            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I32, org.apache.thrift.protocol.TType.LIST, struct.output.size()));
+            for (Map.Entry<Integer, List<String>> _iter83 : struct.output.entrySet())
             {
+              oprot.writeI32(_iter83.getKey());
               {
-                oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, _iter77.size()));
-                for (Map.Entry<String, String> _iter78 : _iter77.entrySet())
+                oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, _iter83.getValue().size()));
+                for (String _iter84 : _iter83.getValue())
                 {
-                  oprot.writeString(_iter78.getKey());
-                  oprot.writeString(_iter78.getValue());
+                  oprot.writeString(_iter84);
                 }
-                oprot.writeMapEnd();
+                oprot.writeListEnd();
               }
             }
-            oprot.writeListEnd();
+            oprot.writeMapEnd();
           }
           oprot.writeFieldEnd();
         }
@@ -528,14 +531,14 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
       if (struct.isSetOutput()) {
         {
           oprot.writeI32(struct.output.size());
-          for (Map<String,String> _iter79 : struct.output)
+          for (Map.Entry<Integer, List<String>> _iter85 : struct.output.entrySet())
           {
+            oprot.writeI32(_iter85.getKey());
             {
-              oprot.writeI32(_iter79.size());
-              for (Map.Entry<String, String> _iter80 : _iter79.entrySet())
+              oprot.writeI32(_iter85.getValue().size());
+              for (String _iter86 : _iter85.getValue())
               {
-                oprot.writeString(_iter80.getKey());
-                oprot.writeString(_iter80.getValue());
+                oprot.writeString(_iter86);
               }
             }
           }
@@ -553,24 +556,24 @@ public class CommitResponse implements org.apache.thrift.TBase<CommitResponse, C
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list81 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.MAP, iprot.readI32());
-          struct.output = new ArrayList<Map<String,String>>(_list81.size);
-          for (int _i82 = 0; _i82 < _list81.size; ++_i82)
+          org.apache.thrift.protocol.TMap _map87 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I32, org.apache.thrift.protocol.TType.LIST, iprot.readI32());
+          struct.output = new HashMap<Integer,List<String>>(2*_map87.size);
+          for (int _i88 = 0; _i88 < _map87.size; ++_i88)
           {
-            Map<String,String> _elem83;
+            int _key89;
+            List<String> _val90;
+            _key89 = iprot.readI32();
             {
-              org.apache.thrift.protocol.TMap _map84 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-              _elem83 = new HashMap<String,String>(2*_map84.size);
-              for (int _i85 = 0; _i85 < _map84.size; ++_i85)
+              org.apache.thrift.protocol.TList _list91 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+              _val90 = new ArrayList<String>(_list91.size);
+              for (int _i92 = 0; _i92 < _list91.size; ++_i92)
               {
-                String _key86;
-                String _val87;
-                _key86 = iprot.readString();
-                _val87 = iprot.readString();
-                _elem83.put(_key86, _val87);
+                String _elem93;
+                _elem93 = iprot.readString();
+                _val90.add(_elem93);
               }
             }
-            struct.output.add(_elem83);
+            struct.output.put(_key89, _val90);
           }
         }
         struct.setOutputIsSet(true);

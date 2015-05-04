@@ -27,7 +27,7 @@ public class ServerConfiguration {
 	private String logConfigfile = "conf/log4j-server.properties";
 	
 	private static final Log LOG = LogFactory.getLog(ServerConfiguration.class);
-		
+
 	private static volatile ServerConfiguration config = null;
 	
 	private ServerConfiguration(Properties properties) {

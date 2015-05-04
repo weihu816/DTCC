@@ -11,6 +11,7 @@ import cn.ict.rcc.messaging.Graph;
 import cn.ict.rcc.messaging.Piece;
 import cn.ict.rcc.messaging.RococoCommunicationService.Iface;
 import cn.ict.rcc.messaging.StartResponse;
+import cn.ict.rcc.messaging.StartResponseBulk;
 
 /**
  * Server Service Handler
@@ -35,15 +36,12 @@ public class ServerCommunicationServiceHandler implements Iface {
 	@Override
 	public StartResponse start_req(Piece piece) throws TException {
 		LOG.debug("Server Handler: start_req(Piece piece) TransactionID: " + piece.getTransactionId());
-		return node.start_req(piece);
+		return null;
 	}
 	
 	@Override
-	public StartResponse start_req_bulk(List<Piece> pieces) throws TException {
-		for (Piece p : pieces) {
-			node.start_req(p);
-		}// TODO
-		return null;
+	public StartResponseBulk start_req_bulk(List<Piece> pieces) throws TException {
+		return node.start_req(pieces);
 	}
 
 	@Override

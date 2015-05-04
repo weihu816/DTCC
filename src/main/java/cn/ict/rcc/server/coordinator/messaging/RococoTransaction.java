@@ -34,7 +34,7 @@ public class RococoTransaction {
 	CoordinatorCommunicator communicator;
 	int piece_number;
 	private Map<Integer, List<Map<String, String>>> readSet = new ConcurrentHashMap<Integer, List<Map<String, String>>>();
-	private Map<Integer, Boolean> readFlag= new ConcurrentHashMap<Integer, Boolean>();
+	private Map<Integer, Boolean> readFlag = new ConcurrentHashMap<Integer, Boolean>();
 	Map<String, String> dep = new HashMap<String, String>();
 	Map<String, Set<String>> serversInvolvedList = new HashMap<String, Set<String>>();
 
@@ -54,7 +54,7 @@ public class RococoTransaction {
 		if (piece != null) {
 			throw new TransactionException("Create a new piece without complete the last one");
 		}
-		piece = new Piece(new ArrayList<Vertex>(), transactionId, table, key, immediate);
+		piece = new Piece(new ArrayList<Vertex>(), transactionId, table, key, immediate, 0);//TODO
 		piece_number++;
 		return piece_number;
 	}
@@ -63,14 +63,15 @@ public class RococoTransaction {
 		pieces.add(piece);
 		Piece tempPiece = piece;
 		Member member = config.getShardMember(piece.getTable(), piece.getKey());
-		StartResponse startResponse = communicator.fistRound(member, tempPiece);
-		
+		StartResponse startResponse = null;
+		// = communicator.firstRound(member, tempPiece);
+
 		List<Map<String, String>> map = readSet.get(piece_number);
 		if (map == null) {
 			map = new ArrayList<Map<String, String>>();
 			readSet.put(piece_number, map);
 		}
-		map.addAll(startResponse.getOutput());
+//		map.addAll(startResponse.getOutput()); TODO
 		dep.putAll(startResponse.getDep().getVertexes());
 		
 		// ServersInvolved
@@ -167,7 +168,7 @@ public class RococoTransaction {
 		names.add(name);
 		List<String> values = new ArrayList<String>();
 		values.add(String.valueOf(value));
-		Vertex v = new Vertex(Action.ADDINTEGER);
+		Vertex v = new Vertex(Action.ADDI);
 		v.setName(names);
 		v.setValue(values);
 		piece.getVertexs().add(v);
@@ -179,7 +180,7 @@ public class RococoTransaction {
 		names.add(name);
 		List<String> values = new ArrayList<String>();
 		values.add(String.valueOf(value));
-		Vertex v = new Vertex(Action.ADDDECIMAL);
+		Vertex v = new Vertex(Action.ADDF);
 		v.setName(names);
 		v.setValue(values);
 		piece.getVertexs().add(v);

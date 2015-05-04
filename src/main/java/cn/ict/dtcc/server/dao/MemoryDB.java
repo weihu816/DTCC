@@ -186,21 +186,21 @@ public class MemoryDB {
 		return true;
 	}
     
-    // read from secondary index
-    public List<Map<String, String>> read_secondaryIndex(String table, String keyIndex,
-			List<String> names, boolean isAll) {
-		List<Map<String, String>> list = new ArrayList<Map<String,String>>();
-		if (!isAll) {
-			Iterator<String> i = secondaryIndex.get(table).get(keyIndex).iterator();
-			String primaryKey = i.next();
-			list.add(read(table, primaryKey, names));
-		} else {
-			for(String primaryKey : secondaryIndex.get(table).get(keyIndex)) {
-				list.add(read(table, primaryKey, names));
-			}
-		}
-		return list;
-	}
+//    // read from secondary index
+//    public List<Map<String, String>> read_secondaryIndex(String table, String keyIndex,
+//			List<String> names, boolean isAll) {
+//		List<Map<String, String>> list = new ArrayList<Map<String,String>>();
+//		if (!isAll) {
+//			Iterator<String> i = secondaryIndex.get(table).get(keyIndex).iterator();
+//			String primaryKey = i.next();
+//			list.add(read(table, primaryKey, names));
+//		} else {
+//			for(String primaryKey : secondaryIndex.get(table).get(keyIndex)) {
+//				list.add(read(table, primaryKey, names));
+//			}
+//		}
+//		return list;
+//	}
     
     // read from secondary index fetch moddle
     public ReadValue read_secondaryIndexFetch(String table, String keyIndex,
@@ -272,18 +272,15 @@ public class MemoryDB {
 	}
     
     /* Basic read */
-	public HashMap<String, String> read(String table, String key,
-			List<String> names) {
+	public List<String> read(String table, String key, List<String> names) {
     	LOG.debug("read: " + table + " " + key);
 		Record record = db.get(table).get(key);
 		if (record != null) {
-			HashMap<String, String> map = new HashMap<String, String>();
+			List<String> list = new ArrayList<String>();
 			for (String name : names) {
-				if (record.getValue(name) != null) {
-					map.put(name, record.getValue(name));
-				}
+				list.add(record.getValue(name));
 			}
-			return map;
+			return list;
 		}
 		return null;
 	}
@@ -292,7 +289,7 @@ public class MemoryDB {
 		LOG.debug(DTCCUtil.buildString("ADD: ", table, " ", key));
 		check(table);
 		if (names == null || values == null || values.size() != names.size()) {
-			return false;
+			throw new DTCCException("No such element table:" + table + " key: "+ key);
 		}
 		int size = names.size();
 		Record r = db.get(table).get(key);
@@ -300,7 +297,7 @@ public class MemoryDB {
 			throw new DTCCException("No such element table:" + table + " key: "+ key);
 		}
 		for (int i = 0; i < size; i++) {
-//			LOG.debug("Table: " + table + " Key: " + key + " Add: " + names.get(i) + values.get(i));
+			LOG.debug("Table: " + table + " Key: " + key + " Add: " + names.get(i) + values.get(i));
 			String new_value;
 			if (isDecimal) {
 				new_value = String.valueOf(Float.parseFloat(r.getValue(names.get(i))) + Float.parseFloat(values.get(i)));
@@ -309,6 +306,32 @@ public class MemoryDB {
 			}
 			r.put(names.get(i), new_value);
 		}
+		return true;
+	}
+	
+	public boolean reduce(String table, String key, List<String> names, List<String> values) {
+		LOG.debug(DTCCUtil.buildString("ADD: ", table, " ", key));
+		check(table);
+		if (names == null || values == null) {
+			throw new DTCCException("No such element table:" + table + " key: "+ key);
+		}
+		String name = names.get(0);
+		int x = Integer.parseInt(values.get(0));
+		int y = Integer.parseInt(values.get(1));
+		int z = Integer.parseInt(values.get(2));
+		
+		Record r = db.get(table).get(key);
+		if (r == null) {
+			throw new DTCCException("No such element table:" + table + " key: "+ key);
+		}
+		int value = Integer.parseInt(r.getValue(name));
+		int new_value;
+		if (value - x > y) {
+			new_value = value - x;
+		} else {
+			new_value = value - x + z;
+		}
+		r.put(name, String.valueOf(new_value));
 		return true;
 	}
 

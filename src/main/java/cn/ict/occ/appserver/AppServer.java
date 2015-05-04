@@ -21,7 +21,6 @@ import org.apache.thrift.transport.TTransportException;
 import cn.ict.dtcc.config.AppServerConfiguration;
 import cn.ict.dtcc.config.Member;
 import cn.ict.dtcc.config.ServerConfiguration;
-import cn.ict.dtcc.server.dao.Database;
 import cn.ict.occ.messaging.OCCAppServerService;
 import cn.ict.occ.messaging.ReadValue;
 import cn.ict.occ.messaging.Result;
@@ -151,8 +150,7 @@ public class AppServer implements AppServerService {
 	}
 
 	public static void main(String[] args) {
-		PropertyConfigurator.configure(ServerConfiguration.getConfiguration()
-				.getLogConfigFilePath());
+		PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
 		final AppServer server = new AppServer();
 		Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override

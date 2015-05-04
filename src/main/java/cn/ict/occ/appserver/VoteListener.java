@@ -28,8 +28,7 @@ public class VoteListener {
     private OCCCommunicator communicator;
     private String txnId;
 
-    public VoteListener(Collection<Option> options, OCCCommunicator communicator,
-                                 String txnId) {
+    public VoteListener(Collection<Option> options, OCCCommunicator communicator, String txnId) {
         this.options = options;
         this.communicator = communicator;
         this.txnId = txnId;
