@@ -16,7 +16,7 @@ public class Chopper_task implements Callable<Integer> {
 		long start = System.currentTimeMillis();
 		int count_neworder = 0;
 
-		while (System.currentTimeMillis() - start < 20000) {
+		while (System.currentTimeMillis() - start < 30000) {
 
 			long xxx = System.currentTimeMillis();
 			int x = TPCCGenerator.randomInt(0, 99);

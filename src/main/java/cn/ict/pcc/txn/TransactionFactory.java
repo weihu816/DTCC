@@ -1,12 +1,12 @@
 package cn.ict.pcc.txn;
 
-import cn.ict.occ.appserver.AppServer;
-import cn.ict.occ.appserver.AppServerService;
+import cn.ict.pcc.appserver.AppServer;
+
 
 public class TransactionFactory {
 	
 	private boolean local;
-	private AppServerService appServer;
+	private AppServer appServer;
 
 	public TransactionFactory() {
 		this.local = true;
@@ -14,8 +14,8 @@ public class TransactionFactory {
 	}
 
 	// HUWEI
-	public OCCTransaction create() {
-		return new OCCTransaction(appServer);
+	public PCCTransaction create() {
+		return new PCCTransaction(appServer);
 	}
 
 	public void close() {

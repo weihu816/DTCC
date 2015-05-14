@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import javax.xml.crypto.Data;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -25,7 +27,7 @@ import cn.ict.occ.messaging.ReadValue;
  * @author Wei Hu
  */
 
-public class MemoryDB {
+public class MemoryDB implements Database {
 	private static final Log LOG = LogFactory.getLog(MemoryDB.class);
 	
 	private Map<String, ConcurrentHashMap<String, Record>> db = new ConcurrentHashMap<String, ConcurrentHashMap<String, Record>>();

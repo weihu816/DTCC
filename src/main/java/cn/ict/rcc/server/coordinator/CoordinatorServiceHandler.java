@@ -1,16 +1,46 @@
 package cn.ict.rcc.server.coordinator;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.thrift.TException;
 
 import cn.ict.dtcc.exception.TransactionException;
 import cn.ict.rcc.benchmark.procedure.Procedure;
+import cn.ict.rcc.benchmark.tpcc.Chopper;
 import cn.ict.rcc.benchmark.tpcc.TPCC;
 import cn.ict.rcc.messaging.RococoCoordinator.Iface;
+import cn.ict.rcc.server.coordinator.messaging.CoordinatorCommunicator;
 
 public class CoordinatorServiceHandler implements Iface {
 
+	Chopper Chopper = new Chopper() {
+		
+		@Override
+		public Map<String, Set<String>> getServersInvolvedList() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+		@Override
+		public Map<Integer, List<String>> getReadSet() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+		@Override
+		public Map<String, String> getGraph() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+		@Override
+		public CoordinatorCommunicator getCommunicator() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
 	@Override
 	public void callProcedure(String procedure, List<String> paras) throws TException {
 		try {

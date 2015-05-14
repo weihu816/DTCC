@@ -55,6 +55,7 @@ public class StorageNode {
     }
     
 	public ReadValue onRead(String tid, String table, String key, List<String> names) {
+		LOG.debug("onRead: table=" + table + " key=" + key + " " + names);
 		this.db.locksAppend(tid, table, new String[] { key });
 		while (true) {
 			if (this.db.isNonConflictingHead(table, tid)) {

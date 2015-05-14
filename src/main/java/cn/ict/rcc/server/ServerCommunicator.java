@@ -20,9 +20,9 @@ public class ServerCommunicator {
 
 	private ExecutorService exec;
 	private TServer server;
+	private ServerCommunicationServiceHandler handler;
 
-
-	public void startListener(final StorageNode node, final int port) {
+	public void startListener(final RCCStorageNode node, final int port) {
 		exec = Executors.newSingleThreadExecutor();
 		exec.submit(new Runnable() {
 			public void run() {
@@ -31,10 +31,10 @@ public class ServerCommunicator {
 //					RococoCommunicationService.Processor processor = 
 //							new RococoCommunicationService.Processor(new ServerCommunicationServiceHandler(node));
 //					server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).processor(processor));
-					
+					handler = new ServerCommunicationServiceHandler(node);
 					TNonblockingServerSocket socket = new TNonblockingServerSocket(port);
 					RococoCommunicationService.Processor processor = 
-							new RococoCommunicationService.Processor(new ServerCommunicationServiceHandler(node));
+							new RococoCommunicationService.Processor(handler);
 					TThreadedSelectorServer.Args thhsArgs = new TThreadedSelectorServer.Args(socket);
 					thhsArgs.processor(processor);
 					thhsArgs.transportFactory(new TFramedTransport.Factory());

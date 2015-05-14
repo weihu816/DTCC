@@ -48,8 +48,7 @@ public class PCCCommunicationServiceHandler implements Iface {
 	@Override
 	public boolean write(String table, String key, List<String> names,
 			List<String> values) throws TException {
-		// TODO Auto-generated method stub
-		return false;
+		return storageNode.write(table, key, names, values);
 	}
 
 	@Override

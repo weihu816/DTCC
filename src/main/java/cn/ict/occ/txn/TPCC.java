@@ -1,9 +1,7 @@
 package cn.ict.occ.txn;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +18,6 @@ import cn.ict.dtcc.benchmark.tpcc.TPCCConstants;
 import cn.ict.dtcc.benchmark.tpcc.TPCCGenerator;
 import cn.ict.dtcc.config.AppServerConfiguration;
 import cn.ict.dtcc.exception.TransactionException;
-import cn.ict.rcc.server.coordinator.messaging.RococoTransaction;
 
 /**
  * TPCC Transaction Stored Procedures
@@ -558,8 +555,6 @@ public class TPCC {
 		
 		int w_id = TPCCGenerator.randomInt(1, TPCCConstants.NUM_WAREHOUSE);
 		int d_id = TPCCGenerator.randomInt(1, TPCCConstants.DISTRICTS_PER_WAREHOUSE);
-		w_id = 1;
-		d_id = 8;
 		
 		List<String> columns, values;
 		/* ORDER BY no_o_id ASC and choose an new order */
@@ -644,7 +639,7 @@ public class TPCC {
 
 		PropertyConfigurator.configure(AppServerConfiguration.getConfiguration().getLogConfigFilePath());
 
-		int n = 2;
+		int n = 10;
 		ExecutorService exec = Executors.newFixedThreadPool(n);
 		Future<Integer>[] futures = new Future[n];
 		int result = 0;
@@ -665,6 +660,7 @@ public class TPCC {
 		System.out.println("NumTxnsAborted: " + TPCC.numTxnsAborted);
 		System.out.println("Commit Rate: " + (double) result / (result + numTxnsAborted.get()) * 100 + "%");
 		System.out.println("Avg Latency: " + (double) Latency.get() / result + " ms");
+		System.out.println("Throughput: " + (double) 1000 / (Latency.get() / result) + " /s");
 		exec.shutdownNow();
 	}
 }
@@ -677,7 +673,7 @@ class myTask implements Callable<Integer> {
 		int count_neworder = 0;
 
 		
-		while (System.currentTimeMillis() - start < 20000) {
+		while (System.currentTimeMillis() - start < 30000) {
 			try {
 				long xxx = System.currentTimeMillis();
 				int x = TPCCGenerator.randomInt(0,99);
@@ -709,7 +705,6 @@ class myTask implements Callable<Integer> {
 			} catch (TransactionException e) {
 				TPCC.numTxnsAborted.addAndGet(1);
 			}
-			
 //			try {
 //	            System.out.println("Starting another txn in 1 seconds...");
 //	            Thread.sleep(10);

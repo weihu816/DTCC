@@ -18,7 +18,7 @@ public class Chopper_main {
 
 	public static void main(String[] args) {
 		PropertyConfigurator.configure(AppServerConfiguration.getConfiguration().getLogConfigFilePath());
-		int n = 1;
+		int n = 2;
 		ExecutorService exec = Executors.newFixedThreadPool(n);
 		Future<Integer>[] futures = new Future[n];
 		int result = 0;

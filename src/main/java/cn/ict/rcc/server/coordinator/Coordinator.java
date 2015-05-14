@@ -15,12 +15,16 @@ import org.apache.thrift.transport.TTransportException;
 import cn.ict.dtcc.config.AppServerConfiguration;
 import cn.ict.dtcc.config.ServerConfiguration;
 import cn.ict.rcc.messaging.RococoCoordinator;
+import cn.ict.rcc.server.ServerCommunicator;
 
 
 public class Coordinator {
 
 	private static final Log log = LogFactory.getLog(Coordinator.class);
 	
+	
+//	private ServerCommunicator communicator;
+	private CoordinatorServiceHandler handler = new CoordinatorServiceHandler();
 	private AppServerConfiguration configuration;
     private TServer server;
     private ExecutorService exec;
@@ -41,7 +45,7 @@ public class Coordinator {
             public void run() {
                 try {
                     TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(port);
-                    RococoCoordinator.Processor processor = new RococoCoordinator.Processor(new CoordinatorServiceHandler());
+                    RococoCoordinator.Processor processor = new RococoCoordinator.Processor(handler);
                     server = new TNonblockingServer(new TNonblockingServer.Args(serverTransport).processor(processor));
                     log.info("Starting server on port: " + port);
                     server.serve();

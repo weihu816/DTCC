@@ -21,9 +21,9 @@ public class ServerCommunicationServiceHandler implements Iface {
 
 	private static final Log LOG = LogFactory.getLog(ServerCommunicationServiceHandler.class);
 			
-	private StorageNode node;
+	private RCCStorageNode node;
 	
-	public ServerCommunicationServiceHandler(StorageNode node) {
+	public ServerCommunicationServiceHandler(RCCStorageNode node) {
         this.node = node;
     }
 	
@@ -52,8 +52,8 @@ public class ServerCommunicationServiceHandler implements Iface {
 
 	@Override
 	public CommitResponse commit_req(String transactionId, Graph dep) throws TException {
-		if (node.status.get(transactionId) == StorageNode.STARTED) {
-			node.status.put(transactionId, StorageNode.COMMITTING);
+		if (node.status.get(transactionId) == RCCStorageNode.STARTED) {
+			node.status.put(transactionId, RCCStorageNode.COMMITTING);
 		} else {
 			LOG.warn("ERROR: DECIDED");
 		}

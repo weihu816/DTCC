@@ -30,9 +30,9 @@ import cn.ict.rcc.messaging.Vertex;
 import cn.ict.rcc.server.coordinator.messaging.AskListener;
 import cn.ict.rcc.server.coordinator.messaging.CoordinatorCommunicator;
 
-public class StorageNode {
+public class RCCStorageNode {
 
-	private static final Log LOG = LogFactory.getLog(StorageNode.class);
+	private static final Log LOG = LogFactory.getLog(RCCStorageNode.class);
 	
 	public static final int STARTED 	= 0;
 	public static final int COMMITTING 	= 1;
@@ -67,7 +67,7 @@ public class StorageNode {
 		}
 	}
 	
-	public StorageNode() {
+	public RCCStorageNode() {
 		this.configuration = ServerConfiguration.getConfiguration();
 		this.communicator = new ServerCommunicator();
 	}
@@ -337,7 +337,7 @@ public class StorageNode {
 
 	public static void main(String[] args) {
 		PropertyConfigurator.configure(ServerConfiguration.getConfiguration().getLogConfigFilePath());
-		final StorageNode storageNode = new StorageNode();
+		final RCCStorageNode storageNode = new RCCStorageNode();
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {

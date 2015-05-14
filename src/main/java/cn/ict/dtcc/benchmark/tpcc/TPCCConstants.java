@@ -11,8 +11,8 @@ public final class TPCCConstants {
 
     private TPCCConstants() { assert false; }
     
-    public static final int NUM_WAREHOUSE = 2;				// number of warehouses - tunable 
-	public static final int ORDER_INIT_DELEVERED = 21;		// if (o_id > #e.g.2100) then it is not delivered when initilized
+    public static final int NUM_WAREHOUSE = 3;				// number of warehouses - tunable 
+	public static final int ORDER_INIT_DELEVERED = 210;		// if (o_id > #e.g.2100) then it is not delivered when initilized
 	public static final int NODES_PER_WAREHOUSE = 2; 		// number of node/warehouuse 
 		
     public static final String TABLENAME_WAREHOUSE 	= "WAREHOUSE";
@@ -58,7 +58,7 @@ public final class TPCCConstants {
 
     // ITEM constants
 	public static final int 	STARTING_ITEM 	= 0;
-    public static final int 	NUM_ITEMS 	  	= 1000;		//100000
+    public static final int 	NUM_ITEMS 	  	= 10000;		//100000
     public static final int 	MIN_IM 			= 1;
     public static final int 	MAX_IM 			= 10000;
     public static final double 	MIN_PRICE 		= 1.00;
@@ -92,14 +92,14 @@ public final class TPCCConstants {
 
     // DISTRICT constants
     public static final double INITIAL_D_YTD 		= 30000.00;
-    public static final int INITIAL_NEXT_O_ID 		= 31;		 		// 3001
-    public static final int DISTRICTS_PER_NODE		= 5;				// number of districts/node
+    public static final int INITIAL_NEXT_O_ID 		= 301;		 		// 3001
+    public static final int DISTRICTS_PER_NODE		= 10;				// number of districts/node
 	public static final int DISTRICTS_PER_WAREHOUSE = DISTRICTS_PER_NODE * NODES_PER_WAREHOUSE;
 	public static final int DISTRICTS_TOTALNUM = DISTRICTS_PER_NODE * NODES_PER_WAREHOUSE * NUM_WAREHOUSE;
 	
     // CUSTOMER constants
-    public static final int CUSTOMERS_PER_DISTRICT = 30;				// 3000
-	public static final int CUSTOMER_LASTNAME_BOUND = 10;	// 1000, in case no such customer
+    public static final int CUSTOMERS_PER_DISTRICT = 300;				// 3000
+	public static final int CUSTOMER_LASTNAME_BOUND = 100;	// 1000, in case no such customer
 
     public static final double INITIAL_CREDIT_LIM = 50000.00;
     public static final double MIN_DISCOUNT = 0.0000;
